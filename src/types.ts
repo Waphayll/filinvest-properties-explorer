@@ -1,18 +1,42 @@
+export type TownshipBrand = 'Premier Township' | 'Coastal Hub' | 'High Growth Area' | 'Exurban Community';
 
-export type Brand = 'Filigree' | 'Aspire' | 'Prestige' | 'Office Spaces';
-
-export interface Project {
+export interface CommercialProject {
   id: string;
   name: string;
-  brand: Brand;
+  brand: TownshipBrand;
   location: string;
-  address: string;
-  coordinates: [number, number];
-  description: string;
-  unitTypes?: string;
-  amenities?: string;
-  highlights?: string;
-  pricePoint?: string;
-  target?: string;
-  imageUrl?: string;
+  shortDescription: string;
+  fullDescription: string;
+  highlightText?: string;
+  bgImage: string;
+  averageLotSize: string;
+  averagePriceRange: string;
+  featureBadge?: string;
+  center?: [number, number]; // Latitude, Longitude center point for OpenStreetMap
+  zoom?: number;               // Default zoom level
+}
+
+export interface CommercialLot {
+  id: string;
+  projectId: string;
+  lotNumber: string;
+  blockNumber: string;
+  areaSqm: number;
+  pricePerSqm: number; // in PHP
+  far: number; // Floor Area Ratio
+  status: 'Available' | 'Reserved';
+  points: string; // SVG path points or polyline coords representation for rendering
+  labelText?: string; // Short code to display in the center of the lot
+  coordinates?: [number, number][]; // Lat-Lng polygon boundary coordinates for OpenStreetMap
+}
+
+export interface InvestorLead {
+  id: string;
+  name: string;
+  contactNumber: string;
+  email: string;
+  brokerName?: string;
+  timestamp: string;
+  selectedProjectName: string;
+  selectedLotNumber: string;
 }

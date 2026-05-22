@@ -16,7 +16,41 @@
 
 /* Leaflet Theme Overrides */
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  @apply bg-editorial-bg text-editorial-black border border-editorial-black/20 font-sans shadow-2xl! ring-1 ring-editorial-black/10;
+  @apply bg-slate-950 text-slate-100 border border-white/10 font-sans shadow-2xl! ring-1 ring-white/5 rounded-none!;
+}
+
+.grayscale-map .leaflet-tile {
+  filter: grayscale(100%) invert(95%) sepia(5%) saturate(200%) hue-rotate(190deg) contrast(95%) brightness(95%);
+}
+
+.lot-label-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.8) !important;
+  pointer-events: none !important;
+}
+
+.lot-label-tooltip-reserved {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #94a3b8 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.7) !important;
+  pointer-events: none !important;
+}
+
+.leaflet-container {
+  background: #0d1527 !important;
 }
 
 .leaflet-popup-content {
@@ -33,4 +67,13 @@
 
 .markdown-body {
   @apply font-sans leading-relaxed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.99); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
