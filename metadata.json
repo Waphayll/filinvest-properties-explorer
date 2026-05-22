@@ -1,0 +1,8 @@
+{
+  "name": "Filinvest Properties Explorer",
+  "description": "An interactive map showcasing Filinvest's premium residential and office developments across Alabang, Clark, and Rizal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
