@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Polygon, useMap, Tooltip, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CommercialLot, CommercialProject } from '../types';
 import { BRAND_COLORS_COMMERCIAL } from '../constants';
-import { ZoomIn, ZoomOut, RotateCcw, Layers, SlidersHorizontal, Eye } from 'lucide-react';
+
 
 interface InteractiveSDPProps {
   project: CommercialProject;
@@ -39,21 +39,12 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   selectedLot,
   onLotSelect,
 }) => {
-  const [filterType, setFilterType] = useState<'all' | 'available' | 'high_far' | 'premium_size'>('all');
-
-
   // Mapped center coordinate & zoom
   const centerCoord: [number, number] = project.center || [14.4150, 121.0360];
   const defaultZoom = project.zoom || 15;
 
-  // Filter lots according to interactive ledger query pills
-  const filteredLots = lots.filter(lot => {
-    if (lot.projectId !== project.id) return false;
-    if (filterType === 'available') return lot.status === 'Available';
-    if (filterType === 'high_far') return lot.far >= 10;
-    if (filterType === 'premium_size') return lot.areaSqm >= 2000;
-    return true;
-  });
+  // All lots for the current project
+  const projectLots = lots.filter(lot => lot.projectId === project.id);
 
   // Unique key to force full leaflet component remount on structural switches if needed
   const mapKey = `leaflet-map-${project.id}`;
@@ -62,63 +53,14 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
     <div className="relative flex flex-col w-full h-full bg-[#0a1220] border border-white/10 rounded-none overflow-hidden group select-none">
       
       {/* HUD Controller / Header Overlay */}
-      <div className="absolute top-3 left-3 z-[1000] flex flex-col sm:flex-row sm:items-center gap-2 max-w-[calc(100%-24px)] pointer-events-auto">
+      <div className="absolute top-3 left-3 z-[1000] pointer-events-auto">
         <div className="bg-[#111c2e]/95 backdrop-blur-md px-3.5 py-2.5 border border-white/10 shadow-2xl flex items-center gap-3 shrink-0">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS_COMMERCIAL[project.brand] }} />
-              <span className="text-xs font-bold tracking-[0.15em] uppercase text-slate-100 font-sans">
-                {project.name}
-              </span>
-            </div>
-            <span className="text-[9px] uppercase tracking-widest text-[#D4AF37] font-semibold mt-0.5">
-              Property Registry Mapping
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS_COMMERCIAL[project.brand] }} />
+            <span className="text-xs font-bold tracking-[0.15em] uppercase text-slate-100 font-sans">
+              {project.name}
             </span>
           </div>
-        </div>
-
-        {/* Filter Controls Widget overlay */}
-        <div className="flex flex-wrap gap-1 bg-[#111c2e]/95 backdrop-blur border border-white/10 p-1 shadow-2xl">
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-2.5 py-1 text-[9px] uppercase font-bold tracking-wider transition-all cursor-pointer ${
-              filterType === 'all'
-                ? 'bg-[#D4AF37] text-slate-950 font-black'
-                : 'text-slate-300 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            All Lots ({lots.filter(l => l.projectId === project.id).length})
-          </button>
-          <button
-            onClick={() => setFilterType('available')}
-            className={`px-2.5 py-1 text-[9px] uppercase font-bold tracking-wider transition-all cursor-pointer ${
-              filterType === 'available'
-                ? 'bg-[#34D399] text-slate-950 font-black'
-                : 'text-slate-300 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Available ({lots.filter(l => l.projectId === project.id && l.status === 'Available').length})
-          </button>
-          <button
-            onClick={() => setFilterType('high_far')}
-            className={`px-2.5 py-1 text-[9px] uppercase font-bold tracking-wider transition-all cursor-pointer ${
-              filterType === 'high_far'
-                ? 'bg-sky-500 text-slate-950 font-black'
-                : 'text-slate-300 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            High FAR (FAR 10+)
-          </button>
-          <button
-            onClick={() => setFilterType('premium_size')}
-            className={`px-2.5 py-1 text-[9px] uppercase font-bold tracking-wider transition-all cursor-pointer ${
-              filterType === 'premium_size'
-                ? 'bg-purple-500 text-slate-950 font-black'
-                : 'text-slate-300 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            2,000+ SQM
-          </button>
         </div>
       </div>
 
@@ -145,19 +87,9 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
           <SelectedLotUpdater selectedLot={selectedLot} />
 
           {/* Plot individual inventory land polygons */}
-          {filteredLots.map((lot) => {
+          {projectLots.map((lot) => {
             const isSelected = selectedLot?.id === lot.id;
-            const isAvailable = lot.status === 'Available';
             const themeColor = BRAND_COLORS_COMMERCIAL[project.brand];
-
-            // Render style matching availability + hover states
-            const fillColour = isAvailable
-              ? (isSelected ? themeColor : `${themeColor}`)
-              : '#334155'; // Dark blue-slate for reserved
-
-            const outlineColour = isSelected
-              ? '#ffffff'
-              : (isAvailable ? themeColor : '#475569');
 
             // Set coordinates list safely
             if (!lot.coordinates || lot.coordinates.length < 3) return null;
@@ -167,11 +99,10 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 key={lot.id}
                 positions={lot.coordinates}
                 pathOptions={{
-                  fillColor: fillColour,
-                  fillOpacity: isSelected ? 0.38 : (isAvailable ? 0.15 : 0.06),
-                  color: outlineColour,
+                  fillColor: themeColor,
+                  fillOpacity: isSelected ? 0.38 : 0.15,
+                  color: isSelected ? '#ffffff' : themeColor,
                   weight: isSelected ? 3.5 : 1.5,
-                  dashArray: isAvailable ? undefined : '4, 4',
                 }}
                 eventHandlers={{
                   click: () => {
@@ -183,7 +114,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 <Tooltip
                   permanent
                   direction="center"
-                  className={isAvailable ? 'lot-label-tooltip' : 'lot-label-tooltip-reserved'}
+                  className="lot-label-tooltip"
                 >
                   <div className="flex flex-col items-center">
                     <span>{lot.labelText || lot.lotNumber}</span>
@@ -196,8 +127,8 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                   <div className="p-1 max-w-[200px] text-slate-100 font-sans">
                     <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] border-b border-white/10 pb-1 mb-1.5 flex items-center justify-between">
                       <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                      <span className={`text-[7px] px-1.5 py-0.5 rounded-none font-sans font-bold uppercase ${isAvailable ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-500/30' : 'bg-slate-700/50 text-slate-400'}`}>
-                        {lot.status}
+                      <span className="text-[7px] px-1.5 py-0.5 rounded-none font-sans font-bold uppercase bg-emerald-600/30 text-emerald-400 border border-emerald-500/30">
+                        Available
                       </span>
                     </h4>
                     <div className="grid grid-cols-2 gap-y-1 text-[9px] text-slate-300">
