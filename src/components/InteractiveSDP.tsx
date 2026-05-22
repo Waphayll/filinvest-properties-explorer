@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CommercialLot, CommercialProject } from '../types';
 import { BRAND_COLORS_COMMERCIAL } from '../constants';
-import { ZoomIn, ZoomOut, RotateCcw, MapPin, Layers, Sparkles, SlidersHorizontal, Eye, Info } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Layers, SlidersHorizontal, Eye } from 'lucide-react';
 
 interface InteractiveSDPProps {
   project: CommercialProject;
@@ -40,7 +40,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   onLotSelect,
 }) => {
   const [filterType, setFilterType] = useState<'all' | 'available' | 'high_far' | 'premium_size'>('all');
-  const [showZonalLegend, setShowZonalLegend] = useState<boolean>(true);
+
 
   // Mapped center coordinate & zoom
   const centerCoord: [number, number] = project.center || [14.4150, 121.0360];
@@ -218,52 +218,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
         </MapContainer>
       </div>
 
-      {/* Floating Interactive Zonal Info Overlay (Bottom-Left) */}
-      {showZonalLegend && (
-        <div className="absolute bottom-3 left-3 z-[1000] bg-[#111c2e]/95 backdrop-blur-md p-3 border border-white/10 shadow-2xl max-w-[260px] hidden sm:block">
-          <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-2">
-            <span className="text-[9px] font-sans font-black tracking-[0.2em] text-[#D4AF37] uppercase flex items-center gap-1">
-              <Sparkles size={11} /> INDEX & METADATA
-            </span>
-            <button
-              onClick={() => setShowZonalLegend(false)}
-              className="text-slate-400 hover:text-white text-[8px] uppercase tracking-wider font-bold"
-            >
-              Hide
-            </button>
-          </div>
-          <div className="flex flex-col gap-1.5 text-[8.5px] text-slate-300">
-            <p className="leading-relaxed font-sans">
-              Currently visualizing <strong className="text-white uppercase font-sans font-semibold">{project.name}</strong> inventory. All values plotted on OpenStreetMap accurately matching district coordinate bounds.
-            </p>
-            <div className="h-[1px] bg-white/5 my-0.5" />
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2" style={{ backgroundColor: `${BRAND_COLORS_COMMERCIAL[project.brand]}` }} />
-              <span>Available Commercial Portions</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-slate-600 border border-slate-500 border-dashed" />
-              <span>Reserved/Leased Land Lots</span>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Closed Legend Reveal */}
-      {!showZonalLegend && (
-        <button
-          onClick={() => setShowZonalLegend(true)}
-          className="absolute bottom-3 left-3 z-[1000] bg-[#111c2e]/95 hover:bg-[#1b2b48] backdrop-blur-md px-2.5 py-1.5 border border-white/10 text-[8px] font-sans font-black tracking-widest text-[#D4AF37] uppercase shadow-2xl flex items-center gap-1 cursor-pointer transition-all"
-        >
-          <Info size={11} /> SHOW MAP DETAILS
-        </button>
-      )}
-
-      {/* User Controls Help overlay (Bottom-Right) */}
-      <div className="absolute bottom-3 right-3 z-[1000] bg-[#111c2e]/95 backdrop-blur-md px-3 py-1.5 border border-white/10 text-[8px] uppercase tracking-[0.15em] text-slate-400 hidden sm:flex items-center gap-1.5 shadow-xl">
-        <MapPin size={10} className="text-[#D4AF37]" />
-        <span>Click parcel polygon for full ledger detail & calculator sync</span>
-      </div>
 
     </div>
   );
