@@ -89,7 +89,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
           {/* Plot individual inventory land polygons */}
           {projectLots.map((lot) => {
             const isSelected = selectedLot?.id === lot.id;
-            const themeColor = BRAND_COLORS_COMMERCIAL[project.brand];
+            const themeColor = lot.colorOverride || BRAND_COLORS_COMMERCIAL[project.brand];
 
             // Set coordinates list safely
             if (!lot.coordinates || lot.coordinates.length < 3) return null;
@@ -100,7 +100,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 positions={lot.coordinates}
                 pathOptions={{
                   fillColor: themeColor,
-                  fillOpacity: isSelected ? 0.38 : 0.15,
+                  fillOpacity: isSelected ? 0.45 : 0.25,
                   color: isSelected ? '#ffffff' : themeColor,
                   weight: isSelected ? 3.5 : 1.5,
                 }}

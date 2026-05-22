@@ -65,36 +65,107 @@ export const COMMERCIAL_PROJECTS: CommercialProject[] = [
 
 // Dynamically generate properly coordinate-positioned lots to ensure perfect layout without overlaps
 const generateFCPalmsLots = (): CommercialLot[] => {
-  const palmsCenter: [number, number] = [14.4215, 121.0315];
-  const data = [
-    { num: '2-B-1', size: 5716, price: 396000, far: 6 },
-    { num: '2-B-4', size: 2607, price: 396000, far: 6 },
-    { num: '2-B-5', size: 2235, price: 396000, far: 6 },
-    { num: '2-B-6', size: 2052, price: 396000, far: 6 },
-    { num: '2-B-7', size: 1940, price: 396000, far: 6 }
-  ];
-  return data.map((d, index) => {
-    const startLng = palmsCenter[1] + index * 0.0006;
-    const startLat = palmsCenter[0];
-    return {
-      id: `fc-palms-${d.num}`,
+  // Block 13 "Palms" lots along Pacific Rim Blvd / Filinvest Ave, Alabang
+  // Lots arranged vertically (north-to-south) along the east side of Pacific Rim
+  const lots: CommercialLot[] = [
+    {
+      id: 'fc-palms-2-B-7',
       projectId: 'filinvest-city',
-      lotNumber: d.num,
+      lotNumber: '2-B-7',
       blockNumber: 'Block 13',
-      areaSqm: d.size,
-      pricePerSqm: d.price,
-      far: d.far,
-      status: (index === 3 ? 'Reserved' : 'Available') as 'Available' | 'Reserved',
-      points: `${50 + index * 50},120 ${90 + index * 50},120 ${90 + index * 50},170 ${50 + index * 50},170`,
-      labelText: d.num,
+      areaSqm: 1940,
+      pricePerSqm: 396000,
+      far: 6,
+      status: 'Available',
+      points: '50,120 90,120 90,170 50,170',
+      labelText: '2-B-7',
+      colorOverride: '#DC2626',
       coordinates: [
-        [startLat, startLng],
-        [startLat + 0.00022, startLng],
-        [startLat + 0.00022, startLng + 0.00045],
-        [startLat, startLng + 0.00045]
-      ] as [number, number][]
-    };
-  });
+        [14.41620, 121.03340],
+        [14.41620, 121.03410],
+        [14.41580, 121.03410],
+        [14.41580, 121.03340]
+      ]
+    },
+    {
+      id: 'fc-palms-2-B-6',
+      projectId: 'filinvest-city',
+      lotNumber: '2-B-6',
+      blockNumber: 'Block 13',
+      areaSqm: 2052,
+      pricePerSqm: 396000,
+      far: 6,
+      status: 'Available',
+      points: '100,120 140,120 140,170 100,170',
+      labelText: '2-B-6',
+      colorOverride: '#DC2626',
+      coordinates: [
+        [14.41575, 121.03340],
+        [14.41575, 121.03410],
+        [14.41530, 121.03410],
+        [14.41530, 121.03340]
+      ]
+    },
+    {
+      id: 'fc-palms-2-B-5',
+      projectId: 'filinvest-city',
+      lotNumber: '2-B-5',
+      blockNumber: 'Block 13',
+      areaSqm: 2235,
+      pricePerSqm: 396000,
+      far: 6,
+      status: 'Available',
+      points: '150,120 190,120 190,170 150,170',
+      labelText: '2-B-5',
+      colorOverride: '#DC2626',
+      coordinates: [
+        [14.41525, 121.03340],
+        [14.41525, 121.03415],
+        [14.41475, 121.03415],
+        [14.41475, 121.03340]
+      ]
+    },
+    {
+      id: 'fc-palms-2-B-4',
+      projectId: 'filinvest-city',
+      lotNumber: '2-B-4',
+      blockNumber: 'Block 13',
+      areaSqm: 2607,
+      pricePerSqm: 396000,
+      far: 6,
+      status: 'Available',
+      points: '200,120 240,120 240,170 200,170',
+      labelText: '2-B-4',
+      colorOverride: '#DC2626',
+      coordinates: [
+        [14.41470, 121.03340],
+        [14.41470, 121.03420],
+        [14.41415, 121.03420],
+        [14.41415, 121.03340]
+      ]
+    },
+    {
+      id: 'fc-palms-2-B-1',
+      projectId: 'filinvest-city',
+      lotNumber: '2-B-1',
+      blockNumber: 'Block 13',
+      areaSqm: 5716,
+      pricePerSqm: 396000,
+      far: 6,
+      status: 'Available',
+      points: '250,120 330,120 330,170 250,170',
+      labelText: '2-B-1',
+      colorOverride: '#DC2626',
+      coordinates: [
+        [14.41410, 121.03310],
+        [14.41410, 121.03430],
+        [14.41310, 121.03430],
+        [14.41310, 121.03310]
+      ]
+    }
+  ];
+
+  return lots;
 };
 
 const generateFCSpectrumLots = (): CommercialLot[] => {

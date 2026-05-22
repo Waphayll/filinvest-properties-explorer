@@ -28,6 +28,7 @@ export interface CommercialLot {
   points: string; // SVG path points or polyline coords representation for rendering
   labelText?: string; // Short code to display in the center of the lot
   coordinates?: [number, number][]; // Lat-Lng polygon boundary coordinates for OpenStreetMap
+  colorOverride?: string; // Custom polygon color override (e.g. '#E53E3E' for red)
 }
 
 export interface InvestorLead {
