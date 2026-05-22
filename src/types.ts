@@ -1,18 +1,31 @@
+export type ProjectId = 'filinvest-city' | 'city-di-mare' | 'daang-hari' | 'village-front';
+export type LotStatus = 'available' | 'sold' | 'reserved';
 
-export type Brand = 'Filigree' | 'Aspire' | 'Prestige' | 'Office Spaces';
-
-export interface Project {
+export interface Lot {
   id: string;
+  block: string;
+  lotNumber: string;
+  district?: string;
+  lotArea: number;       // sqm
+  pricePerSqm: number;   // PHP
+  tcp: number;           // PHP
+  far: number;
+  status: LotStatus;
+  // Daang Hari Lot 2G only
+  hasStructure?: boolean;
+  structureArea?: number;
+  structurePrice?: number;
+  structureTcp?: number;
+}
+
+export interface CommercialProject {
+  id: ProjectId;
   name: string;
-  brand: Brand;
+  shortName: string;
   location: string;
-  address: string;
-  coordinates: [number, number];
   description: string;
-  unitTypes?: string;
-  amenities?: string;
-  highlights?: string;
-  pricePoint?: string;
-  target?: string;
-  imageUrl?: string;
+  lotCuts: string;
+  farRange: string;
+  priceRange: string;
+  lots: Lot[];
 }
