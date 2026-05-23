@@ -387,39 +387,39 @@ export default function App() {
             >
               
               {/* Top Persistent Navigation Header (Screen 6 Compliance - Compact height) */}
-              <header className="h-14 border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-4 sm:px-6 flex items-center justify-between z-10 shrink-0">
-                <div className="flex items-center gap-3">
+              <header className="h-20 border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-6 sm:px-8 flex items-center justify-between z-10 shrink-0">
+                <div className="flex items-center gap-4">
                   <button 
                     onClick={() => {
                       setCurrentScreen('selection');
                       setSelectedLot(null);
                     }}
-                    className="p-1.5 text-slate-400 hover:text-white border border-white/10 rounded-none bg-[#0a1220]/50 hover:bg-white/5 transition-all"
+                    className="p-2 text-slate-400 hover:text-white border border-white/10 rounded-none bg-[#0a1220]/50 hover:bg-white/5 transition-all"
                   >
-                    <ArrowLeft size={14} />
+                    <ArrowLeft size={18} />
                   </button>
                   <div>
-                    <h2 className="text-sm md:text-base font-display font-medium text-white flex items-center gap-2">
+                    <h2 className="text-lg md:text-xl font-display font-medium text-white flex items-center gap-2">
                        <span>{selectedProject.name}</span>
                       {selectedProject.id === 'filinvest-city' && (
-                        <span className="text-[8px] bg-[#D4AF37]/25 text-[#D4AF37] border border-[#D4AF37]/35 px-2 py-0.5 uppercase tracking-widest font-bold font-sans">
+                        <span className="text-[10px] bg-[#D4AF37]/25 text-[#D4AF37] border border-[#D4AF37]/35 px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans">
                           Featured
                         </span>
                       )}
                     </h2>
-                    <p className="text-[9px] text-slate-400 uppercase tracking-widest truncate max-w-sm hidden md:block">
+                    <p className="text-[11px] text-slate-400 uppercase tracking-widest truncate max-w-sm hidden md:block">
                       {selectedProject.location} • {selectedProject.brand}
                     </p>
                   </div>
                 </div>
 
                 {/* Quick Switch Switcher Tabs (No App Restart Needed - Screen 6) */}
-                <div className="flex items-center bg-[#0a1220] p-0.5 border border-white/10">
+                <div className="flex items-center bg-[#0a1220] p-1 border border-white/10">
                   {COMMERCIAL_PROJECTS.map((p) => (
                     <button
                       key={p.id}
                       onClick={() => handleProjectSelect(p)}
-                      className={`px-2 py-1 text-[9px] uppercase font-bold tracking-wider transition-all rounded-none ${
+                      className={`px-3 py-1.5 text-[11px] uppercase font-bold tracking-wider transition-all rounded-none ${
                         selectedProject.id === p.id 
                           ? 'bg-amber-600 text-white' 
                           : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -432,19 +432,19 @@ export default function App() {
 
                 <div className="flex items-center">
                   {isEditMode && (
-                    <label className="mr-4 flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
+                    <label className="mr-5 flex items-center gap-2 text-xs uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
                       <input 
                         type="checkbox" 
                         checked={inquiriesEnabled} 
                         onChange={(e) => setInquiriesEnabled(e.target.checked)} 
-                        className="accent-indigo-500 w-3 h-3"
+                        className="accent-indigo-500 w-4 h-4"
                       />
                       Enable Inquiries
                     </label>
                   )}
                   <button
                     onClick={handleAdminToggle}
-                    className={`mr-3 px-3 py-1.5 text-[10px] uppercase font-bold tracking-widest transition-all rounded-none border ${
+                    className={`mr-4 px-4 py-2 text-xs uppercase font-bold tracking-widest transition-all rounded-none border ${
                       isEditMode ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.5)]' : 'opacity-10 hover:opacity-100 text-slate-500 border-transparent hover:border-white/10 hover:bg-white/5'
                     }`}
                   >
@@ -456,7 +456,7 @@ export default function App() {
                         setFormSubmitted(false);
                         setShowInquiryModal(true);
                       }}
-                      className="px-4 py-1.5 bg-slate-100 hover:bg-white text-slate-950 text-[10px] uppercase font-bold tracking-widest transition-all rounded-none shadow"
+                      className="px-5 py-2 bg-slate-100 hover:bg-white text-slate-950 text-xs uppercase font-bold tracking-widest transition-all rounded-none shadow"
                     >
                       Inquire Now
                     </button>
