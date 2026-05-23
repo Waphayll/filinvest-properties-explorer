@@ -41,3 +41,23 @@ export interface InvestorLead {
   selectedProjectName: string;
   selectedLotNumber: string;
 }
+
+export interface SurveyorBearing {
+  direction1: 'N' | 'S';
+  degrees: number;
+  minutes: number;
+  direction2: 'E' | 'W';
+}
+
+export interface SurveyorLine {
+  from: number;
+  to: number;
+  bearing: SurveyorBearing;
+  distance_m: number;
+}
+
+export interface SurveyorData {
+  lot: string;
+  area_sqm: number;
+  lines: SurveyorLine[];
+}

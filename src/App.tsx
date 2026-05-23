@@ -28,6 +28,8 @@ export default function App() {
   const [showInquiryModal, setShowInquiryModal] = useState<boolean>(false);
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [leads, setLeads] = useState<InvestorLead[]>([]);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [inquiriesEnabled, setInquiriesEnabled] = useState<boolean>(false);
 
   // --- LEAD CAPTURE FORM STATE ---
   const [formData, setFormData] = useState({
@@ -65,6 +67,19 @@ export default function App() {
 
   const handleLotClick = (lot: CommercialLot) => {
     setSelectedLot(lot);
+  };
+
+  const handleAdminToggle = () => {
+    if (isEditMode) {
+      setIsEditMode(false);
+    } else {
+      const pwd = window.prompt("Enter Admin Password:");
+      if (pwd === "Admin123") {
+        setIsEditMode(true);
+      } else if (pwd !== null) {
+        alert("Incorrect password");
+      }
+    }
   };
 
   const validateForm = () => {
@@ -150,7 +165,7 @@ export default function App() {
                 <span className="text-[10px] bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 px-4 py-1.5 uppercase tracking-[0.3em] font-semibold text-xs rounded-full">
                   EXCLUSIVE PRIVATE CATALOGUE
                 </span>
-                <h1 className="text-4xl sm:text-7xl font-display font-medium tracking-tight text-white italic leading-tight mt-4">
+                <h1 className="text-4xl sm:text-7xl font-display font-medium tracking-tight text-white leading-tight mt-4">
                   Q2 Investors <span className="font-bold font-display">Night</span>
                 </h1>
                 <div className="h-[1px] w-24 bg-[#D4AF37]/40 mx-auto my-6"></div>
@@ -184,7 +199,7 @@ export default function App() {
                     <span className="text-[#D4AF37] tracking-[0.35em] text-xs font-bold uppercase block">
                       Filinvest Townships
                     </span>
-                    <h1 className="text-2xl md:text-3xl font-display font-medium text-white italic mt-1">
+                    <h1 className="text-2xl md:text-3xl font-display font-medium text-white mt-1">
                       Explore Commercial Portfolios
                     </h1>
                   </div>
@@ -247,7 +262,7 @@ export default function App() {
                               <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase flex items-center gap-1.5">
                                 <MapPin size={11} /> {project.location}
                               </span>
-                              <h2 className="text-2xl sm:text-3.5xl font-display font-medium text-white italic group-hover:text-amber-400 transition-colors leading-tight">
+                              <h2 className="text-2xl sm:text-3.5xl font-display font-medium text-white group-hover:text-amber-400 transition-colors leading-tight">
                                 {project.name}
                               </h2>
                               <p className="text-xs text-slate-300 leading-relaxed font-sans max-w-2xl">
@@ -324,7 +339,7 @@ export default function App() {
                               <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase flex items-center gap-1 font-sans">
                                 <MapPin size={10} className="text-[#38BDF8]" /> {project.location.split(',')[0]}
                               </span>
-                              <h2 className="text-xl font-display font-medium text-white italic group-hover:text-amber-400 transition-colors leading-tight">
+                              <h2 className="text-xl font-display font-medium text-white group-hover:text-amber-400 transition-colors leading-tight">
                                 {project.name}
                               </h2>
                               <p className="text-[11px] text-slate-300 leading-relaxed font-sans line-clamp-4">
@@ -385,7 +400,7 @@ export default function App() {
                   </button>
                   <div>
                     <h2 className="text-sm md:text-base font-display font-medium text-white flex items-center gap-2">
-                       <span className="italic">{selectedProject.name}</span>
+                       <span>{selectedProject.name}</span>
                       {selectedProject.id === 'filinvest-city' && (
                         <span className="text-[8px] bg-[#D4AF37]/25 text-[#D4AF37] border border-[#D4AF37]/35 px-2 py-0.5 uppercase tracking-widest font-bold font-sans">
                           Featured
@@ -415,16 +430,37 @@ export default function App() {
                   ))}
                 </div>
 
-                <div>
-                  <button 
-                    onClick={() => {
-                      setFormSubmitted(false);
-                      setShowInquiryModal(true);
-                    }}
-                    className="px-4 py-1.5 bg-slate-100 hover:bg-white text-slate-950 text-[10px] uppercase font-bold tracking-widest transition-all rounded-none shadow"
+                <div className="flex items-center">
+                  {isEditMode && (
+                    <label className="mr-4 flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={inquiriesEnabled} 
+                        onChange={(e) => setInquiriesEnabled(e.target.checked)} 
+                        className="accent-indigo-500 w-3 h-3"
+                      />
+                      Enable Inquiries
+                    </label>
+                  )}
+                  <button
+                    onClick={handleAdminToggle}
+                    className={`mr-3 px-3 py-1.5 text-[10px] uppercase font-bold tracking-widest transition-all rounded-none border ${
+                      isEditMode ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.5)]' : 'opacity-10 hover:opacity-100 text-slate-500 border-transparent hover:border-white/10 hover:bg-white/5'
+                    }`}
                   >
-                    Inquire Now
+                    {isEditMode ? 'Exit Edit Mode' : 'Admin'}
                   </button>
+                  {inquiriesEnabled && (
+                    <button 
+                      onClick={() => {
+                        setFormSubmitted(false);
+                        setShowInquiryModal(true);
+                      }}
+                      className="px-4 py-1.5 bg-slate-100 hover:bg-white text-slate-950 text-[10px] uppercase font-bold tracking-widest transition-all rounded-none shadow"
+                    >
+                      Inquire Now
+                    </button>
+                  )}
                 </div>
               </header>
 
@@ -439,71 +475,72 @@ export default function App() {
                       lots={activeProjectLots}
                       selectedLot={selectedLot}
                       onLotSelect={handleLotClick}
+                      isEditMode={isEditMode}
                     />
                   </div>
                 </div>
 
                 {/* Right Side Fixed Details Panel Layout (Screen 5 Compliance) */}
-                <div className="w-full md:w-85 border-t md:border-t-0 md:border-l border-white/10 bg-[#0c1524] flex flex-col justify-between p-6 shrink-0 h-[280px] md:h-full z-10">
-                  <div className="space-y-5">
-                    <div className="flex items-center gap-2 border-b border-white/10 pb-4">
-                      <Building2 size={16} className="text-[#D4AF37]" />
-                      <h3 className="font-display text-lg font-semibold text-white italic">
+                <div className="w-full md:w-[28rem] border-t md:border-t-0 md:border-l border-white/10 bg-[#0c1524] flex flex-col justify-between p-8 shrink-0 h-[320px] md:h-full z-10">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 border-b border-white/10 pb-5">
+                      <Building2 size={24} className="text-[#D4AF37]" />
+                      <h3 className="font-display text-2xl font-semibold text-white">
                         Lot Parameters
                       </h3>
                     </div>
 
                     {selectedLot ? (
-                      <div className="space-y-4 font-sans text-xs">
+                      <div className="space-y-6 font-sans text-sm">
                         <div>
-                          <label className="text-[8px] uppercase text-slate-400 tracking-widest font-mono">Lot Identifier</label>
-                          <div className="text-base font-bold text-white mt-0.5">
+                          <label className="text-xs uppercase text-slate-400 tracking-widest font-mono">Lot Identifier</label>
+                          <div className="text-xl font-bold text-white mt-1">
                             {selectedLot.blockNumber} • {selectedLot.lotNumber}
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-6">
                           <div>
-                            <label className="text-[8px] uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1">
-                              <Maximize2 size={10} /> Lot Area
+                            <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
+                              <Maximize2 size={14} /> Lot Area
                             </label>
-                            <div className="text-sm font-semibold text-slate-200 mt-0.5">
+                            <div className="text-lg font-semibold text-slate-200 mt-1">
                               {selectedLot.areaSqm.toLocaleString()} sqm
                             </div>
                           </div>
                           <div>
-                            <label className="text-[8px] uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1">
-                              <Layers size={10} /> FAR Limit
+                            <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
+                              <Layers size={14} /> FAR Limit
                             </label>
-                            <div className="text-sm font-semibold text-slate-200 mt-0.5">
+                            <div className="text-lg font-semibold text-slate-200 mt-1">
                               FAR {selectedLot.far}.0
                             </div>
                           </div>
                         </div>
 
                         <div>
-                          <label className="text-[8px] uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1">
-                            <DollarSign size={10} /> Price per SQM
+                          <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
+                            <DollarSign size={14} /> Price per SQM
                           </label>
-                          <div className="text-sm font-semibold text-slate-200 mt-0.5">
+                          <div className="text-lg font-semibold text-slate-200 mt-1">
                             ₱ {selectedLot.pricePerSqm.toLocaleString()}
                           </div>
                         </div>
 
-                        <div className="p-3 bg-[#0a1220] border border-white/5">
-                          <label className="text-[8px] uppercase text-[#D4AF37] tracking-widest font-mono font-bold">
+                        <div className="p-4 bg-[#0a1220] border border-white/5">
+                          <label className="text-xs uppercase text-[#D4AF37] tracking-widest font-mono font-bold">
                             Total Contract Price (TCP)
                           </label>
-                          <div className="text-lg font-bold text-amber-400 mt-0.5">
+                          <div className="text-2xl font-bold text-amber-400 mt-1.5">
                             ₱ {(selectedLot.areaSqm * selectedLot.pricePerSqm).toLocaleString()}
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="py-8 flex flex-col items-center justify-center text-center text-slate-400 px-4 border border-dashed border-white/10 bg-white/[0.01]">
-                        <MapPin size={22} className="mb-2 opacity-30 text-[#D4AF37]" />
-                        <p className="text-xs font-display italic">No lot selected</p>
-                        <p className="text-[10px] uppercase tracking-widest leading-relaxed text-slate-500 mt-1 max-w-xs">
+                      <div className="py-12 flex flex-col items-center justify-center text-center text-slate-400 px-6 border border-dashed border-white/10 bg-white/[0.01]">
+                        <MapPin size={32} className="mb-3 opacity-30 text-[#D4AF37]" />
+                        <p className="text-lg font-display">No lot selected</p>
+                        <p className="text-xs uppercase tracking-widest leading-relaxed text-slate-500 mt-2 max-w-xs">
                           Tap any interactive lot block on the plan layout to view metrics instantly here.
                         </p>
                       </div>
@@ -512,15 +549,21 @@ export default function App() {
 
                   <div>
                     {selectedLot ? (
-                      <button 
-                        onClick={() => {
-                          setFormSubmitted(false);
-                          setShowInquiryModal(true);
-                        }}
-                        className="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-all shadow"
-                      >
-                        Inquire For This Lot
-                      </button>
+                      inquiriesEnabled ? (
+                        <button 
+                          onClick={() => {
+                            setFormSubmitted(false);
+                            setShowInquiryModal(true);
+                          }}
+                          className="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-all shadow"
+                        >
+                          Inquire For This Lot
+                        </button>
+                      ) : (
+                        <div className="text-center text-[10px] uppercase text-slate-500 tracking-widest font-mono pb-2">
+                          💡 Lot parameters loaded above
+                        </div>
+                      )
                     ) : (
                       <div className="text-center text-[10px] uppercase text-slate-500 tracking-widest font-mono pb-2">
                         💡 Interactive Registry active
@@ -559,7 +602,7 @@ export default function App() {
                   <h4 className="text-[9px] font-bold tracking-[0.3em] uppercase text-[#D4AF37]">
                     Filinvest Townships
                   </h4>
-                  <h3 className="text-xl font-display font-semibold text-white italic mt-1">
+                  <h3 className="text-xl font-display font-semibold text-white mt-1">
                     Investment Inquiry Form
                   </h3>
                   <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">
@@ -577,7 +620,7 @@ export default function App() {
               {formSubmitted ? (
                 <div className="p-12 flex flex-col items-center justify-center text-center space-y-4 animate-fadeIn">
                   <CheckCircle2 size={44} className="text-emerald-400" />
-                  <h4 className="text-xl font-display font-medium text-white italic">Inquiry Documented</h4>
+                  <h4 className="text-xl font-display font-medium text-white">Inquiry Documented</h4>
                   <p className="text-xs text-slate-300 max-w-xs leading-relaxed font-sans">
                     Registry files logged safely. Our township account executive will prioritize your follow-up profile.
                   </p>

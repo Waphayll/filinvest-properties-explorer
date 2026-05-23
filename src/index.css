@@ -3,7 +3,7 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Cormorant Garamond", serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
   --color-editorial-bg: #1a2b4b;
   --color-editorial-black: #f8fafc;
 }
@@ -76,4 +76,28 @@
 
 .animate-fadeIn {
   animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Geoman Toolbar Icons */
+.geoman-scale-up::after { content: "+"; font-size: 16px; font-weight: bold; margin-left: 2px; }
+.geoman-scale-down::after { content: "-"; font-size: 16px; font-weight: bold; margin-left: 2px; }
+.geoman-stretch-x::after { content: "↔"; font-size: 16px; font-weight: bold; margin-left: 1px; }
+.geoman-stretch-y::after { content: "↕"; font-size: 16px; font-weight: bold; margin-left: 1px; }
+.geoman-rotate-left::after { content: "↺"; font-size: 16px; font-weight: bold; }
+.geoman-rotate-right::after { content: "↻"; font-size: 16px; font-weight: bold; }
+.geoman-rotate-left-fast::after { content: "↶"; font-size: 16px; font-weight: bold; }
+.geoman-rotate-right-fast::after { content: "↷"; font-size: 16px; font-weight: bold; }
+
+.geoman-scale-up, .geoman-scale-down, .geoman-stretch-x, .geoman-stretch-y,
+.geoman-rotate-left, .geoman-rotate-right, .geoman-rotate-left-fast, .geoman-rotate-right-fast {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background-image: none !important;
+}
+
+.svg-overlay-marker {
+  overflow: visible !important;
+  border: none !important;
+  background: transparent !important;
 }

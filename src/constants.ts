@@ -1,4 +1,6 @@
 import { CommercialProject, CommercialLot } from './types';
+import lotOverridesData from './lotCoordinates.json';
+const lotOverrides = lotOverridesData as Record<string, [number, number][]>;
 
 export const COMMERCIAL_PROJECTS: CommercialProject[] = [
   {
@@ -231,6 +233,7 @@ const generateFCNorthgateLots = (): CommercialLot[] => {
       status: 'Available',
       points: '500,100 580,100 580,170 500,170',
       labelText: 'B46 L1',
+      colorOverride: '#06b6d4', // Cyan color
       coordinates: [
         [northgateCenter[0], northgateCenter[1]],
         [northgateCenter[0] + 0.00025, northgateCenter[1]],
@@ -404,7 +407,12 @@ export const COMMERCIAL_LOTS: CommercialLot[] = [
   ...generateCDMLots(),
   ...generateDHLots(),
   ...generateBVF_Lots()
-];
+].map(lot => {
+  if (lotOverrides && lotOverrides[lot.id]) {
+    return { ...lot, coordinates: lotOverrides[lot.id] };
+  }
+  return lot;
+});
 
 export const BRAND_COLORS_COMMERCIAL = {
   'Premier Township': '#D4AF37',    // Luxury Gold
