@@ -12,6 +12,19 @@ import { MapPin, Layers } from 'lucide-react';
 const CONCEPT_BOUNDS = L.latLngBounds([0, 0], [800, 1000]);
 const CONCEPT_MAX_BOUNDS = L.latLngBounds([-100, -100], [900, 1100]);
 
+// Custom gold pin marker icon for mobile selected lot
+const selectedLotIcon = L.divIcon({
+  className: '',
+  html: `<div style="display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%)">
+    <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.268 21.732 0 14 0z" fill="#D4AF37"/>
+      <circle cx="14" cy="14" r="6" fill="#0a1220"/>
+    </svg>
+  </div>`,
+  iconSize: [28, 36],
+  iconAnchor: [14, 36],
+});
+
 interface InteractiveSDPProps {
   project: CommercialProject;
   lots: CommercialLot[];
@@ -570,6 +583,14 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   // All lots for the current project
   const projectLots = lots.filter(lot => lot.projectId === project.id);
 
+  // Track mobile screen size
+  const [isMobile, setIsMobile] = React.useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
   // Unique key to force full leaflet component remount on structural switches if needed
   const mapKey = `leaflet-map-${project.id}`;
 
@@ -726,17 +747,27 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                   }
                 }}
               >
-                {/* Tooltip on hover for instant summary */}
-                <Tooltip key={`tooltip-${lot.id}`} direction="top" className="custom-hover-tooltip">
-                  <div className="p-1 text-slate-100 font-sans">
-                    <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
-                      <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                    </h4>
-                  </div>
-                </Tooltip>
+                {/* Tooltip on hover - desktop only */}
+                {!isMobile && (
+                  <Tooltip key={`tooltip-${lot.id}`} direction="top" className="custom-hover-tooltip">
+                    <div className="p-1 text-slate-100 font-sans">
+                      <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
+                        <span>{lot.blockNumber} • {lot.lotNumber}</span>
+                      </h4>
+                    </div>
+                  </Tooltip>
+                )}
               </Polygon>
             );
           })}
+
+          {/* Mobile: show gold pin marker on selected lot */}
+          {isMobile && selectedLot && selectedLot.coordinates && selectedLot.coordinates.length >= 3 && (() => {
+            const bounds = L.latLngBounds(selectedLot.coordinates as L.LatLngExpression[]);
+            const center = bounds.getCenter();
+            return <Marker position={center} icon={selectedLotIcon} interactive={false} />;
+          })()}
+
         </MapContainer>
         ) : (
           <MapContainer
@@ -844,13 +875,16 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                     }
                   }}
                 >
-                  <Tooltip key={`tooltip-${lot.id}`} direction="top" className="custom-hover-tooltip">
-                    <div className="p-1 text-slate-100 font-sans">
-                      <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
-                        <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                      </h4>
-                    </div>
-                  </Tooltip>
+                  {/* Tooltip on hover - desktop only */}
+                  {!isMobile && (
+                    <Tooltip key={`tooltip-${lot.id}`} direction="top" className="custom-hover-tooltip">
+                      <div className="p-1 text-slate-100 font-sans">
+                        <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
+                          <span>{lot.blockNumber} • {lot.lotNumber}</span>
+                        </h4>
+                      </div>
+                    </Tooltip>
+                  )}
                 </Polygon>
               );
             })}
