@@ -25,12 +25,31 @@ const selectedLotIcon = L.divIcon({
   iconAnchor: [14, 36],
 });
 
+// Easter Egg university icon for DLSU-D
+const dlsuDIcon = L.divIcon({
+  className: '',
+  html: `<div style="display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%)">
+    <div style="background-color:#15803d; border: 2px solid #ffffff; border-radius: 9999px; padding: 6px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+        <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"></path>
+      </svg>
+    </div>
+    <div style="background-color:#15803d; color:#ffffff; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-top:4px; white-space:nowrap; border: 1px solid #ffffff; box-shadow: 0 2px 4px rgb(0 0 0 / 0.2); font-family: sans-serif;">
+      DLSU - Dasmariñas
+    </div>
+  </div>`,
+  iconSize: [36, 50],
+  iconAnchor: [18, 50],
+});
+
 interface InteractiveSDPProps {
   project: CommercialProject;
   lots: CommercialLot[];
   selectedLot: CommercialLot | null;
   onLotSelect: (lot: CommercialLot) => void;
   onLotDeselect?: () => void;
+  onDlsuClick?: () => void;
   isEditMode?: boolean;
 }
 
@@ -546,6 +565,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   selectedLot,
   onLotSelect,
   onLotDeselect,
+  onDlsuClick,
   isEditMode = false,
 }) => {
   const [adminSelectedIds, setAdminSelectedIds] = React.useState<string[]>([]);
@@ -671,6 +691,19 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
 
             {/* Synchronized lot coordinate tracker focus */}
             <SelectedLotUpdater selectedLot={selectedLot} mapType="actual" />
+
+            {/* Easter Egg: DLSU - Dasmariñas Marker */}
+            {project.id === 'daang-hari-lots' && (
+              <Marker
+                position={[14.32422, 120.95754]}
+                icon={dlsuDIcon}
+                eventHandlers={{
+                  click: () => {
+                    if (onDlsuClick) onDlsuClick();
+                  }
+                }}
+              />
+            )}
 
             {/* Tap on empty map area to deselect */}
             <MapClickHandler onDeselect={onLotDeselect} polygonClickedRef={polygonClickedRef} />
