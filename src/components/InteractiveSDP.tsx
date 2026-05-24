@@ -17,6 +17,7 @@ interface InteractiveSDPProps {
   lots: CommercialLot[];
   selectedLot: CommercialLot | null;
   onLotSelect: (lot: CommercialLot) => void;
+  onLotDeselect?: () => void;
   isEditMode?: boolean;
 }
 
@@ -61,6 +62,25 @@ const SelectedLotUpdater: React.FC<{ selectedLot: CommercialLot | null; mapType?
       }
     }
   }, [selectedLot, map, mapType]);
+  return null;
+};
+
+// MapClickHandler - deselects lot when tapping on empty map area
+// Uses a shared ref to avoid deselecting when a polygon was just clicked
+const MapClickHandler: React.FC<{ onDeselect?: () => void; polygonClickedRef: React.MutableRefObject<boolean> }> = ({ onDeselect, polygonClickedRef }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (!onDeselect) return;
+    const handler = () => {
+      if (polygonClickedRef.current) {
+        polygonClickedRef.current = false;
+        return;
+      }
+      onDeselect();
+    };
+    map.on('click', handler);
+    return () => { map.off('click', handler); };
+  }, [map, onDeselect, polygonClickedRef]);
   return null;
 };
 
@@ -512,9 +532,11 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   lots,
   selectedLot,
   onLotSelect,
+  onLotDeselect,
   isEditMode = false,
 }) => {
   const [adminSelectedIds, setAdminSelectedIds] = React.useState<string[]>([]);
+  const polygonClickedRef = React.useRef(false);
   // Mapped center coordinate & zoom
   const centerCoord: [number, number] = project.center || [14.4150, 121.0360];
   const defaultZoom = project.zoom || 15;
@@ -574,8 +596,8 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
         </div>
       </div>
 
-      {/* Map Toggle Controls */}
-      <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[1000] pointer-events-auto">
+      {/* Map Toggle Controls - hidden on mobile when a lot is selected */}
+      <div className={`absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[1000] pointer-events-auto ${selectedLot ? 'hidden md:block' : ''}`}>
         <div className="bg-[#0a1220]/90 backdrop-blur-md flex flex-col p-1 border border-white/10 rounded-none shadow-2xl shrink-0 gap-1">
           <button 
             onClick={() => setViewMode('actual')}
@@ -629,6 +651,9 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             {/* Synchronized lot coordinate tracker focus */}
             <SelectedLotUpdater selectedLot={selectedLot} mapType="actual" />
 
+            {/* Tap on empty map area to deselect */}
+            <MapClickHandler onDeselect={onLotDeselect} polygonClickedRef={polygonClickedRef} />
+
             {/* Editing Controls & Admin Panel */}
             <GeomanSetup isEditMode={isEditMode} adminSelectedIds={adminSelectedIds} />
             <ExportAdminPanel
@@ -678,6 +703,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 }}
                 eventHandlers={{
                   click: (e) => {
+                    polygonClickedRef.current = true;
                     if (!isEditMode) {
                       onLotSelect(lot);
                     } else if ((e.originalEvent as MouseEvent).shiftKey) {
@@ -761,6 +787,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             />
             
             <SelectedLotUpdater selectedLot={selectedLot} mapType="concept" />
+            <MapClickHandler onDeselect={onLotDeselect} polygonClickedRef={polygonClickedRef} />
 
             {projectLots.map(lot => {
               if (!lot.points) return null;
@@ -794,6 +821,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                   }}
                   eventHandlers={{
                     click: (e) => {
+                      polygonClickedRef.current = true;
                       if (!isEditMode) {
                         onLotSelect(lot);
                       } else if ((e.originalEvent as MouseEvent).shiftKey) {

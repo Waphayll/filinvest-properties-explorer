@@ -137,7 +137,14 @@
 
 /* Hide hover tooltips entirely on mobile/touch screens to prevent ghost squares on tap */
 @media (max-width: 768px) {
-  .leaflet-tooltip {
+  .leaflet-tooltip-pane,
+  .leaflet-tooltip-pane *,
+  .leaflet-tooltip,
+  .leaflet-tooltip::before,
+  .leaflet-tooltip::after {
     display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 }

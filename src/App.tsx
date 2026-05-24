@@ -192,7 +192,11 @@ export default function App() {
   };
 
   const handleLotClick = (lot: CommercialLot) => {
-    setSelectedLot(lot);
+    setSelectedLot(prev => prev?.id === lot.id ? null : lot);
+  };
+
+  const handleLotDeselect = () => {
+    setSelectedLot(null);
   };
 
   const handleAdminToggle = () => {
@@ -261,7 +265,7 @@ export default function App() {
     <div className="w-full h-[100dvh] bg-[#0a1220] text-slate-100 font-sans select-none overflow-hidden relative flex flex-col">
 
       {/* Universal Embedded Content Frame */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 overflow-hidden relative" style={{ minHeight: 0 }}>
         <AnimatePresence mode="wait">
 
           {/* ========================================================
@@ -316,10 +320,11 @@ export default function App() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 overflow-y-auto p-5 sm:p-8 lg:p-12 pb-24 sm:pb-12 flex flex-col bg-[#0a1220] relative"
+              className="absolute inset-0 overflow-y-auto bg-[#0a1220]"
+              style={{ WebkitOverflowScrolling: 'touch' }}
             >
               <CursorGlow />
-              <div className="max-w-7xl mx-auto w-full space-y-6 relative z-10 py-8 md:my-auto">
+              <div className="max-w-7xl mx-auto w-full space-y-6 relative z-10 p-5 sm:p-8 lg:p-12 pb-32">
                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
                   <div>
                     <span className="text-[#D4AF37] tracking-[0.35em] text-xs font-bold uppercase block">
@@ -501,40 +506,45 @@ export default function App() {
               className="absolute inset-0 flex flex-col bg-[#0a1220]"
             >
 
-              {/* Top Persistent Navigation Header (Screen 6 Compliance - Compact height) */}
-              <header className="min-h-24 h-auto py-4 md:py-0 md:h-24 border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-4 sm:px-10 flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-0 items-center z-10 shrink-0 relative">
-                <div className="flex items-center gap-3 sm:gap-5 justify-self-start w-full md:w-auto">
-                  <button
-                    onClick={() => {
-                      setCurrentScreen('selection');
-                      setSelectedLot(null);
-                    }}
-                    className="p-2.5 text-slate-400 hover:text-white border border-white/10 rounded-none bg-[#0a1220]/50 hover:bg-white/5 transition-all"
-                  >
-                    <ArrowLeft size={20} />
-                  </button>
-                  <div>
-                    <h2 className="text-xl md:text-2xl font-display font-medium text-white flex items-center gap-3">
-                      <span>{selectedProject.name}</span>
-                      {selectedProject.id === 'filinvest-city' && (
-                        <span className="text-[10px] bg-[#D4AF37]/25 text-[#D4AF37] border border-[#D4AF37]/35 px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans">
-                          Featured
-                        </span>
-                      )}
-                    </h2>
-                    <p className="text-xs text-slate-400 uppercase tracking-widest truncate max-w-sm hidden md:block mt-0.5">
-                      {selectedProject.location} • {selectedProject.brand}
-                    </p>
+              {/* Top Persistent Navigation Header */}
+              <header className="border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
+                flex flex-col gap-3 py-3
+                md:grid md:grid-cols-3 md:h-24 md:py-0 md:gap-0 md:items-center">
+                {/* Row 1 on mobile: Back + Title + Admin */}
+                <div className="flex items-center gap-3 justify-between md:justify-start">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => {
+                        setCurrentScreen('selection');
+                        setSelectedLot(null);
+                      }}
+                      className="p-2 md:p-2.5 text-slate-400 hover:text-white border border-white/10 rounded-none bg-[#0a1220]/50 hover:bg-white/5 transition-all shrink-0"
+                    >
+                      <ArrowLeft size={18} />
+                    </button>
+                    <div className="min-w-0">
+                      <h2 className="text-base md:text-2xl font-display font-medium text-white flex items-center gap-2 truncate">
+                        <span className="truncate">{selectedProject.name}</span>
+                        {selectedProject.id === 'filinvest-city' && (
+                          <span className="text-[9px] md:text-[10px] bg-[#D4AF37]/25 text-[#D4AF37] border border-[#D4AF37]/35 px-1.5 md:px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans shrink-0">
+                            Featured
+                          </span>
+                        )}
+                      </h2>
+                      <p className="text-xs text-slate-400 uppercase tracking-widest truncate max-w-sm hidden md:block mt-0.5">
+                        {selectedProject.location} • {selectedProject.brand}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Quick Switch Switcher Tabs (No App Restart Needed - Screen 6) */}
-                <div className="flex items-center bg-[#0a1220] p-1.5 border border-white/10 justify-self-center w-full md:w-auto overflow-x-auto scrollbar-hide">
+                {/* Row 2 on mobile: Quick Switch Tabs */}
+                <div className="flex items-center bg-[#0a1220] p-1 md:p-1.5 border border-white/10 justify-self-center w-full md:w-auto overflow-x-auto scrollbar-hide">
                   {COMMERCIAL_PROJECTS.map((p) => (
                     <button
                       key={p.id}
                       onClick={() => handleProjectSelect(p)}
-                      className={`px-4 py-2 text-[11px] uppercase font-bold tracking-wider transition-all rounded-none ${selectedProject.id === p.id
+                      className={`px-3 md:px-4 py-1.5 md:py-2 text-[10px] md:text-[11px] uppercase font-bold tracking-wider transition-all rounded-none whitespace-nowrap flex-1 md:flex-none ${selectedProject.id === p.id
                         ? 'bg-amber-600 text-white'
                         : 'text-slate-400 hover:text-white hover:bg-white/5'
                         }`}
@@ -544,7 +554,8 @@ export default function App() {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-self-end w-full md:w-auto justify-between md:justify-end">
+                {/* Desktop-only admin controls row */}
+                <div className="hidden md:flex items-center justify-self-end">
                   {isEditMode && (
                     <label className="mr-5 flex items-center gap-2 text-xs uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
                       <input
@@ -588,6 +599,7 @@ export default function App() {
                       lots={activeProjectLots}
                       selectedLot={selectedLot}
                       onLotSelect={handleLotClick}
+                      onLotDeselect={handleLotDeselect}
                       isEditMode={isEditMode}
                     />
                   </div>
