@@ -761,12 +761,6 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             );
           })}
 
-          {/* Mobile: show gold pin marker on selected lot */}
-          {isMobile && selectedLot && selectedLot.coordinates && selectedLot.coordinates.length >= 3 && (() => {
-            const bounds = L.latLngBounds(selectedLot.coordinates as L.LatLngExpression[]);
-            const center = bounds.getCenter();
-            return <Marker position={center} icon={selectedLotIcon} interactive={false} />;
-          })()}
 
         </MapContainer>
         ) : (
