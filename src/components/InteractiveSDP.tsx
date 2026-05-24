@@ -51,6 +51,7 @@ interface InteractiveSDPProps {
   onLotDeselect?: () => void;
   onDlsuClick?: () => void;
   isEditMode?: boolean;
+  easterEggEnabled?: boolean;
 }
 
 // MapUpdater helper component to smoothly update views when projects are switched in the parent tab switcher
@@ -567,6 +568,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   onLotDeselect,
   onDlsuClick,
   isEditMode = false,
+  easterEggEnabled = true,
 }) => {
   const [adminSelectedIds, setAdminSelectedIds] = React.useState<string[]>([]);
   const polygonClickedRef = React.useRef(false);
@@ -693,7 +695,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             <SelectedLotUpdater selectedLot={selectedLot} mapType="actual" />
 
             {/* Easter Egg: DLSU - Dasmariñas Marker */}
-            {project.id === 'daang-hari-lots' && (
+            {easterEggEnabled && project.id === 'daang-hari-lots' && (
               <Marker
                 position={[14.32422, 120.95754]}
                 icon={dlsuDIcon}

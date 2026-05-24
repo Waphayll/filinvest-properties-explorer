@@ -21,6 +21,7 @@ import {
 import { CommercialProject, CommercialLot, InvestorLead } from './types';
 import { COMMERCIAL_PROJECTS, COMMERCIAL_LOTS, BRAND_COLORS_COMMERCIAL } from './constants';
 import InteractiveSDP from './components/InteractiveSDP';
+import { Chatbot } from './components/Chatbot';
 
 const CursorGlow = () => {
   const trailRef = useRef<HTMLDivElement>(null);
@@ -167,6 +168,9 @@ export default function App() {
   const [leads, setLeads] = useState<InvestorLead[]>([]);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [inquiriesEnabled, setInquiriesEnabled] = useState<boolean>(false);
+  const [chatbotEnabled, setChatbotEnabled] = useState<boolean>(false);
+  const [easterEggEnabled, setEasterEggEnabled] = useState<boolean>(true);
+  const [alabangClicks, setAlabangClicks] = useState<number>(0);
 
   // --- EASTER EGG STATES ---
   const [dlsuClicks, setDlsuClicks] = useState<number>(0);
@@ -232,6 +236,18 @@ export default function App() {
   }, [selectedProject]);
 
   const handleProjectSelect = (project: CommercialProject) => {
+    if (project.id === 'filinvest-city') {
+      setAlabangClicks(prev => {
+        const next = prev + 1;
+        if (next >= 5) {
+          handleAdminToggle();
+          return 0;
+        }
+        return next;
+      });
+    } else {
+      setAlabangClicks(0);
+    }
     setSelectedProject(project);
     setSelectedLot(null);
     setCurrentScreen('viewer');
@@ -603,23 +619,51 @@ export default function App() {
                 {/* Desktop-only admin controls row */}
                 <div className="hidden md:flex items-center justify-self-end">
                   {isEditMode && (
-                    <label className="mr-5 flex items-center gap-2 text-xs uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={inquiriesEnabled}
-                        onChange={(e) => setInquiriesEnabled(e.target.checked)}
-                        className="accent-indigo-500 w-4 h-4"
-                      />
-                      Enable Inquiries
-                    </label>
+                    <>
+                      <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={chatbotEnabled}
+                          onChange={(e) => setChatbotEnabled(e.target.checked)}
+                          className="accent-amber-500 w-3.5 h-3.5"
+                        />
+                        Chatbot
+                      </label>
+                      <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={easterEggEnabled}
+                          onChange={(e) => setEasterEggEnabled(e.target.checked)}
+                          className="accent-amber-500 w-3.5 h-3.5"
+                        />
+                        Easter Egg
+                      </label>
+                      <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={inquiriesEnabled}
+                          onChange={(e) => setInquiriesEnabled(e.target.checked)}
+                          className="accent-indigo-500 w-3.5 h-3.5"
+                        />
+                        Inquiries
+                      </label>
+                      <button
+                        onClick={() => {
+                          setChatbotEnabled(false);
+                          setEasterEggEnabled(false);
+                        }}
+                        className="mr-3 px-3 py-2 text-[9px] uppercase font-bold tracking-widest transition-all rounded-none border bg-rose-600 text-white border-rose-500 shadow-[0_0_10px_rgba(225,29,72,0.5)] hover:bg-rose-500"
+                      >
+                        Showcase Mode
+                      </button>
+                      <button
+                        onClick={handleAdminToggle}
+                        className="mr-4 px-3 py-2 text-[9px] uppercase font-bold tracking-widest transition-all rounded-none border bg-indigo-600 text-white border-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.5)] hover:bg-indigo-500"
+                      >
+                        Exit Edit Mode
+                      </button>
+                    </>
                   )}
-                  <button
-                    onClick={handleAdminToggle}
-                    className={`mr-4 px-4 py-2.5 text-xs uppercase font-bold tracking-widest transition-all rounded-none border ${isEditMode ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.5)]' : 'opacity-10 hover:opacity-100 text-slate-500 border-transparent hover:border-white/10 hover:bg-white/5'
-                      }`}
-                  >
-                    {isEditMode ? 'Exit Edit Mode' : 'Admin'}
-                  </button>
                   {inquiriesEnabled && (
                     <button
                       onClick={() => {
@@ -648,6 +692,7 @@ export default function App() {
                       onLotDeselect={handleLotDeselect}
                       onDlsuClick={handleDlsuClick}
                       isEditMode={isEditMode}
+                      easterEggEnabled={easterEggEnabled}
                     />
                   </div>
                 </div>
@@ -890,6 +935,15 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Premium AI Chatbot Concierge Widget */}
+      {chatbotEnabled && (
+        <Chatbot 
+          projects={COMMERCIAL_PROJECTS} 
+          lots={COMMERCIAL_LOTS} 
+          onOpenInquiry={() => setShowInquiryModal(true)} 
+        />
+      )}
 
       {/* Easter Egg loading screen */}
       {showEasterEggLoading && (
