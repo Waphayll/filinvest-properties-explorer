@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import anime from 'animejs/lib/anime.es.js';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Building2, 
@@ -52,6 +53,43 @@ export default function App() {
       console.error("Failed to parse cached leads:", e);
     }
   }, []);
+
+  // Animejs hook for lot selection
+  useEffect(() => {
+    if (currentScreen === 'viewer' && selectedLot) {
+      anime({
+        targets: '.lot-detail-item',
+        opacity: [0, 1],
+        translateX: [20, 0],
+        delay: anime.stagger(80),
+        easing: 'easeOutQuad',
+        duration: 500
+      });
+    }
+  }, [selectedLot, currentScreen]);
+
+  // Animejs hook for landing/selection screens
+  useEffect(() => {
+    if (currentScreen === 'landing') {
+      anime({
+        targets: '.landing-anime',
+        opacity: [0, 1],
+        translateY: [30, 0],
+        delay: anime.stagger(150),
+        easing: 'easeOutExpo',
+        duration: 1000
+      });
+    } else if (currentScreen === 'selection') {
+      anime({
+        targets: '.selection-anime',
+        opacity: [0, 1],
+        scale: [0.95, 1],
+        delay: anime.stagger(100),
+        easing: 'easeOutExpo',
+        duration: 800
+      });
+    }
+  }, [currentScreen]);
 
   // Filter lots of active selected project
   const activeProjectLots = useMemo(() => {
@@ -152,7 +190,7 @@ export default function App() {
             >
               <div className="absolute inset-0 bg-[radial-gradient(#ffffff02_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
               
-              <div className="pt-12">
+              <div className="pt-12 landing-anime opacity-0">
                 <div className="text-[#D4AF37] uppercase tracking-[0.45em] text-xs font-bold mb-3 font-sans">
                   Filinvest Townships
                 </div>
@@ -161,10 +199,8 @@ export default function App() {
                 </h2>
               </div>
 
-              <div className="space-y-6 max-w-3xl px-6 z-10">
-                <span className="text-[10px] bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 px-4 py-1.5 uppercase tracking-[0.3em] font-semibold text-xs rounded-full">
-                  EXCLUSIVE PRIVATE CATALOGUE
-                </span>
+              <div className="space-y-6 max-w-3xl px-6 z-10 landing-anime opacity-0">
+
                 <h1 className="text-4xl sm:text-7xl font-display font-medium tracking-tight text-white leading-tight mt-4">
                   Q2 Investors <span className="font-bold font-display">Night</span>
                 </h1>
@@ -174,7 +210,7 @@ export default function App() {
                 </p>
               </div>
 
-              <div className="pb-12 z-10">
+              <div className="pb-12 z-10 landing-anime opacity-0">
                 <button className="px-10 py-4.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 border border-amber-500/20 text-white rounded-none shadow-xl font-medium tracking-widest uppercase text-xs transition-colors animate-pulse">
                   Tap Anywhere to Begin
                 </button>
@@ -233,7 +269,7 @@ export default function App() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.05 }}
                           onClick={() => handleProjectSelect(project)}
-                          className="relative group bg-[#112440] border-2 border-[#D4AF37] overflow-hidden min-h-[220px] p-6 sm:p-8 flex flex-col md:flex-row justify-between cursor-pointer transition-all duration-300 shadow-[0_0_30px_rgba(212,175,55,0.08)] hover:shadow-[0_0_40px_rgba(212,175,55,0.18)]"
+                          className="selection-anime opacity-0 relative group bg-[#112440] border-2 border-[#D4AF37] overflow-hidden min-h-[220px] p-6 sm:p-8 flex flex-col md:flex-row justify-between cursor-pointer transition-all duration-300 shadow-[0_0_30px_rgba(212,175,55,0.08)] hover:shadow-[0_0_40px_rgba(212,175,55,0.18)]"
                         >
                           {/* Background Image overlay */}
                           <div className="absolute inset-0 z-0 select-none pointer-events-none">
@@ -314,7 +350,7 @@ export default function App() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.12 + idx * 0.06 }}
                             onClick={() => handleProjectSelect(project)}
-                            className="relative group bg-[#111c2e] border border-white/5 hover:border-white/15 overflow-hidden min-h-[350px] p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px]"
+                            className="selection-anime opacity-0 relative group bg-[#111c2e] border border-white/5 hover:border-white/15 overflow-hidden min-h-[350px] p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px]"
                           >
                             {/* Background Image overlay */}
                             <div className="absolute inset-0 z-0 select-none pointer-events-none">
@@ -387,19 +423,19 @@ export default function App() {
             >
               
               {/* Top Persistent Navigation Header (Screen 6 Compliance - Compact height) */}
-              <header className="h-20 border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-6 sm:px-8 flex items-center justify-between z-10 shrink-0">
-                <div className="flex items-center gap-4">
+              <header className="h-24 border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-6 sm:px-10 grid grid-cols-3 items-center z-10 shrink-0 relative">
+                <div className="flex items-center gap-5 justify-self-start">
                   <button 
                     onClick={() => {
                       setCurrentScreen('selection');
                       setSelectedLot(null);
                     }}
-                    className="p-2 text-slate-400 hover:text-white border border-white/10 rounded-none bg-[#0a1220]/50 hover:bg-white/5 transition-all"
+                    className="p-2.5 text-slate-400 hover:text-white border border-white/10 rounded-none bg-[#0a1220]/50 hover:bg-white/5 transition-all"
                   >
-                    <ArrowLeft size={18} />
+                    <ArrowLeft size={20} />
                   </button>
                   <div>
-                    <h2 className="text-lg md:text-xl font-display font-medium text-white flex items-center gap-2">
+                    <h2 className="text-xl md:text-2xl font-display font-medium text-white flex items-center gap-3">
                        <span>{selectedProject.name}</span>
                       {selectedProject.id === 'filinvest-city' && (
                         <span className="text-[10px] bg-[#D4AF37]/25 text-[#D4AF37] border border-[#D4AF37]/35 px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans">
@@ -407,19 +443,19 @@ export default function App() {
                         </span>
                       )}
                     </h2>
-                    <p className="text-[11px] text-slate-400 uppercase tracking-widest truncate max-w-sm hidden md:block">
+                    <p className="text-xs text-slate-400 uppercase tracking-widest truncate max-w-sm hidden md:block mt-0.5">
                       {selectedProject.location} • {selectedProject.brand}
                     </p>
                   </div>
                 </div>
 
                 {/* Quick Switch Switcher Tabs (No App Restart Needed - Screen 6) */}
-                <div className="flex items-center bg-[#0a1220] p-1 border border-white/10">
+                <div className="flex items-center bg-[#0a1220] p-1.5 border border-white/10 justify-self-center">
                   {COMMERCIAL_PROJECTS.map((p) => (
                     <button
                       key={p.id}
                       onClick={() => handleProjectSelect(p)}
-                      className={`px-3 py-1.5 text-[11px] uppercase font-bold tracking-wider transition-all rounded-none ${
+                      className={`px-4 py-2 text-[11px] uppercase font-bold tracking-wider transition-all rounded-none ${
                         selectedProject.id === p.id 
                           ? 'bg-amber-600 text-white' 
                           : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -430,7 +466,7 @@ export default function App() {
                   ))}
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center justify-self-end">
                   {isEditMode && (
                     <label className="mr-5 flex items-center gap-2 text-xs uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
                       <input 
@@ -444,7 +480,7 @@ export default function App() {
                   )}
                   <button
                     onClick={handleAdminToggle}
-                    className={`mr-4 px-4 py-2 text-xs uppercase font-bold tracking-widest transition-all rounded-none border ${
+                    className={`mr-4 px-4 py-2.5 text-xs uppercase font-bold tracking-widest transition-all rounded-none border ${
                       isEditMode ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.5)]' : 'opacity-10 hover:opacity-100 text-slate-500 border-transparent hover:border-white/10 hover:bg-white/5'
                     }`}
                   >
@@ -456,7 +492,7 @@ export default function App() {
                         setFormSubmitted(false);
                         setShowInquiryModal(true);
                       }}
-                      className="px-5 py-2 bg-slate-100 hover:bg-white text-slate-950 text-xs uppercase font-bold tracking-widest transition-all rounded-none shadow"
+                      className="px-6 py-2.5 bg-slate-100 hover:bg-white text-slate-950 text-xs uppercase font-bold tracking-widest transition-all rounded-none shadow"
                     >
                       Inquire Now
                     </button>
@@ -492,15 +528,15 @@ export default function App() {
 
                     {selectedLot ? (
                       <div className="space-y-6 font-sans text-sm">
-                        <div>
+                        <div className="lot-detail-item opacity-0">
                           <label className="text-xs uppercase text-slate-400 tracking-widest font-mono">Lot Identifier</label>
                           <div className="text-xl font-bold text-white mt-1">
                             {selectedLot.blockNumber} • {selectedLot.lotNumber}
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
-                          <div>
+                        <div className="flex flex-col gap-6">
+                          <div className="lot-detail-item opacity-0">
                             <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
                               <Maximize2 size={14} /> Lot Area
                             </label>
@@ -508,7 +544,7 @@ export default function App() {
                               {selectedLot.areaSqm.toLocaleString()} sqm
                             </div>
                           </div>
-                          <div>
+                          <div className="lot-detail-item opacity-0">
                             <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
                               <Layers size={14} /> FAR Limit
                             </label>
@@ -518,7 +554,7 @@ export default function App() {
                           </div>
                         </div>
 
-                        <div>
+                        <div className="lot-detail-item opacity-0">
                           <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
                             <DollarSign size={14} /> Price per SQM
                           </label>
@@ -527,7 +563,7 @@ export default function App() {
                           </div>
                         </div>
 
-                        <div className="p-4 bg-[#0a1220] border border-white/5">
+                        <div className="p-4 bg-[#0a1220] border border-white/5 lot-detail-item opacity-0">
                           <label className="text-xs uppercase text-[#D4AF37] tracking-widest font-mono font-bold">
                             Total Contract Price (TCP)
                           </label>

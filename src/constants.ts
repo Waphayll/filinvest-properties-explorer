@@ -1,6 +1,8 @@
 import { CommercialProject, CommercialLot } from './types';
 import lotOverridesData from './lotCoordinates.json';
-const lotOverrides = lotOverridesData as Record<string, [number, number][]>;
+import conceptOverridesData from './conceptCoordinates.json';
+const lotOverrides = lotOverridesData as unknown as Record<string, [number, number][]>;
+const conceptOverrides = conceptOverridesData as unknown as Record<string, string>;
 
 export const COMMERCIAL_PROJECTS: CommercialProject[] = [
   {
@@ -31,7 +33,8 @@ export const COMMERCIAL_PROJECTS: CommercialProject[] = [
     averagePriceRange: '₱294,000 – ₱408,000 / sqm',
     featureBadge: 'Waterfront Prime',
     center: [10.2715, 123.8788],
-    zoom: 15
+    zoom: 15,
+    conceptMapSvg: 'CDM.svg'
   },
   {
     id: 'daang-hari-lots',
@@ -46,7 +49,8 @@ export const COMMERCIAL_PROJECTS: CommercialProject[] = [
     averagePriceRange: '₱226,000 / sqm',
     featureBadge: 'High Frontage',
     center: [14.3820, 121.0125],
-    zoom: 16
+    zoom: 16,
+    conceptMapSvg: 'THE ENCLAVE ALABANG.svg'
   },
   {
     id: 'brentville-front',
@@ -61,7 +65,8 @@ export const COMMERCIAL_PROJECTS: CommercialProject[] = [
     averagePriceRange: '₱131,990 – ₱152,851 / sqm',
     featureBadge: 'SLEX Frontage',
     center: [14.3142, 121.0833],
-    zoom: 16
+    zoom: 16,
+    conceptMapSvg: 'Brentville.svg'
   }
 ];
 
@@ -408,10 +413,14 @@ export const COMMERCIAL_LOTS: CommercialLot[] = [
   ...generateDHLots(),
   ...generateBVF_Lots()
 ].map(lot => {
+  let updatedLot = { ...lot };
   if (lotOverrides && lotOverrides[lot.id]) {
-    return { ...lot, coordinates: lotOverrides[lot.id] };
+    updatedLot.coordinates = lotOverrides[lot.id];
   }
-  return lot;
+  if (conceptOverrides && conceptOverrides[lot.id]) {
+    updatedLot.points = conceptOverrides[lot.id];
+  }
+  return updatedLot;
 });
 
 export const BRAND_COLORS_COMMERCIAL = {

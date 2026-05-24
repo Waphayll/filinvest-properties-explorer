@@ -8,7 +8,7 @@ const saveLotsPlugin = () => ({
   name: 'save-lots-plugin',
   configureServer(server: any) {
     server.middlewares.use(async (req: any, res: any, next: any) => {
-      if (req.url === '/api/save-lots' && req.method === 'POST') {
+      if ((req.url === '/api/save-lots' || req.url === '/api/save-concept-lots') && req.method === 'POST') {
         let body = '';
         req.on('data', (chunk: any) => {
           body += chunk.toString();
@@ -16,15 +16,16 @@ const saveLotsPlugin = () => ({
         req.on('end', () => {
           try {
             const data = JSON.parse(body);
-            const filepath = path.resolve(__dirname, 'src/lotCoordinates.json');
+            const fileName = req.url === '/api/save-concept-lots' ? 'conceptCoordinates.json' : 'lotCoordinates.json';
+            const filepath = path.resolve(__dirname, `src/${fileName}`);
             let existing = {};
             if (fs.existsSync(filepath)) {
               existing = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
             }
-            // Merge array of exported lots into a dictionary mapping ID -> coordinates
+            // Merge array of exported lots into a dictionary mapping ID -> coordinates (or points)
             const newData: Record<string, any> = {};
             data.forEach((lot: any) => {
-              newData[lot.id] = lot.coordinates;
+              newData[lot.id] = req.url === '/api/save-concept-lots' ? lot.points : lot.coordinates;
             });
             const updated = { ...existing, ...newData };
             fs.writeFileSync(filepath, JSON.stringify(updated, null, 2));

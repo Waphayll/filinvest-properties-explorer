@@ -14,6 +14,7 @@ export interface CommercialProject {
   featureBadge?: string;
   center?: [number, number]; // Latitude, Longitude center point for OpenStreetMap
   zoom?: number;               // Default zoom level
+  conceptMapSvg?: string;      // URL to the concept map SVG file
 }
 
 export interface CommercialLot {

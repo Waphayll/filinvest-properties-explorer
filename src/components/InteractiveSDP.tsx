@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Polygon, useMap, Tooltip, Popup, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, useMap, Tooltip, Popup, Marker, ImageOverlay } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '@geoman-io/leaflet-geoman-free';
@@ -7,6 +7,9 @@ import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import { CommercialLot, CommercialProject } from '../types';
 import { BRAND_COLORS_COMMERCIAL } from '../constants';
 
+
+const CONCEPT_BOUNDS = L.latLngBounds([0, 0], [800, 1000]);
+const CONCEPT_MAX_BOUNDS = L.latLngBounds([-100, -100], [900, 1100]);
 
 interface InteractiveSDPProps {
   project: CommercialProject;
@@ -44,21 +47,16 @@ const MapUpdater: React.FC<{ center: [number, number]; zoom: number; projectLots
 };
 
 // SelectedLotUpdater helper to pan map when a specific lot is selected via sidebar list click
-const SelectedLotUpdater: React.FC<{ selectedLot: CommercialLot | null }> = ({ selectedLot }) => {
+const SelectedLotUpdater: React.FC<{ selectedLot: CommercialLot | null; mapType?: 'actual' | 'concept' }> = ({ selectedLot, mapType = 'actual' }) => {
   const map = useMap();
   useEffect(() => {
-    if (selectedLot?.coordinates && selectedLot.coordinates.length > 0) {
-      const bounds = L.latLngBounds([]);
-      selectedLot.coordinates.forEach(coord => {
-        if (Array.isArray(coord) && coord.length >= 2) {
-          bounds.extend([coord[0], coord[1]] as L.LatLngTuple);
-        }
-      });
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [100, 100], maxZoom: 19, animate: true, duration: 0.6 });
+    if (selectedLot) {
+      if (mapType === 'actual' && selectedLot.coordinates) {
+        const bounds = L.latLngBounds(selectedLot.coordinates as any);
+        map.flyToBounds(bounds, { padding: [50, 50], duration: 0.4 });
       }
     }
-  }, [selectedLot, map]);
+  }, [selectedLot, map, mapType]);
   return null;
 };
 
@@ -95,7 +93,7 @@ const GeomanSetup: React.FC<{ isEditMode?: boolean, adminSelectedIds: string[] }
         if (ids.length === 0) return;
 
         map.eachLayer((layer: any) => {
-          if (layer instanceof L.Polygon && layer.options.lotId && ids.includes(layer.options.lotId)) {
+          if (layer instanceof L.Polygon && (layer.options as any).lotId && ids.includes((layer.options as any).lotId)) {
             const latlngs = layer.getLatLngs() as any;
             let flatLatLngs: L.LatLng[] = [];
             if (Array.isArray(latlngs) && latlngs.length > 0) {
@@ -140,7 +138,7 @@ const GeomanSetup: React.FC<{ isEditMode?: boolean, adminSelectedIds: string[] }
         let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
 
         map.eachLayer((layer: any) => {
-          if (layer instanceof L.Polygon && layer.options.lotId && ids.includes(layer.options.lotId)) {
+          if (layer instanceof L.Polygon && (layer.options as any).lotId && ids.includes((layer.options as any).lotId)) {
             const latlngs = layer.getLatLngs() as any;
             let flatLatLngs: L.LatLng[] = [];
             if (Array.isArray(latlngs) && latlngs.length > 0) {
@@ -163,7 +161,7 @@ const GeomanSetup: React.FC<{ isEditMode?: boolean, adminSelectedIds: string[] }
         const latCos = Math.cos((centerLat * Math.PI) / 180);
 
         map.eachLayer((layer: any) => {
-          if (layer instanceof L.Polygon && layer.options.lotId && ids.includes(layer.options.lotId)) {
+          if (layer instanceof L.Polygon && (layer.options as any).lotId && ids.includes((layer.options as any).lotId)) {
             const latlngs = layer.getLatLngs() as any;
             let flatLatLngs: L.LatLng[] = [];
             if (Array.isArray(latlngs) && latlngs.length > 0) {
@@ -361,7 +359,8 @@ const ExportAdminPanel: React.FC<{
   setSvgOpacity: React.Dispatch<React.SetStateAction<number>>;
   svgLocked: boolean;
   setSvgLocked: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ isEditMode, adminSelectedIds, setAdminSelectedIds, svgUrl, setSvgUrl, svgScale, setSvgScale, svgRotation, setSvgRotation, svgOpacity, setSvgOpacity, svgLocked, setSvgLocked }) => {
+  mapType?: 'actual' | 'concept';
+}> = ({ isEditMode, adminSelectedIds, setAdminSelectedIds, svgUrl, setSvgUrl, svgScale, setSvgScale, svgRotation, setSvgRotation, svgOpacity, setSvgOpacity, svgLocked, setSvgLocked, mapType = 'actual' }) => {
   const map = useMap();
   const [saveStatus, setSaveStatus] = React.useState<string | null>(null);
 
@@ -370,14 +369,14 @@ const ExportAdminPanel: React.FC<{
     if (!map) return;
     const selectedLayers: any[] = [];
     map.eachLayer((layer: any) => {
-      if (layer instanceof L.Polygon && layer.options.lotId && adminSelectedIds.includes(layer.options.lotId)) {
+      if (layer instanceof L.Polygon && (layer.options as any).lotId && adminSelectedIds.includes((layer.options as any).lotId)) {
         selectedLayers.push(layer);
       }
     });
 
     map.eachLayer((layer: any) => {
-      if (layer instanceof L.Polygon && layer.options.lotId) {
-        if (adminSelectedIds.includes(layer.options.lotId)) {
+      if (layer instanceof L.Polygon && (layer.options as any).lotId) {
+        if (adminSelectedIds.includes((layer.options as any).lotId)) {
           layer.pm.setOptions({ syncLayersOnDrag: selectedLayers.filter(l => l !== layer) });
         } else {
           layer.pm.setOptions({ syncLayersOnDrag: false });
@@ -400,7 +399,7 @@ const ExportAdminPanel: React.FC<{
     setSaveStatus('Saving...');
     const exportedLots: any[] = [];
     map.eachLayer((layer: any) => {
-      if (layer instanceof L.Polygon && layer.options.lotId) {
+      if (layer instanceof L.Polygon && (layer.options as any).lotId) {
         const latlngs = layer.getLatLngs();
         let flatLatLngs: number[][] = [];
         if (Array.isArray(latlngs) && latlngs.length > 0) {
@@ -411,15 +410,24 @@ const ExportAdminPanel: React.FC<{
           }
         }
 
-        exportedLots.push({
-          id: layer.options.lotId,
-          coordinates: flatLatLngs
-        });
+        if (mapType === 'concept') {
+          const pointsStr = flatLatLngs.map(ll => `${Math.round(ll[1])},${Math.round(800 - ll[0])}`).join(' ');
+          exportedLots.push({
+            id: (layer.options as any).lotId,
+            points: pointsStr
+          });
+        } else {
+          exportedLots.push({
+            id: (layer.options as any).lotId,
+            coordinates: flatLatLngs
+          });
+        }
       }
     });
 
     try {
-      const res = await fetch('/api/save-lots', {
+      const endpoint = mapType === 'concept' ? '/api/save-concept-lots' : '/api/save-lots';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(exportedLots)
@@ -513,6 +521,15 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   const [svgRotation, setSvgRotation] = React.useState<number>(0);
   const [svgOpacity, setSvgOpacity] = React.useState<number>(0.5);
   const [svgLocked, setSvgLocked] = React.useState<boolean>(false);
+  const [isConceptMapLoading, setIsConceptMapLoading] = React.useState<boolean>(true);
+
+  const [viewMode, setViewMode] = React.useState<'actual' | 'concept'>('actual');
+
+  useEffect(() => {
+    if (viewMode === 'concept') {
+      setIsConceptMapLoading(true);
+    }
+  }, [viewMode]);
 
   // Reset overlay when switching projects so it spawns at the new project's center
   useEffect(() => {
@@ -521,7 +538,8 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
     setSvgScale(1);
     setSvgRotation(0);
     setSvgLocked(false);
-  }, [project.id]);
+    setIsConceptMapLoading(true);
+  }, [project.id, project.conceptMapSvg]);
 
   // All lots for the current project
   const projectLots = lots.filter(lot => lot.projectId === project.id);
@@ -529,11 +547,13 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   // Unique key to force full leaflet component remount on structural switches if needed
   const mapKey = `leaflet-map-${project.id}`;
 
+  const activeViewMode = (!project.conceptMapSvg) ? 'actual' : viewMode;
+
   return (
     <div className="relative flex flex-col w-full h-full bg-[#0a1220] border border-white/10 rounded-none overflow-hidden group select-none">
 
       {/* HUD Controller / Header Overlay */}
-      <div className="absolute top-3 left-3 z-[1000] pointer-events-auto">
+      <div className="absolute top-3 left-3 z-[1000] pointer-events-auto flex items-center gap-2">
         <div className="bg-[#111c2e]/95 backdrop-blur-md px-3.5 py-2.5 border border-white/10 shadow-2xl flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS_COMMERCIAL[project.brand] }} />
@@ -542,42 +562,70 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             </span>
           </div>
         </div>
+
+        <div className="bg-[#111c2e]/95 backdrop-blur-md flex items-center border border-white/10 shadow-2xl overflow-hidden shrink-0">
+          <button 
+            onClick={() => setViewMode('actual')}
+            className={`px-3 py-2 text-[10px] uppercase font-bold tracking-widest transition-all ${activeViewMode === 'actual' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+          >
+            Actual Map
+          </button>
+          {project.conceptMapSvg && (
+            <button 
+              onClick={() => setViewMode('concept')}
+              className={`px-3 py-2 text-[10px] uppercase font-bold tracking-widest transition-all ${activeViewMode === 'concept' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            >
+              Concept Map
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Primary React Leaflet Component Viewport */}
       <div className="w-full flex-1 min-h-0 relative z-0 grayscale-map">
-        <MapContainer
-          key={mapKey}
-          center={centerCoord}
-          zoom={defaultZoom}
-          className="w-full h-full"
-          zoomControl={false} // Disable default layout to construct cleaner styled controls
-        >
-          {/* Custom tile coordinates */}
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maxZoom={19}
-          />
+        {activeViewMode === 'concept' && isConceptMapLoading && project.conceptMapSvg && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#0a1220]/90 backdrop-blur-sm transition-opacity duration-300">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 border-4 border-white/10 border-t-[#D4AF37] rounded-full animate-spin"></div>
+              <p className="mt-4 text-[#D4AF37] font-sans text-xs font-bold uppercase tracking-widest animate-pulse">Loading Blueprint...</p>
+            </div>
+          </div>
+        )}
+        
+        {activeViewMode === 'actual' ? (
+          <MapContainer
+            key={mapKey}
+            center={centerCoord}
+            zoom={defaultZoom}
+            className="w-full h-full"
+            zoomControl={false} // Disable default layout to construct cleaner styled controls
+          >
+            {/* Custom tile coordinates */}
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              maxZoom={19}
+            />
 
-          {/* Map panning observer tool */}
-          <MapUpdater center={centerCoord} zoom={defaultZoom} projectLots={projectLots} projectId={project.id} />
+            {/* Map panning observer tool */}
+            <MapUpdater center={centerCoord} zoom={defaultZoom} projectLots={projectLots} projectId={project.id} />
 
-          {/* Synchronized lot coordinate tracker focus */}
-          <SelectedLotUpdater selectedLot={selectedLot} />
+            {/* Synchronized lot coordinate tracker focus */}
+            <SelectedLotUpdater selectedLot={selectedLot} mapType="actual" />
 
-          {/* Editing Controls & Admin Panel */}
-          <GeomanSetup isEditMode={isEditMode} adminSelectedIds={adminSelectedIds} />
-          <ExportAdminPanel
-            isEditMode={isEditMode}
-            adminSelectedIds={adminSelectedIds}
-            setAdminSelectedIds={setAdminSelectedIds}
-            svgUrl={svgUrl} setSvgUrl={setSvgUrl}
-            svgScale={svgScale} setSvgScale={setSvgScale}
-            svgRotation={svgRotation} setSvgRotation={setSvgRotation}
-            svgOpacity={svgOpacity} setSvgOpacity={setSvgOpacity}
-            svgLocked={svgLocked} setSvgLocked={setSvgLocked}
-          />
+            {/* Editing Controls & Admin Panel */}
+            <GeomanSetup isEditMode={isEditMode} adminSelectedIds={adminSelectedIds} />
+            <ExportAdminPanel
+              isEditMode={isEditMode}
+              adminSelectedIds={adminSelectedIds}
+              setAdminSelectedIds={setAdminSelectedIds}
+              svgUrl={svgUrl} setSvgUrl={setSvgUrl}
+              svgScale={svgScale} setSvgScale={setSvgScale}
+              svgRotation={svgRotation} setSvgRotation={setSvgRotation}
+              svgOpacity={svgOpacity} setSvgOpacity={setSvgOpacity}
+              svgLocked={svgLocked} setSvgLocked={setSvgLocked}
+              mapType="actual"
+            />
           <SVGOverlayManager
             svgUrl={svgUrl}
             svgPosition={svgPosition}
@@ -626,7 +674,6 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
               >
                 {/* Visual Tooltip Overlay centered right inside the parcel */}
                 <Tooltip
-                  permanent
                   direction="center"
                   className="lot-label-tooltip"
                 >
@@ -639,30 +686,132 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 {/* Lightweight popup on click for instant summary */}
                 <Popup>
                   <div className="p-1 max-w-[200px] text-slate-100 font-sans">
-                    <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] border-b border-white/10 pb-1 mb-1.5 flex items-center justify-between">
+                    <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] mb-0.5 flex items-center justify-between">
                       <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                      <span className="text-[7px] px-1.5 py-0.5 rounded-none font-sans font-bold uppercase bg-emerald-600/30 text-emerald-400 border border-emerald-500/30">
-                        Available
+                      <span className="text-[7px] px-1.5 py-0.5 rounded-none font-sans font-bold uppercase bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 ml-3">
+                        {lot.status}
                       </span>
                     </h4>
-                    <div className="grid grid-cols-2 gap-y-1 text-[9px] text-slate-300">
-                      <div>Lot Area:</div>
-                      <div className="text-right font-mono font-bold text-white">{lot.areaSqm.toLocaleString()} sqm</div>
-                      <div>Price / SQM:</div>
-                      <div className="text-right font-mono font-bold text-emerald-400">₱{lot.pricePerSqm.toLocaleString()}</div>
-                      <div>Estimated TLP:</div>
-                      <div className="text-right font-mono font-bold text-white">₱{(lot.areaSqm * lot.pricePerSqm).toLocaleString()}</div>
-                      <div>Max FAR:</div>
-                      <div className="text-right font-mono font-bold text-amber-500">FAR {lot.far}</div>
-                    </div>
                   </div>
                 </Popup>
               </Polygon>
             );
           })}
         </MapContainer>
-      </div>
+        ) : (
+          <MapContainer
+            key={`${mapKey}-concept`}
+            crs={L.CRS.Simple}
+            bounds={CONCEPT_BOUNDS}
+            maxBounds={CONCEPT_MAX_BOUNDS}
+            maxBoundsViscosity={1.0}
+            minZoom={1}
+            maxZoom={2}
+            zoomSnap={0.5}
+            zoomDelta={0.5}
+            zoomControl={false}
+            className="w-full h-full bg-[#0a1220] z-0"
+            scrollWheelZoom={false}
+            doubleClickZoom={false}
+            touchZoom={false}
+            boxZoom={false}
+            keyboard={false}
+          >
+            {project.conceptMapSvg?.toLowerCase().includes('enclave') ? (
+              <div className="absolute inset-0 bg-slate-50 pointer-events-none z-[-1]"></div>
+            ) : (
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-[-1]"></div>
+            )}
+            
+            {project.conceptMapSvg && (
+              <ImageOverlay 
+                url={project.conceptMapSvg} 
+                bounds={CONCEPT_BOUNDS}
+                opacity={0.95}
+                eventHandlers={{
+                  load: () => setIsConceptMapLoading(false),
+                  error: () => setIsConceptMapLoading(false)
+                }}
+              />
+            )}
 
+            <GeomanSetup isEditMode={isEditMode} adminSelectedIds={adminSelectedIds} />
+            <ExportAdminPanel 
+              isEditMode={isEditMode} 
+              adminSelectedIds={adminSelectedIds} 
+              setAdminSelectedIds={setAdminSelectedIds}
+              svgUrl={svgUrl} setSvgUrl={setSvgUrl}
+              svgScale={svgScale} setSvgScale={setSvgScale}
+              svgRotation={svgRotation} setSvgRotation={setSvgRotation}
+              svgOpacity={svgOpacity} setSvgOpacity={setSvgOpacity}
+              svgLocked={svgLocked} setSvgLocked={setSvgLocked}
+              mapType="concept"
+            />
+            
+            <SelectedLotUpdater selectedLot={selectedLot} mapType="concept" />
+
+            {projectLots.map(lot => {
+              if (!lot.points) return null;
+              
+              const isSelected = selectedLot?.id === lot.id;
+              const isAdminSelected = isEditMode && adminSelectedIds.includes(lot.id);
+              const themeColor = lot.colorOverride || BRAND_COLORS_COMMERCIAL[project.brand];
+              
+              // Map SVG points string "x,y" to Leaflet LatLng [800-y, x]
+              const pairs = lot.points.trim().split(/\s+/);
+              const latlngs: [number, number][] = pairs.map(p => {
+                const [x, y] = p.split(',').map(Number);
+                return [800 - y, x];
+              });
+
+              return (
+                <Polygon
+                  key={lot.id}
+                  positions={latlngs}
+                  smoothFactor={0}
+                  pathOptions={{
+                    fillColor: isAdminSelected ? '#fb7185' : themeColor,
+                    fillOpacity: (isSelected || isAdminSelected) ? 0.45 : 0.25,
+                    color: (isSelected || isAdminSelected) ? '#ffffff' : themeColor,
+                    weight: (isSelected || isAdminSelected) ? 3.5 : 1.5,
+                    dashArray: isAdminSelected ? '5, 5' : undefined,
+                    // @ts-ignore
+                    lotId: lot.id,
+                    // @ts-ignore
+                    pmIgnore: false
+                  }}
+                  eventHandlers={{
+                    click: (e) => {
+                      if (!isEditMode) {
+                        onLotSelect(lot);
+                      } else if ((e.originalEvent as MouseEvent).shiftKey) {
+                        setAdminSelectedIds(prev =>
+                          prev.includes(lot.id) ? prev.filter(id => id !== lot.id) : [...prev, lot.id]
+                        );
+                      }
+                    }
+                  }}
+                >
+                  <Tooltip
+                    direction="center"
+                    className="bg-transparent border-none shadow-none text-center lot-label-tooltip"
+                    opacity={1}
+                  >
+                    <div className="flex flex-col items-center">
+                      <span className="font-bold font-sans text-[10px] pointer-events-none" style={{ color: project.conceptMapSvg?.toLowerCase().includes('enclave') ? '#1e293b' : 'white' }}>
+                        {lot.labelText || lot.lotNumber}
+                      </span>
+                      <span className="font-sans text-[7px] pointer-events-none mt-0.5" style={{ color: project.conceptMapSvg?.toLowerCase().includes('enclave') ? '#334155' : 'rgba(255,255,255,0.7)' }}>
+                        {lot.areaSqm.toLocaleString()}㎡
+                      </span>
+                    </div>
+                  </Tooltip>
+                </Polygon>
+              );
+            })}
+          </MapContainer>
+        )}
+      </div>
 
 
     </div>

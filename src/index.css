@@ -101,3 +101,11 @@
   border: none !important;
   background: transparent !important;
 }
+
+/* Fix Tailwind CSS max-width 100% bug on Leaflet images and SVGs which causes shifting/shrinking */
+.leaflet-container img, 
+.leaflet-container svg, 
+.leaflet-container canvas {
+  max-width: none !important;
+  max-height: none !important;
+}
