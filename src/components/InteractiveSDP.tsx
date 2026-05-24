@@ -701,15 +701,13 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 }}
               >
                 {/* Tooltip on hover for instant summary */}
-                {!isSelected && (
-                  <Tooltip key={`tooltip-${lot.id}-${isSelected}`} direction="top" className="custom-hover-tooltip">
-                    <div className="p-1 text-slate-100 font-sans">
-                      <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
-                        <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                      </h4>
-                    </div>
-                  </Tooltip>
-                )}
+                <Tooltip key={`tooltip-${lot.id}`} direction="top" className="custom-hover-tooltip">
+                  <div className="p-1 text-slate-100 font-sans">
+                    <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
+                      <span>{lot.blockNumber} • {lot.lotNumber}</span>
+                    </h4>
+                  </div>
+                </Tooltip>
               </Polygon>
             );
           })}
@@ -818,15 +816,13 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                     }
                   }}
                 >
-                  {!isSelected && (
-                    <Tooltip key={`tooltip-${lot.id}-${isSelected}`} direction="top" className="custom-hover-tooltip">
-                      <div className="p-1 text-slate-100 font-sans">
-                        <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
-                          <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                        </h4>
-                      </div>
-                    </Tooltip>
-                  )}
+                  <Tooltip key={`tooltip-${lot.id}`} direction="top" className="custom-hover-tooltip">
+                    <div className="p-1 text-slate-100 font-sans">
+                      <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
+                        <span>{lot.blockNumber} • {lot.lotNumber}</span>
+                      </h4>
+                    </div>
+                  </Tooltip>
                 </Polygon>
               );
             })}

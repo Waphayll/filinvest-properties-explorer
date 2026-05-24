@@ -134,3 +134,10 @@
 .custom-hover-tooltip.leaflet-tooltip-right::before {
   border-right-color: #020617 !important;
 }
+
+/* Hide hover tooltips entirely on mobile/touch screens to prevent ghost squares on tap */
+@media (max-width: 768px) {
+  .leaflet-tooltip {
+    display: none !important;
+  }
+}

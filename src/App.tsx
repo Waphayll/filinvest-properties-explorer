@@ -258,7 +258,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-screen bg-[#0a1220] text-slate-100 font-sans select-none overflow-hidden relative flex flex-col">
+    <div className="w-full h-[100dvh] bg-[#0a1220] text-slate-100 font-sans select-none overflow-hidden relative flex flex-col">
 
       {/* Universal Embedded Content Frame */}
       <div className="flex-1 overflow-hidden relative">
@@ -316,7 +316,7 @@ export default function App() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 overflow-y-auto p-5 sm:p-8 lg:p-12 flex flex-col bg-[#0a1220] relative"
+              className="absolute inset-0 overflow-y-auto p-5 sm:p-8 lg:p-12 pb-24 sm:pb-12 flex flex-col bg-[#0a1220] relative"
             >
               <CursorGlow />
               <div className="max-w-7xl mx-auto w-full space-y-6 relative z-10 py-8 md:my-auto">
