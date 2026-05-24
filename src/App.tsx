@@ -273,7 +273,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col items-center justify-between p-12 bg-gradient-to-b from-[#111c2e] to-[#0a1220] text-center cursor-pointer overflow-hidden z-0"
+              className="absolute inset-0 flex flex-col items-center justify-between p-6 sm:p-12 bg-gradient-to-b from-[#111c2e] to-[#0a1220] text-center cursor-pointer overflow-hidden z-0"
               onClick={() => setCurrentScreen('selection')}
             >
               <CursorGlow />
@@ -294,7 +294,7 @@ export default function App() {
                   Q2 Investors <span className="font-bold font-display">Night</span>
                 </h1>
                 <div className="h-[1px] w-24 bg-[#D4AF37]/40 mx-auto my-6"></div>
-                <p className="text-lg text-slate-300 font-sans font-light max-w-2xl mx-auto leading-relaxed">
+                <p className="text-base sm:text-lg text-slate-300 font-sans font-light max-w-2xl mx-auto leading-relaxed px-4">
                   Step into the future of urban development with Filinvest Townships. Navigate through our interactive digital blueprints and select a project to explore premium commercial spaces available for development.
                 </p>
               </div>
@@ -502,8 +502,8 @@ export default function App() {
             >
 
               {/* Top Persistent Navigation Header (Screen 6 Compliance - Compact height) */}
-              <header className="h-24 border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-6 sm:px-10 grid grid-cols-3 items-center z-10 shrink-0 relative">
-                <div className="flex items-center gap-5 justify-self-start">
+              <header className="min-h-24 h-auto py-4 md:py-0 border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-4 sm:px-10 flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-0 items-center z-10 shrink-0 relative">
+                <div className="flex items-center gap-3 sm:gap-5 justify-self-start w-full md:w-auto">
                   <button
                     onClick={() => {
                       setCurrentScreen('selection');
@@ -529,7 +529,7 @@ export default function App() {
                 </div>
 
                 {/* Quick Switch Switcher Tabs (No App Restart Needed - Screen 6) */}
-                <div className="flex items-center bg-[#0a1220] p-1.5 border border-white/10 justify-self-center">
+                <div className="flex items-center bg-[#0a1220] p-1.5 border border-white/10 justify-self-center w-full md:w-auto overflow-x-auto scrollbar-hide">
                   {COMMERCIAL_PROJECTS.map((p) => (
                     <button
                       key={p.id}
@@ -544,7 +544,7 @@ export default function App() {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-self-end">
+                <div className="flex items-center justify-self-end w-full md:w-auto justify-between md:justify-end">
                   {isEditMode && (
                     <label className="mr-5 flex items-center gap-2 text-xs uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
                       <input
@@ -595,7 +595,7 @@ export default function App() {
 
                 {/* Right Side Fixed Details Panel Layout (Screen 5 Compliance) */}
                 {selectedLot && (
-                  <div className="w-full md:w-[28rem] border-t md:border-t-0 md:border-l border-white/10 bg-[#0c1524] flex flex-col justify-between p-8 shrink-0 h-[320px] md:h-full z-10">
+                  <div className="w-full md:w-[28rem] border-t md:border-t-0 md:border-l border-white/10 bg-[#0c1524] flex flex-col justify-between p-6 sm:p-8 shrink-0 h-[45vh] md:h-full z-10 overflow-y-auto">
                     <div className="space-y-6">
                       <div className="flex items-center gap-3 border-b border-white/10 pb-5">
                         <Building2 size={24} className="text-[#D4AF37]" />

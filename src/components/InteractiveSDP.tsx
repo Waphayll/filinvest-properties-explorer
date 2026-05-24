@@ -446,7 +446,7 @@ const ExportAdminPanel: React.FC<{
   };
 
   return (
-    <div className="absolute top-16 left-14 z-[1000] pointer-events-auto w-64">
+    <div className="absolute top-16 left-3 sm:left-14 z-[1000] pointer-events-auto w-56 sm:w-64">
       <div className="bg-[#111c2e]/95 backdrop-blur-md p-3 border border-indigo-500/50 shadow-2xl flex flex-col gap-2">
         <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex justify-between items-center">
           <span>Admin Controls</span>
@@ -572,7 +572,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
       </div>
 
       {/* Map Toggle Controls */}
-      <div className="absolute bottom-6 right-6 z-[1000] pointer-events-auto">
+      <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[1000] pointer-events-auto">
         <div className="bg-[#0a1220]/90 backdrop-blur-md flex flex-col p-1 border border-white/10 rounded-none shadow-2xl shrink-0 gap-1">
           <button 
             onClick={() => setViewMode('actual')}
@@ -611,6 +611,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             zoom={defaultZoom}
             className="w-full h-full"
             zoomControl={false} // Disable default layout to construct cleaner styled controls
+            attributionControl={false}
           >
             {/* Custom tile coordinates */}
             <TileLayer
@@ -720,6 +721,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             zoomSnap={0.5}
             zoomDelta={0.5}
             zoomControl={false}
+            attributionControl={false}
             className="w-full h-full bg-[#0a1220] z-0"
             scrollWheelZoom={false}
             doubleClickZoom={false}
