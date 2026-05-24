@@ -316,10 +316,10 @@ export default function App() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 overflow-y-auto p-5 sm:p-8 lg:p-12 flex flex-col justify-between bg-[#0a1220] relative"
+              className="absolute inset-0 overflow-y-auto p-5 sm:p-8 lg:p-12 flex flex-col bg-[#0a1220] relative"
             >
               <CursorGlow />
-              <div className="max-w-7xl mx-auto w-full space-y-6 my-auto relative z-10">
+              <div className="max-w-7xl mx-auto w-full space-y-6 relative z-10 py-8 md:my-auto">
                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
                   <div>
                     <span className="text-[#D4AF37] tracking-[0.35em] text-xs font-bold uppercase block">
@@ -502,7 +502,7 @@ export default function App() {
             >
 
               {/* Top Persistent Navigation Header (Screen 6 Compliance - Compact height) */}
-              <header className="min-h-24 h-auto py-4 md:py-0 border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-4 sm:px-10 flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-0 items-center z-10 shrink-0 relative">
+              <header className="min-h-24 h-auto py-4 md:py-0 md:h-24 border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-4 sm:px-10 flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-0 items-center z-10 shrink-0 relative">
                 <div className="flex items-center gap-3 sm:gap-5 justify-self-start w-full md:w-auto">
                   <button
                     onClick={() => {

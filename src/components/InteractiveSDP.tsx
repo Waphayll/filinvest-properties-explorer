@@ -54,7 +54,10 @@ const SelectedLotUpdater: React.FC<{ selectedLot: CommercialLot | null; mapType?
     if (selectedLot) {
       if (mapType === 'actual' && selectedLot.coordinates) {
         const bounds = L.latLngBounds(selectedLot.coordinates as any);
-        map.flyToBounds(bounds, { padding: [50, 50], duration: 0.4 });
+        // Only zoom in on desktop/large screens (where md:flex-row is active)
+        if (window.innerWidth >= 768) {
+          map.flyToBounds(bounds, { padding: [50, 50], duration: 0.4 });
+        }
       }
     }
   }, [selectedLot, map, mapType]);
@@ -698,13 +701,15 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 }}
               >
                 {/* Tooltip on hover for instant summary */}
-                <Tooltip key={`tooltip-${lot.id}-${isSelected}`} direction="top" permanent={isSelected} className="custom-hover-tooltip">
-                  <div className="p-1 text-slate-100 font-sans">
-                    <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
-                      <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                    </h4>
-                  </div>
-                </Tooltip>
+                {!isSelected && (
+                  <Tooltip key={`tooltip-${lot.id}-${isSelected}`} direction="top" className="custom-hover-tooltip">
+                    <div className="p-1 text-slate-100 font-sans">
+                      <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
+                        <span>{lot.blockNumber} • {lot.lotNumber}</span>
+                      </h4>
+                    </div>
+                  </Tooltip>
+                )}
               </Polygon>
             );
           })}
@@ -813,13 +818,15 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                     }
                   }}
                 >
-                  <Tooltip key={`tooltip-${lot.id}-${isSelected}`} direction="top" permanent={isSelected} className="custom-hover-tooltip">
-                    <div className="p-1 text-slate-100 font-sans">
-                      <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
-                        <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                      </h4>
-                    </div>
-                  </Tooltip>
+                  {!isSelected && (
+                    <Tooltip key={`tooltip-${lot.id}-${isSelected}`} direction="top" className="custom-hover-tooltip">
+                      <div className="p-1 text-slate-100 font-sans">
+                        <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
+                          <span>{lot.blockNumber} • {lot.lotNumber}</span>
+                        </h4>
+                      </div>
+                    </Tooltip>
+                  )}
                 </Polygon>
               );
             })}
