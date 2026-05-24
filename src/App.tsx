@@ -29,6 +29,7 @@ const CursorGlow = () => {
   const dots = useRef<{ x: number; y: number }[]>(Array.from({ length: 25 }, () => ({ x: 0, y: 0 })));
   const mouse = useRef({ x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0, y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0 });
   const glowPos = useRef({ x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0, y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0 });
+  const isHolding = useRef(false);
 
   useEffect(() => {
     let animationFrameId: number;
@@ -48,8 +49,27 @@ const CursorGlow = () => {
       }
     };
 
+    const handleMouseDown = () => {
+      isHolding.current = true;
+      if (trailRef.current) {
+        trailRef.current.style.opacity = '1';
+      }
+    };
+
+    const handleMouseUp = () => {
+      isHolding.current = false;
+      if (trailRef.current) {
+        trailRef.current.style.opacity = '0';
+      }
+    };
+
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('touchmove', handleMouseMove, { passive: true });
+    window.addEventListener('mousedown', handleMouseDown, { passive: true });
+    window.addEventListener('touchstart', handleMouseDown, { passive: true });
+    window.addEventListener('mouseup', handleMouseUp, { passive: true });
+    window.addEventListener('touchend', handleMouseUp, { passive: true });
+    window.addEventListener('touchcancel', handleMouseUp, { passive: true });
 
     const animate = () => {
       if (!isActive) {
@@ -90,6 +110,11 @@ const CursorGlow = () => {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleMouseMove);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('touchstart', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchend', handleMouseUp);
+      window.removeEventListener('touchcancel', handleMouseUp);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -108,7 +133,10 @@ const CursorGlow = () => {
       />
 
       {/* High-fidelity Gold dust trail */}
-      <div ref={trailRef} className="absolute inset-0 mix-blend-screen">
+      <div 
+        ref={trailRef} 
+        className="absolute inset-0 mix-blend-screen opacity-0 transition-opacity duration-300"
+      >
         {dots.current.map((_, index) => (
           <div
             key={index}
