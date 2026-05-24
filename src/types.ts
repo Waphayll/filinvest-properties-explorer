@@ -24,6 +24,8 @@ export interface CommercialLot {
   blockNumber: string;
   areaSqm: number;
   pricePerSqm: number; // in PHP
+  structureSize?: number; // optional structure size in sqm
+  structurePrice?: number; // optional structure price in PHP
   far: number; // Floor Area Ratio
   status: 'Available' | 'Reserved';
   points: string; // SVG path points or polyline coords representation for rendering

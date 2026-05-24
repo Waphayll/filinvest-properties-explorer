@@ -6,6 +6,7 @@ import '@geoman-io/leaflet-geoman-free';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import { CommercialLot, CommercialProject } from '../types';
 import { BRAND_COLORS_COMMERCIAL } from '../constants';
+import { MapPin, Layers } from 'lucide-react';
 
 
 const CONCEPT_BOUNDS = L.latLngBounds([0, 0], [800, 1000]);
@@ -551,9 +552,15 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
 
   return (
     <div className="relative flex flex-col w-full h-full bg-[#0a1220] border border-white/10 rounded-none overflow-hidden group select-none">
+      <svg width="0" height="0" className="absolute pointer-events-none">
+        <filter id="daang-hari-tint" colorInterpolationFilters="sRGB">
+          <feColorMatrix in="SourceGraphic" type="matrix" values="-1 0 0 0 1   0 -1 0 0 1   0 0 -1 0 1   0 0 0 1 0" result="inverted" />
+          <feColorMatrix in="inverted" type="matrix" values="1 0 0 0 0   0 1 0 0 0   0 0 1 0 0   0.333 0.333 0.333 0 0" />
+        </filter>
+      </svg>
 
       {/* HUD Controller / Header Overlay */}
-      <div className="absolute top-3 left-3 z-[1000] pointer-events-auto flex items-center gap-2">
+      <div className="absolute top-3 left-3 z-[1000] pointer-events-auto">
         <div className="bg-[#111c2e]/95 backdrop-blur-md px-3.5 py-2.5 border border-white/10 shadow-2xl flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS_COMMERCIAL[project.brand] }} />
@@ -562,19 +569,24 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             </span>
           </div>
         </div>
+      </div>
 
-        <div className="bg-[#111c2e]/95 backdrop-blur-md flex items-center border border-white/10 shadow-2xl overflow-hidden shrink-0">
+      {/* Map Toggle Controls */}
+      <div className="absolute bottom-6 right-6 z-[1000] pointer-events-auto">
+        <div className="bg-[#0a1220]/90 backdrop-blur-md flex flex-col p-1 border border-white/10 rounded-none shadow-2xl shrink-0 gap-1">
           <button 
             onClick={() => setViewMode('actual')}
-            className={`px-3 py-2 text-[10px] uppercase font-bold tracking-widest transition-all ${activeViewMode === 'actual' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            className={`px-5 py-3 text-[11px] uppercase font-bold tracking-[0.2em] transition-all flex items-center justify-start gap-3 w-40 ${activeViewMode === 'actual' ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
           >
+            <MapPin size={14} />
             Actual Map
           </button>
           {project.conceptMapSvg && (
             <button 
               onClick={() => setViewMode('concept')}
-              className={`px-3 py-2 text-[10px] uppercase font-bold tracking-widest transition-all ${activeViewMode === 'concept' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+              className={`px-5 py-3 text-[11px] uppercase font-bold tracking-[0.2em] transition-all flex items-center justify-start gap-3 w-40 ${activeViewMode === 'concept' ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
             >
+              <Layers size={14} />
               Concept Map
             </button>
           )}
@@ -602,8 +614,8 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
           >
             {/* Custom tile coordinates */}
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
               maxZoom={19}
             />
 
@@ -669,31 +681,29 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                         prev.includes(lot.id) ? prev.filter(id => id !== lot.id) : [...prev, lot.id]
                       );
                     }
+                  },
+                  mouseover: (e) => {
+                    const layer = e.target;
+                    if (!isSelected && !isAdminSelected) {
+                      layer.setStyle({ fillOpacity: 0.6, weight: 2.5, color: '#ffffff' });
+                    }
+                  },
+                  mouseout: (e) => {
+                    const layer = e.target;
+                    if (!isSelected && !isAdminSelected) {
+                      layer.setStyle({ fillOpacity: 0.25, weight: 1.5, color: themeColor });
+                    }
                   }
                 }}
               >
-                {/* Visual Tooltip Overlay centered right inside the parcel */}
-                <Tooltip
-                  direction="center"
-                  className="lot-label-tooltip"
-                >
-                  <div className="flex flex-col items-center">
-                    <span>{lot.labelText || lot.lotNumber}</span>
-                    <span className="text-[7.5px] opacity-70 font-sans mt-0.5">{lot.areaSqm.toLocaleString()}㎡</span>
-                  </div>
-                </Tooltip>
-
-                {/* Lightweight popup on click for instant summary */}
-                <Popup>
-                  <div className="p-1 max-w-[200px] text-slate-100 font-sans">
-                    <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] mb-0.5 flex items-center justify-between">
+                {/* Tooltip on hover for instant summary */}
+                <Tooltip key={`tooltip-${lot.id}-${isSelected}`} direction="top" permanent={isSelected} className="custom-hover-tooltip">
+                  <div className="p-1 text-slate-100 font-sans">
+                    <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
                       <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                      <span className="text-[7px] px-1.5 py-0.5 rounded-none font-sans font-bold uppercase bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 ml-3">
-                        {lot.status}
-                      </span>
                     </h4>
                   </div>
-                </Popup>
+                </Tooltip>
               </Polygon>
             );
           })}
@@ -717,17 +727,14 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             boxZoom={false}
             keyboard={false}
           >
-            {project.conceptMapSvg?.toLowerCase().includes('enclave') ? (
-              <div className="absolute inset-0 bg-slate-50 pointer-events-none z-[-1]"></div>
-            ) : (
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-[-1]"></div>
-            )}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-[-1]"></div>
             
             {project.conceptMapSvg && (
               <ImageOverlay 
                 url={project.conceptMapSvg} 
                 bounds={CONCEPT_BOUNDS}
                 opacity={0.95}
+                className={project.id === 'daang-hari-lots' ? 'invert-concept-map' : ''}
                 eventHandlers={{
                   load: () => setIsConceptMapLoading(false),
                   error: () => setIsConceptMapLoading(false)
@@ -789,21 +796,26 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                           prev.includes(lot.id) ? prev.filter(id => id !== lot.id) : [...prev, lot.id]
                         );
                       }
+                    },
+                    mouseover: (e) => {
+                      const layer = e.target;
+                      if (!isSelected && !isAdminSelected) {
+                        layer.setStyle({ fillOpacity: 0.6, weight: 2.5, color: '#ffffff' });
+                      }
+                    },
+                    mouseout: (e) => {
+                      const layer = e.target;
+                      if (!isSelected && !isAdminSelected) {
+                        layer.setStyle({ fillOpacity: 0.25, weight: 1.5, color: themeColor });
+                      }
                     }
                   }}
                 >
-                  <Tooltip
-                    direction="center"
-                    className="bg-transparent border-none shadow-none text-center lot-label-tooltip"
-                    opacity={1}
-                  >
-                    <div className="flex flex-col items-center">
-                      <span className="font-bold font-sans text-[10px] pointer-events-none" style={{ color: project.conceptMapSvg?.toLowerCase().includes('enclave') ? '#1e293b' : 'white' }}>
-                        {lot.labelText || lot.lotNumber}
-                      </span>
-                      <span className="font-sans text-[7px] pointer-events-none mt-0.5" style={{ color: project.conceptMapSvg?.toLowerCase().includes('enclave') ? '#334155' : 'rgba(255,255,255,0.7)' }}>
-                        {lot.areaSqm.toLocaleString()}㎡
-                      </span>
+                  <Tooltip key={`tooltip-${lot.id}-${isSelected}`} direction="top" permanent={isSelected} className="custom-hover-tooltip">
+                    <div className="p-1 text-slate-100 font-sans">
+                      <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
+                        <span>{lot.blockNumber} • {lot.lotNumber}</span>
+                      </h4>
                     </div>
                   </Tooltip>
                 </Polygon>
