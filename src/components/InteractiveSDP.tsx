@@ -432,7 +432,9 @@ const ExportAdminPanel: React.FC<{
   svgLocked: boolean;
   setSvgLocked: React.Dispatch<React.SetStateAction<boolean>>;
   mapType?: 'actual' | 'concept';
-}> = ({ isEditMode, adminSelectedIds, setAdminSelectedIds, svgUrl, setSvgUrl, svgScale, setSvgScale, svgRotation, setSvgRotation, svgOpacity, setSvgOpacity, svgLocked, setSvgLocked, mapType = 'actual' }) => {
+  watermarkEnabled: boolean;
+  setWatermarkEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ isEditMode, adminSelectedIds, setAdminSelectedIds, svgUrl, setSvgUrl, svgScale, setSvgScale, svgRotation, setSvgRotation, svgOpacity, setSvgOpacity, svgLocked, setSvgLocked, mapType = 'actual', watermarkEnabled, setWatermarkEnabled }) => {
   const map = useMap();
   const [saveStatus, setSaveStatus] = React.useState<string | null>(null);
 
@@ -563,6 +565,16 @@ const ExportAdminPanel: React.FC<{
               </div>
             </div>
           )}
+        </div>
+
+        <div className="mt-1 flex flex-col gap-1 border-t border-indigo-500/30 pt-2">
+          <div className="text-[10px] font-bold text-indigo-400 mb-1">Watermark Settings</div>
+          <button 
+            onClick={() => setWatermarkEnabled(!watermarkEnabled)} 
+            className={`text-[8px] px-2 py-1 rounded border shadow-sm w-full text-center transition-all ${watermarkEnabled ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 hover:bg-emerald-500/30' : 'bg-rose-500/20 border-rose-400 text-rose-300 hover:bg-rose-500/30'}`}
+          >
+            {watermarkEnabled ? '🔒 Watermark: Enabled' : '🔓 Watermark: Disabled'}
+          </button>
         </div>
 
         {saveStatus && (
@@ -706,6 +718,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   const [isConceptMapLoading, setIsConceptMapLoading] = React.useState<boolean>(true);
 
   const [viewMode, setViewMode] = React.useState<'actual' | 'concept'>('actual');
+  const [watermarkEnabled, setWatermarkEnabled] = React.useState<boolean>(true);
 
   useEffect(() => {
     if (viewMode === 'concept') {
@@ -747,6 +760,19 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
           <feColorMatrix in="inverted" type="matrix" values="1 0 0 0 0   0 1 0 0 0   0 0 1 0 0   0.333 0.333 0.333 0 0" />
         </filter>
       </svg>
+
+      {/* Repeating Diagonal Watermark */}
+      {watermarkEnabled && (
+        <div className="absolute inset-0 z-[999] pointer-events-none overflow-hidden flex flex-col justify-around select-none opacity-[0.06] rotate-[-25deg] scale-125">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex justify-around whitespace-nowrap text-white font-sans text-xl sm:text-2xl font-black uppercase tracking-[0.3em]">
+              {Array.from({ length: 4 }).map((_, j) => (
+                <span key={j}>this is a project not a video game!</span>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* HUD Controller / Header Overlay */}
       <div className="absolute top-3 left-3 z-[1000] pointer-events-auto">
@@ -839,6 +865,8 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
               svgOpacity={svgOpacity} setSvgOpacity={setSvgOpacity}
               svgLocked={svgLocked} setSvgLocked={setSvgLocked}
               mapType="actual"
+              watermarkEnabled={watermarkEnabled}
+              setWatermarkEnabled={setWatermarkEnabled}
             />
           <SVGOverlayManager
             svgUrl={svgUrl}
@@ -965,6 +993,8 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
               svgOpacity={svgOpacity} setSvgOpacity={setSvgOpacity}
               svgLocked={svgLocked} setSvgLocked={setSvgLocked}
               mapType="concept"
+              watermarkEnabled={watermarkEnabled}
+              setWatermarkEnabled={setWatermarkEnabled}
             />
             
             <SelectedLotUpdater selectedLot={selectedLot} mapType="concept" />
