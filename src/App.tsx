@@ -716,15 +716,15 @@ export default function App() {
 
                 {/* Right Side Fixed Details Panel Layout (Screen 5 Compliance) */}
                 {selectedLot && (
-                  <div className="w-full md:w-[28rem] border-t md:border-t-0 md:border-l border-white/10 bg-[#0c1524] flex flex-col justify-between p-6 sm:p-8 shrink-0 h-[45vh] md:h-full z-10 overflow-y-auto">
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 border-b border-white/10 pb-5">
+                  <div className="w-full md:w-[28rem] border-t md:border-t-0 md:border-l border-white/10 bg-[#0c1524] flex flex-col justify-between p-6 sm:p-8 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto">
+                    <div className="flex-1 flex flex-col justify-between min-h-0">
+                      <div className="flex items-center gap-3 border-b border-white/10 pb-5 shrink-0">
                         <Building2 size={24} className="text-[#D4AF37]" />
                         <h3 className="font-display text-2xl font-semibold text-white">
                           Lot Parameters
                         </h3>
                       </div>
-                      <div className="space-y-6 font-sans text-sm">
+                      <div className="flex-1 flex flex-col justify-around py-4 font-sans text-sm gap-4">
                         <div className="lot-detail-item opacity-0">
                           <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
                             <FileText size={14} /> Lot Identifier
