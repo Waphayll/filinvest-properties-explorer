@@ -763,7 +763,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
 
       {/* Repeating Diagonal Watermark */}
       {watermarkEnabled && (
-        <div className="absolute inset-0 z-[999] pointer-events-none overflow-hidden flex flex-col justify-around select-none opacity-[0.06] rotate-[-25deg] scale-125">
+        <div className="absolute inset-0 z-[999] pointer-events-none overflow-hidden flex flex-col justify-around select-none opacity-[0.22] rotate-[-25deg] scale-125">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex justify-around whitespace-nowrap text-white font-sans text-xl sm:text-2xl font-black uppercase tracking-[0.3em]">
               {Array.from({ length: 4 }).map((_, j) => (
