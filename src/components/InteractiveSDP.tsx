@@ -572,6 +572,51 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
 }) => {
   const [adminSelectedIds, setAdminSelectedIds] = React.useState<string[]>([]);
   const polygonClickedRef = React.useRef(false);
+
+  // --- La Salle Easter Egg (long-press) ---
+  const [showLasalle, setShowLasalle] = React.useState(false);
+  const lasallTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lasalleAudioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  const handleDlsuPressStart = React.useCallback(() => {
+    // Clear any previous timer
+    if (lasallTimerRef.current) clearTimeout(lasallTimerRef.current);
+    lasallTimerRef.current = setTimeout(() => {
+      setShowLasalle(true);
+      // Create and play audio
+      const audio = new Audio('/lasalle.mp3');
+      audio.loop = true;
+      audio.play().catch(() => {});
+      lasalleAudioRef.current = audio;
+    }, 10000); // 10 seconds
+  }, []);
+
+  const handleDlsuPressEnd = React.useCallback(() => {
+    // Clear the timer if released early
+    if (lasallTimerRef.current) {
+      clearTimeout(lasallTimerRef.current);
+      lasallTimerRef.current = null;
+    }
+    // Stop audio & hide overlay
+    if (lasalleAudioRef.current) {
+      lasalleAudioRef.current.pause();
+      lasalleAudioRef.current.currentTime = 0;
+      lasalleAudioRef.current = null;
+    }
+    setShowLasalle(false);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (lasallTimerRef.current) clearTimeout(lasallTimerRef.current);
+      if (lasalleAudioRef.current) {
+        lasalleAudioRef.current.pause();
+        lasalleAudioRef.current = null;
+      }
+    };
+  }, []);
+
   // Mapped center coordinate & zoom
   const centerCoord: [number, number] = project.center || [14.4150, 121.0360];
   const defaultZoom = project.zoom || 15;
@@ -702,7 +747,12 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 eventHandlers={{
                   click: () => {
                     if (onDlsuClick) onDlsuClick();
-                  }
+                  },
+                  mousedown: handleDlsuPressStart,
+                  mouseup: handleDlsuPressEnd,
+                  // @ts-ignore – Leaflet does fire touchstart/touchend on markers
+                  touchstart: handleDlsuPressStart,
+                  touchend: handleDlsuPressEnd,
                 }}
               />
             )}
@@ -921,6 +971,21 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
         )}
       </div>
 
+      {/* La Salle Easter Egg Fullscreen Overlay */}
+      {showLasalle && (
+        <div
+          className="absolute inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm cursor-pointer"
+          onMouseUp={handleDlsuPressEnd}
+          onTouchEnd={handleDlsuPressEnd}
+        >
+          <img
+            src="/lasalle.jpg"
+            alt="La Salle"
+            className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-2xl animate-pulse"
+            style={{ animationDuration: '3s' }}
+          />
+        </div>
+      )}
 
     </div>
   );
