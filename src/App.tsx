@@ -376,7 +376,7 @@ export default function App() {
               <div className="hidden md:flex flex-col items-center gap-2 pointer-events-none absolute bottom-6 right-8 z-20">
                 <div className="bg-[#111c2e] p-2.5 rounded-sm shadow-lg shadow-black/40 border border-[#D4AF37]/30">
                   <QRCodeSVG
-                    value={typeof window !== 'undefined' ? window.location.href : 'https://filinvest-properties.vercel.app'}
+                    value="https://filinvest-properties-explorer.vercel.app/"
                     size={80}
                     bgColor="#111c2e"
                     fgColor="#D4AF37"
