@@ -567,6 +567,7 @@ const DlsuTouchMarker: React.FC<{
   onPressEnd: () => void;
 }> = ({ onDlsuClick, onPressStart, onPressEnd }) => {
   const markerRef = React.useRef<L.Marker | null>(null);
+  const touchStartTimeRef = React.useRef<number>(0);
 
   useEffect(() => {
     const marker = markerRef.current;
@@ -576,11 +577,17 @@ const DlsuTouchMarker: React.FC<{
 
     const handleTouchStart = (e: TouchEvent) => {
       e.preventDefault(); // prevent scroll & context menu
+      touchStartTimeRef.current = Date.now();
       onPressStart();
     };
     const handleTouchEnd = (e: TouchEvent) => {
       e.preventDefault();
       onPressEnd();
+      // If it was a short tap (< 500ms), also fire the click handler
+      // so the 7-tap portfolio easter egg still works on mobile
+      if (Date.now() - touchStartTimeRef.current < 500) {
+        if (onDlsuClick) onDlsuClick();
+      }
     };
     const handleContextMenu = (e: Event) => {
       e.preventDefault(); // block native long-press menu on mobile
@@ -597,7 +604,7 @@ const DlsuTouchMarker: React.FC<{
       el.removeEventListener('touchcancel', handleTouchEnd);
       el.removeEventListener('contextmenu', handleContextMenu);
     };
-  }, [onPressStart, onPressEnd]);
+  }, [onPressStart, onPressEnd, onDlsuClick]);
 
   return (
     <Marker
@@ -628,40 +635,28 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   const [adminSelectedIds, setAdminSelectedIds] = React.useState<string[]>([]);
   const polygonClickedRef = React.useRef(false);
 
-  // --- La Salle Easter Egg (long-press: audio at 5s, image at 10s) ---
+  // --- La Salle Easter Egg (long-press 5s: show image + play music from 10s mark) ---
   const [showLasalle, setShowLasalle] = React.useState(false);
-  const lasalleAudioTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lasalleImageTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lasalleTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const lasalleAudioRef = React.useRef<HTMLAudioElement | null>(null);
 
   const handleDlsuPressStart = React.useCallback(() => {
-    // Clear any previous timers
-    if (lasalleAudioTimerRef.current) clearTimeout(lasalleAudioTimerRef.current);
-    if (lasalleImageTimerRef.current) clearTimeout(lasalleImageTimerRef.current);
+    if (lasalleTimerRef.current) clearTimeout(lasalleTimerRef.current);
 
-    // Stage 1: Start music at 5 seconds
-    lasalleAudioTimerRef.current = setTimeout(() => {
+    lasalleTimerRef.current = setTimeout(() => {
+      setShowLasalle(true);
       const audio = new Audio('/lasalle.mp3');
+      audio.currentTime = 10; // skip to 10s mark
       audio.loop = true;
       audio.play().catch(() => {});
       lasalleAudioRef.current = audio;
-    }, 5000);
-
-    // Stage 2: Show image at 10 seconds
-    lasalleImageTimerRef.current = setTimeout(() => {
-      setShowLasalle(true);
-    }, 10000);
+    }, 5000); // 5 second hold
   }, []);
 
   const handleDlsuPressEnd = React.useCallback(() => {
-    // Clear both timers
-    if (lasalleAudioTimerRef.current) {
-      clearTimeout(lasalleAudioTimerRef.current);
-      lasalleAudioTimerRef.current = null;
-    }
-    if (lasalleImageTimerRef.current) {
-      clearTimeout(lasalleImageTimerRef.current);
-      lasalleImageTimerRef.current = null;
+    if (lasalleTimerRef.current) {
+      clearTimeout(lasalleTimerRef.current);
+      lasalleTimerRef.current = null;
     }
     // Stop audio & hide overlay
     if (lasalleAudioRef.current) {
@@ -675,8 +670,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (lasalleAudioTimerRef.current) clearTimeout(lasalleAudioTimerRef.current);
-      if (lasalleImageTimerRef.current) clearTimeout(lasalleImageTimerRef.current);
+      if (lasalleTimerRef.current) clearTimeout(lasalleTimerRef.current);
       if (lasalleAudioRef.current) {
         lasalleAudioRef.current.pause();
         lasalleAudioRef.current = null;
