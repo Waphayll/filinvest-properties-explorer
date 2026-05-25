@@ -92,6 +92,21 @@ const SelectedLotUpdater: React.FC<{ selectedLot: CommercialLot | null; mapType?
         if (window.innerWidth >= 768) {
           map.flyToBounds(bounds, { padding: [50, 50], duration: 0.4 });
         }
+      } else if (mapType === 'concept' && selectedLot.points) {
+        // Calculate center of concept lot points
+        const pairs = selectedLot.points.trim().split(/\s+/);
+        const latlngs: [number, number][] = pairs.map(p => {
+          const [x, y] = p.split(',').map(Number);
+          return [800 - y, x];
+        });
+        if (latlngs.length > 0) {
+          const bounds = L.latLngBounds(latlngs);
+          const center = bounds.getCenter();
+          // In desktop view, pan to center without zooming
+          if (window.innerWidth >= 768) {
+            map.panTo(center, { animate: true, duration: 0.4 });
+          }
+        }
       }
     }
   }, [selectedLot, map, mapType]);
@@ -884,9 +899,14 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                   }
                 }}
               >
-                {/* Tooltip on hover - desktop only */}
-                {!isMobile && (
-                  <Tooltip key={`tooltip-${lot.id}`} direction="top" className="custom-hover-tooltip">
+                {/* Tooltip on hover (desktop only) OR permanent when selected (both desktop and mobile) */}
+                {(isSelected || !isMobile) && (
+                  <Tooltip 
+                    key={`tooltip-${lot.id}-${isSelected ? 'perm' : 'hover'}`} 
+                    direction="top" 
+                    permanent={isSelected}
+                    className="custom-hover-tooltip"
+                  >
                     <div className="p-1 text-slate-100 font-sans">
                       <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
                         <span>{lot.blockNumber} • {lot.lotNumber}</span>
@@ -898,16 +918,15 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             );
           })}
 
-
         </MapContainer>
         ) : (
           <MapContainer
             key={`${mapKey}-concept`}
             crs={L.CRS.Simple}
-            bounds={CONCEPT_BOUNDS}
-            maxBounds={CONCEPT_MAX_BOUNDS}
+            bounds={project.id === 'filinvest-city' ? CONCEPT_BOUNDS : L.latLngBounds([-200, -250], [1000, 1250])}
+            maxBounds={project.id === 'filinvest-city' ? CONCEPT_MAX_BOUNDS : L.latLngBounds([-300, -375], [1100, 1375])}
             maxBoundsViscosity={1.0}
-            minZoom={1}
+            minZoom={project.id === 'filinvest-city' ? 1 : 0.5}
             maxZoom={2}
             zoomSnap={0.5}
             zoomDelta={0.5}
@@ -1006,9 +1025,14 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                     }
                   }}
                 >
-                  {/* Tooltip on hover - desktop only */}
-                  {!isMobile && (
-                    <Tooltip key={`tooltip-${lot.id}`} direction="top" className="custom-hover-tooltip">
+                  {/* Tooltip on hover (desktop only) OR permanent when selected (both desktop and mobile) */}
+                  {(isSelected || !isMobile) && (
+                    <Tooltip 
+                      key={`tooltip-${lot.id}-${isSelected ? 'perm' : 'hover'}`} 
+                      direction="top" 
+                      permanent={isSelected}
+                      className="custom-hover-tooltip"
+                    >
                       <div className="p-1 text-slate-100 font-sans">
                         <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
                           <span>{lot.blockNumber} • {lot.lotNumber}</span>
@@ -1019,6 +1043,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 </Polygon>
               );
             })}
+
           </MapContainer>
         )}
       </div>
