@@ -18,7 +18,8 @@ export const COMMERCIAL_PROJECTS: CommercialProject[] = [
     averagePriceRange: '₱396,000 – ₱766,000 / sqm',
     featureBadge: 'Feature Launch: Block 13 & 14',
     center: [14.4172, 121.0354],
-    zoom: 15
+    zoom: 15,
+    conceptMapSvg: 'FC.svg'
   },
   {
     id: 'city-di-mare',
@@ -178,24 +179,24 @@ const generateFCPalmsLots = (): CommercialLot[] => {
 const generateFCSpectrumLots = (): CommercialLot[] => {
   const spectrumCenter: [number, number] = [14.4140, 121.0392];
   const data = [
-    { num: 'Blk 1 Lot 2', size: 1524, price: 592000, far: 10 },
-    { num: 'Blk 8 Lot 4', size: 2247, price: 626000, far: 10 },
-    { num: 'Blk 11 Lot 3', size: 2628, price: 749000, far: 10 },
-    { num: 'Blk 20 Lot 4', size: 2265, price: 592000, far: 10 },
-    { num: 'Blk 20 Lot 5', size: 2292, price: 592000, far: 10 },
-    { num: 'Blk 20 Lot 6', size: 2293, price: 592000, far: 10 },
-    { num: 'Blk 20 Lot 1', size: 2358, price: 592000, far: 10 },
-    { num: 'Blk 21 Lot 2', size: 3139, price: 766000, far: 10 },
-    { num: 'Blk 21 Lot 3-A', size: 2010, price: 592000, far: 10 },
-    { num: 'Blk 21 Lot 4', size: 2189, price: 592000, far: 10 },
-    { num: 'Blk 21 Lot 5', size: 2113, price: 592000, far: 10 },
-    { num: 'Blk 21 Lot 6', size: 2181, price: 592000, far: 10 },
-    { num: 'Blk 21 Lot 3-B', size: 2186, price: 592000, far: 10 },
-    { num: 'Blk 24 Lot 4', size: 2634, price: 592000, far: 10 },
-    { num: 'Blk 24 Lot 7', size: 2595, price: 592000, far: 10 },
-    { num: 'Blk 24 Lot 2-E-2-B-5', size: 3411, price: 592000, far: 10 },
-    { num: 'Blk 27 Lot 2-E-2-B-6', size: 1779, price: 592000, far: 10 },
-    { num: 'Blk 27 Lot 2-E-2-B-6-Alt', size: 4593, price: 626000, far: 10 }
+    { num: 'Blk 1 Lot 3', size: 1524, price: 592000, far: 10 },
+    { num: 'Blk 8 Lot 2', size: 2247, price: 626000, far: 10 },
+    { num: 'Blk 11 Lot 4', size: 2628, price: 749000, far: 10 },
+    { num: 'Blk 20 Lot 3', size: 2265, price: 592000, far: 10 },
+    { num: 'Blk 20 Lot 4', size: 2292, price: 592000, far: 10 },
+    { num: 'Blk 20 Lot 5', size: 2293, price: 592000, far: 10 },
+    { num: 'Blk 20 Lot 6', size: 2358, price: 592000, far: 10 },
+    { num: 'Blk 21 Lot 1', size: 3139, price: 766000, far: 10 },
+    { num: 'Blk 21 Lot 2', size: 2010, price: 592000, far: 10 },
+    { num: 'Blk 21 Lot 3', size: 2189, price: 592000, far: 10 },
+    { num: 'Blk 21 Lot 4', size: 2113, price: 592000, far: 10 },
+    { num: 'Blk 21 Lot 5', size: 2181, price: 592000, far: 10 },
+    { num: 'Blk 21 Lot 6', size: 2186, price: 592000, far: 10 },
+    { num: 'Blk 24 Lot 3', size: 2634, price: 592000, far: 10 },
+    { num: 'Blk 24 Lot 4', size: 2595, price: 592000, far: 10 },
+    { num: 'Blk 24 Lot 7', size: 3411, price: 592000, far: 10 },
+    { num: 'Blk 27 Lot 2-E-2-B-5', size: 1779, price: 592000, far: 10 },
+    { num: 'Blk 27 Lot 2-E-2-B-6', size: 4593, price: 626000, far: 10 }
   ];
   return data.map((d, index) => {
     const colLength = 4;

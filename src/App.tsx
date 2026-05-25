@@ -22,6 +22,7 @@ import { CommercialProject, CommercialLot, InvestorLead } from './types';
 import { COMMERCIAL_PROJECTS, COMMERCIAL_LOTS, BRAND_COLORS_COMMERCIAL } from './constants';
 import InteractiveSDP from './components/InteractiveSDP';
 import { Chatbot } from './components/Chatbot';
+import { QRCodeSVG } from 'qrcode.react';
 
 const CursorGlow = () => {
   const trailRef = useRef<HTMLDivElement>(null);
@@ -369,6 +370,22 @@ export default function App() {
                 <button className="px-10 py-4.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 border border-amber-500/20 text-white rounded-none shadow-xl font-medium tracking-widest uppercase text-xs transition-colors animate-pulse">
                   Tap Anywhere to Begin
                 </button>
+              </div>
+
+              {/* QR Code - Desktop only, far bottom-right */}
+              <div className="hidden md:flex flex-col items-center gap-2 pointer-events-none absolute bottom-6 right-8 z-20">
+                <div className="bg-[#111c2e] p-2.5 rounded-sm shadow-lg shadow-black/40 border border-[#D4AF37]/30">
+                  <QRCodeSVG
+                    value={typeof window !== 'undefined' ? window.location.href : 'https://filinvest-properties.vercel.app'}
+                    size={80}
+                    bgColor="#111c2e"
+                    fgColor="#D4AF37"
+                    level="M"
+                  />
+                </div>
+                <span className="text-[8px] text-[#D4AF37]/60 uppercase tracking-[0.2em] font-bold font-sans">
+                  Scan to open on mobile
+                </span>
               </div>
             </motion.div>
           )}

@@ -927,7 +927,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 url={project.conceptMapSvg} 
                 bounds={CONCEPT_BOUNDS}
                 opacity={0.95}
-                className={project.id === 'daang-hari-lots' ? 'invert-concept-map' : ''}
+                className={(project.id === 'daang-hari-lots' || project.id === 'filinvest-city') ? 'invert-concept-map' : ''}
                 eventHandlers={{
                   load: () => setIsConceptMapLoading(false),
                   error: () => setIsConceptMapLoading(false)
