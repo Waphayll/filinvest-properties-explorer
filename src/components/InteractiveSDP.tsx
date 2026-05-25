@@ -778,10 +778,10 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
 
       {/* Map Toggle Controls - hidden on mobile when a lot is selected */}
       <div className={`absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[1000] pointer-events-auto ${selectedLot ? 'hidden md:block' : ''}`}>
-        <div className="bg-[#0a1220]/90 backdrop-blur-md flex flex-col p-1 border border-white/10 rounded-none shadow-2xl shrink-0 gap-1">
+        <div className="bg-white/95 backdrop-blur-md flex flex-col p-1 border border-[#171796]/10 rounded-none shadow-2xl shrink-0 gap-1">
           <button 
             onClick={() => setViewMode('actual')}
-            className={`px-5 py-3 text-[11px] uppercase font-bold tracking-[0.2em] transition-all flex items-center justify-start gap-3 w-40 ${activeViewMode === 'actual' ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            className={`px-5 py-3 text-[11px] uppercase font-bold tracking-[0.2em] transition-all flex items-center justify-start gap-3 w-40 ${activeViewMode === 'actual' ? 'bg-[#171796] text-white shadow-lg' : 'text-slate-500 hover:text-[#171796] hover:bg-[#171796]/5'}`}
           >
             <MapPin size={14} />
             Actual Map
@@ -789,7 +789,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
           {project.conceptMapSvg && (
             <button 
               onClick={() => setViewMode('concept')}
-              className={`px-5 py-3 text-[11px] uppercase font-bold tracking-[0.2em] transition-all flex items-center justify-start gap-3 w-40 ${activeViewMode === 'concept' ? 'bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+              className={`px-5 py-3 text-[11px] uppercase font-bold tracking-[0.2em] transition-all flex items-center justify-start gap-3 w-40 ${activeViewMode === 'concept' ? 'bg-[#171796] text-white shadow-lg' : 'text-slate-500 hover:text-[#171796] hover:bg-[#171796]/5'}`}
             >
               <Layers size={14} />
               Concept Map
@@ -801,10 +801,10 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
       {/* Primary React Leaflet Component Viewport */}
       <div className={`w-full flex-1 min-h-0 relative z-0 ${activeViewMode === 'actual' ? 'light-theme-map' : 'grayscale-map'}`}>
         {activeViewMode === 'concept' && isConceptMapLoading && project.conceptMapSvg && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#0a1220]/90 backdrop-blur-sm transition-opacity duration-300">
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm transition-opacity duration-300">
             <div className="flex flex-col items-center">
-              <div className="w-12 h-12 border-4 border-white/10 border-t-[#D4AF37] rounded-full animate-spin"></div>
-              <p className="mt-4 text-[#D4AF37] font-sans text-xs font-bold uppercase tracking-widest animate-pulse">Loading Blueprint...</p>
+              <div className="w-12 h-12 border-4 border-[#171796]/10 border-t-[#171796] rounded-full animate-spin"></div>
+              <p className="mt-4 text-[#171796] font-sans text-xs font-bold uppercase tracking-widest animate-pulse">Loading Blueprint...</p>
             </div>
           </div>
         )}

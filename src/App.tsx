@@ -252,23 +252,6 @@ export default function App() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleBackToSelection = () => {
-    if (isWipingRef.current) return;
-    const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
-    setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
-    setWipeDirection('backward');
-    setIsWiping(true);
-    isWipingRef.current = true;
-    setTimeout(() => {
-      setCurrentScreen('selection');
-      setSelectedLot(null);
-      setTimeout(() => {
-        setIsWiping(false);
-        isWipingRef.current = false;
-      }, 100);
-    }, 600);
-  };
-
   // --- VIEWER GESTURE NAVIGATION ---
   useEffect(() => {
     if (currentScreen !== 'viewer') return;
@@ -299,7 +282,18 @@ export default function App() {
           if (container.scrollLeft > 50) {
             container.scrollTo({ left: 0, behavior: 'smooth' });
           } else if (!isWipingRef.current) {
-            handleBackToSelection();
+            const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
+            setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
+            setWipeDirection('backward');
+            setIsWiping(true);
+            isWipingRef.current = true;
+            setTimeout(() => {
+              setCurrentScreen('selection');
+              setTimeout(() => {
+                setIsWiping(false);
+                isWipingRef.current = false;
+              }, 100);
+            }, 600);
           }
         }
       }
@@ -317,7 +311,18 @@ export default function App() {
             container.scrollTo({ left: 0, behavior: 'smooth' });
             lastViewerWheel = now;
           } else if (container.scrollLeft === 0 && !isWipingRef.current) {
-            handleBackToSelection();
+            const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
+            setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
+            setWipeDirection('backward');
+            setIsWiping(true);
+            isWipingRef.current = true;
+            setTimeout(() => {
+              setCurrentScreen('selection');
+              setTimeout(() => {
+                setIsWiping(false);
+                isWipingRef.current = false;
+              }, 100);
+            }, 600);
             lastViewerWheel = now;
           }
         }
@@ -704,34 +709,34 @@ export default function App() {
                           style={{ filter: isCenter ? 'brightness(0.8) contrast(1.1)' : 'brightness(0.4) blur(4px)' }}
                           referrerPolicy="no-referrer"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a1220]/95 via-[#0e1726]/40 to-transparent pointer-events-none" />
-                        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/50 to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-black/5 pointer-events-none" />
 
                         {/* Content Overlay */}
                         <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 pb-24 md:pb-32 flex flex-col md:flex-row items-end justify-between max-w-7xl mx-auto right-0 gap-8 pointer-events-none">
                           
                           <div className="flex-1 max-w-2xl space-y-4">
                             <div className="flex items-center gap-3 mb-2">
-                              <span className="bg-[#D4AF37] text-slate-950 text-[10px] uppercase font-bold tracking-[0.25em] px-3 py-1 shadow-md">
+                              <span className="bg-[#171796] text-white text-[10px] uppercase font-bold tracking-[0.25em] px-3 py-1 shadow-md">
                                 {project.brand}
                               </span>
-                              <span className="text-xs font-bold tracking-[0.2em] text-[#D4AF37] uppercase flex items-center gap-1.5 font-sans drop-shadow-md">
-                                <MapPin size={12} className="text-[#D4AF37]" /> {project.location.split(',')[0]}
+                              <span className="text-xs font-bold tracking-[0.2em] text-[#171796] uppercase flex items-center gap-1.5 font-sans drop-shadow-sm">
+                                <MapPin size={12} className="text-[#171796]" /> {project.location.split(',')[0]}
                               </span>
                             </div>
                             
-                            <h2 className="text-4xl md:text-6xl font-display font-medium text-white tracking-wide leading-tight drop-shadow-xl">
+                            <h2 className="text-4xl md:text-6xl font-display font-medium text-[#171796] tracking-wide leading-tight drop-shadow-sm">
                               {project.name}
                             </h2>
 
                             <div className="flex gap-8 pt-4 uppercase font-sans">
                               <div>
-                                <span className="block text-[9px] md:text-[10px] font-semibold tracking-widest text-slate-300 drop-shadow">Avg Lot Sizing</span>
-                                <span className="block text-sm md:text-base font-bold text-white mt-1 drop-shadow-md">{project.averageLotSize}</span>
+                                <span className="block text-[9px] md:text-[10px] font-semibold tracking-widest text-slate-500">Avg Lot Sizing</span>
+                                <span className="block text-sm md:text-base font-bold text-[#171796] mt-1">{project.averageLotSize}</span>
                               </div>
                               <div>
-                                <span className="block text-[9px] md:text-[10px] font-semibold tracking-widest text-slate-300 drop-shadow">Est. Market Rates</span>
-                                <span className="block text-sm md:text-base font-bold text-[#D4AF37] mt-1 drop-shadow-md">{project.averagePriceRange.split(' ')[0]} / sqm</span>
+                                <span className="block text-[9px] md:text-[10px] font-semibold tracking-widest text-slate-500">Est. Market Rates</span>
+                                <span className="block text-sm md:text-base font-bold text-[#171796] mt-1">{project.averagePriceRange.split(' ')[0]} / sqm</span>
                               </div>
                             </div>
                           </div>
@@ -742,7 +747,7 @@ export default function App() {
                                 e.stopPropagation();
                                 handleProjectSelect(project);
                               }}
-                              className="w-full md:w-auto px-8 py-4 text-xs uppercase font-bold tracking-[0.2em] bg-[#D4AF37] text-slate-950 hover:bg-amber-400 hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)] flex items-center justify-center gap-3 pointer-events-auto"
+                              className="w-full md:w-auto px-8 py-4 text-xs uppercase font-bold tracking-[0.2em] bg-[#171796] text-white hover:bg-blue-800 hover:scale-[1.02] transition-all shadow-lg flex items-center justify-center gap-3 pointer-events-auto"
                             >
                               Explore Township
                             </button>
@@ -808,27 +813,28 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col"
-              style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)' }}
+              className="absolute inset-0 flex flex-col bg-white"
             >
 
               {/* Top Persistent Navigation Header */}
-              <header className="border-b border-white/10 backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
+              <header className="border-b border-[#171796]/10 backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
                 flex flex-col gap-3 py-3
-                md:grid md:grid-cols-3 md:h-24 md:py-0 md:gap-0 md:items-center"
-                style={{ backgroundColor: 'color-mix(in srgb, var(--theme-header-bg, #111c2e) 95%, transparent)' }}>
+                md:grid md:grid-cols-3 md:h-24 md:py-0 md:gap-0 md:items-center bg-white/95 text-[#171796]">
                 {/* Row 1 on mobile: Back + Title + Admin */}
                 <div className="flex items-center gap-3 justify-between md:justify-start">
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={handleBackToSelection}
+                      onClick={() => {
+                        setCurrentScreen('selection');
+                        setSelectedLot(null);
+                      }}
                       className="flex items-center justify-center p-2 text-slate-400 hover:text-[#D4AF37] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/5 shrink-0"
                       aria-label="Back to selection"
                     >
                       <ArrowLeft size={24} />
                     </button>
                     <div className="min-w-0">
-                      <h2 className="text-base md:text-2xl font-display font-medium text-white flex items-center gap-2 truncate">
+                      <h2 className="text-base md:text-2xl font-display font-medium text-[#171796] flex items-center gap-2 truncate">
                         <span className="truncate">{selectedProject.name}</span>
                         {selectedProject.id === 'filinvest-city' && (
                           <span 
@@ -842,13 +848,13 @@ export default function App() {
                                 return next;
                               });
                             }}
-                            className="cursor-pointer text-[9px] md:text-[10px] bg-[#D4AF37]/25 text-[#D4AF37] border border-[#D4AF37]/35 px-1.5 md:px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans shrink-0 pointer-events-auto"
+                            className="cursor-pointer text-[9px] md:text-[10px] bg-[#171796]/10 text-[#171796] border border-[#171796]/20 px-1.5 md:px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans shrink-0 pointer-events-auto"
                           >
                             Featured
                           </span>
                         )}
                       </h2>
-                      <p className="text-xs text-slate-400 uppercase tracking-widest truncate max-w-sm hidden md:block mt-0.5">
+                      <p className="text-xs text-slate-500 uppercase tracking-widest truncate max-w-sm hidden md:block mt-0.5">
                         {selectedProject.location} • {selectedProject.brand}
                       </p>
                     </div>
@@ -937,18 +943,18 @@ export default function App() {
                   </div>
 
                   {/* Right Side: Description */}
-                  <div className="w-full md:w-1/2 h-1/2 md:h-full bg-[#0a1220] flex flex-col justify-center p-8 md:p-16 lg:p-24 overflow-y-auto" style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)' }}>
-                    <span className="text-[#D4AF37] tracking-[0.3em] text-xs font-bold uppercase block font-sans mb-4">
+                  <div className="w-full md:w-1/2 h-1/2 md:h-full bg-white flex flex-col justify-center p-8 md:p-16 lg:p-24 overflow-y-auto">
+                    <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase block font-sans mb-4">
                       {selectedProject.brand}
                     </span>
-                    <h2 className="text-4xl md:text-5xl font-display font-medium text-white mb-6">
+                    <h2 className="text-4xl md:text-5xl font-display font-medium text-[#171796] mb-6">
                       {selectedProject.name}
                     </h2>
-                    <div className="h-[1px] w-16 bg-[#D4AF37]/50 mb-8"></div>
-                    <p className="text-slate-300 font-sans font-light leading-relaxed mb-6">
+                    <div className="h-[1px] w-16 bg-[#171796]/30 mb-8"></div>
+                    <p className="text-slate-600 font-sans font-light leading-relaxed mb-6">
                       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
                     </p>
-                    <p className="text-slate-300 font-sans font-light leading-relaxed mb-12">
+                    <p className="text-slate-600 font-sans font-light leading-relaxed mb-12">
                       Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.
                     </p>
                     
@@ -959,9 +965,9 @@ export default function App() {
                           container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
                         }
                       }}
-                      className="flex items-center gap-3 text-[#D4AF37] text-xs font-bold tracking-[0.2em] uppercase hover:text-amber-400 transition-colors w-max group"
+                      className="flex items-center gap-3 text-[#171796] text-xs font-bold tracking-[0.2em] uppercase hover:text-blue-800 transition-colors w-max group"
                     >
-                      <span className="border border-[#D4AF37]/30 p-3 rounded-full group-hover:bg-[#D4AF37]/10 transition-colors">
+                      <span className="border border-[#171796]/30 p-3 rounded-full group-hover:bg-[#171796]/10 transition-colors">
                         <ArrowLeft size={16} className="rotate-180" />
                       </span>
                       Scroll To Map
@@ -990,15 +996,15 @@ export default function App() {
 
                   {/* Right Side Fixed Details Panel Layout (Screen 5 Compliance) */}
                   {selectedLot && (
-                    <div className="w-full md:w-[30rem] border-t md:border-t-0 md:border-l border-white/10 flex flex-col justify-between p-8 sm:p-10 lg:p-12 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto kiosk-portrait-sidebar" style={{ backgroundColor: 'var(--theme-sidebar-bg, #0c1524)' }}>
+                    <div className="w-full md:w-[30rem] border-t md:border-t-0 md:border-l border-[#171796]/10 flex flex-col justify-between p-8 sm:p-10 lg:p-12 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto kiosk-portrait-sidebar bg-white">
                       <div className="flex-1 flex flex-col justify-between min-h-0">
                       
                       {/* Editorial Double Rule Header */}
-                      <div className="border-b-4 border-double border-white/20 pb-5 shrink-0 mb-6">
-                        <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#D4AF37] block mb-1.5 font-sans">
+                      <div className="border-b-4 border-double border-[#171796]/20 pb-5 shrink-0 mb-6">
+                        <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#171796] block mb-1.5 font-sans">
                           Lot Specification
                         </span>
-                        <h3 className="font-display text-2.5xl font-medium tracking-wide italic text-white">
+                        <h3 className="font-display text-2.5xl font-medium tracking-wide italic text-[#171796]">
                           Lot Registry
                         </h3>
                       </div>
@@ -1007,8 +1013,8 @@ export default function App() {
                       <div className="flex-1 flex flex-col justify-start py-2 font-sans text-sm gap-4">
                         
                         {/* CAD / Architectural Design Image Placeholder */}
-                        <div className="lot-detail-item opacity-0 pb-4 border-b border-white/5 mb-2">
-                          <div className="w-full h-48 bg-slate-950/40 border border-white/5 flex flex-col items-center justify-center relative overflow-hidden text-slate-500 hover:text-slate-400 transition-colors cursor-crosshair">
+                        <div className="lot-detail-item opacity-0 pb-4 border-b border-[#171796]/10 mb-2">
+                          <div className="w-full h-48 bg-slate-50 border border-[#171796]/10 flex flex-col items-center justify-center relative overflow-hidden text-slate-400 hover:text-slate-500 transition-colors cursor-crosshair">
                             <svg className="w-8 h-8 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
@@ -1024,57 +1030,57 @@ export default function App() {
                         {/* Architectural Ledger List */}
                         <div className="space-y-3 font-sans">
                           
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
                               Lot Identifier
                             </span>
-                            <span className="text-sm font-semibold text-white">
+                            <span className="text-sm font-semibold text-[#171796]">
                               Block {selectedLot.blockNumber} • Lot {selectedLot.lotNumber}
                             </span>
                           </div>
 
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
                               Lot Area
                             </span>
-                            <span className="text-sm font-semibold text-white">
+                            <span className="text-sm font-semibold text-[#171796]">
                               {selectedLot.areaSqm.toLocaleString()} sqm
                             </span>
                           </div>
 
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
                               FAR Limit
                             </span>
-                            <span className="text-sm font-semibold text-white">
+                            <span className="text-sm font-semibold text-[#171796]">
                               FAR {selectedLot.far}.0
                             </span>
                           </div>
 
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
                               Price per SQM
                             </span>
-                            <span className="text-sm font-semibold text-white">
+                            <span className="text-sm font-semibold text-[#171796]">
                               ₱ {selectedLot.pricePerSqm.toLocaleString()} / sqm
                             </span>
                           </div>
 
                           {selectedLot.structureSize !== undefined && selectedLot.structurePrice !== undefined && (
                             <>
-                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
                                   Structure Size
                                 </span>
-                                <span className="text-sm font-semibold text-white">
+                                <span className="text-sm font-semibold text-[#171796]">
                                   {selectedLot.structureSize.toLocaleString()} sqm
                                 </span>
                               </div>
-                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
                                   Structure Price
                                 </span>
-                                <span className="text-sm font-semibold text-white">
+                                <span className="text-sm font-semibold text-[#171796]">
                                   ₱ {selectedLot.structurePrice.toLocaleString()}
                                 </span>
                               </div>
@@ -1082,11 +1088,11 @@ export default function App() {
                           )}
                           
                           {/* Total Contract Value Ledger Box */}
-                          <div className="lot-detail-item opacity-0 mt-6 py-4.5 px-5 bg-white/[0.02] border-y-4 border-double border-[#D4AF37]/35 flex justify-between items-center">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#D4AF37] font-sans">
+                          <div className="lot-detail-item opacity-0 mt-6 py-4.5 px-5 bg-[#171796]/[0.02] border-y-4 border-double border-[#171796]/30 flex justify-between items-center">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#171796] font-sans">
                               Contract Value (TCP)
                             </span>
-                            <span className="text-2xl font-display font-bold text-[#D4AF37]">
+                            <span className="text-2xl font-display font-bold text-[#171796]">
                               ₱ {((selectedLot.areaSqm * selectedLot.pricePerSqm) + (selectedLot.structurePrice || 0)).toLocaleString()}
                             </span>
                           </div>
