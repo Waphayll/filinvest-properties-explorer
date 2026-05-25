@@ -15,7 +15,9 @@ import {
   X,
   Sparkles,
   CheckCircle2,
-  FileText
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 import { CommercialProject, CommercialLot, InvestorLead } from './types';
@@ -173,6 +175,46 @@ export default function App() {
   const [chatbotEnabled, setChatbotEnabled] = useState<boolean>(false);
   const [easterEggEnabled, setEasterEggEnabled] = useState<boolean>(true);
   const [alabangClicks, setAlabangClicks] = useState<number>(0);
+  const [activeCarouselIndex, setActiveCarouselIndex] = useState<number>(0);
+  
+  // --- TRANSITION STATE ---
+  const [isWiping, setIsWiping] = useState<boolean>(false);
+  const isWipingRef = useRef<boolean>(false);
+  const [wipeColor, setWipeColor] = useState<string>('#D4AF37');
+  const [wipeDirection, setWipeDirection] = useState<'forward' | 'backward'>('forward');
+
+  // --- CAROUSEL WHEEL SCROLL STATE ---
+  const lastWheelTime = useRef<number>(0);
+
+  const handleCarouselWheel = (e: React.WheelEvent) => {
+    const now = Date.now();
+    if (now - lastWheelTime.current < 400) return; // 400ms debounce
+
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      if (e.deltaX > 20) {
+        setActiveCarouselIndex(prev => prev + 1);
+        lastWheelTime.current = now;
+      } else if (e.deltaX < -20) {
+        setActiveCarouselIndex(prev => prev - 1);
+        lastWheelTime.current = now;
+      }
+    } else {
+      if (e.deltaY > 20) {
+        setActiveCarouselIndex(prev => prev + 1);
+        lastWheelTime.current = now;
+      } else if (e.deltaY < -20) {
+        setActiveCarouselIndex(prev => prev - 1);
+        lastWheelTime.current = now;
+      }
+    }
+  };
+
+  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   // --- THEME EDITOR STATE ---
   const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => loadThemeFromStorage());
@@ -210,6 +252,89 @@ export default function App() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleBackToSelection = () => {
+    if (isWipingRef.current) return;
+    const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
+    setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
+    setWipeDirection('backward');
+    setIsWiping(true);
+    isWipingRef.current = true;
+    setTimeout(() => {
+      setCurrentScreen('selection');
+      setSelectedLot(null);
+      setTimeout(() => {
+        setIsWiping(false);
+        isWipingRef.current = false;
+      }, 100);
+    }, 600);
+  };
+
+  // --- VIEWER GESTURE NAVIGATION ---
+  useEffect(() => {
+    if (currentScreen !== 'viewer') return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.changedTouches.length !== 1) return;
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+
+      // Edge swipe is more lenient
+      const isEdgeSwipe = touchStartX < 100;
+      
+      // Detect strong rightward swipe (scroll back gesture)
+      if (deltaX > (isEdgeSwipe ? 50 : 120) && Math.abs(deltaY) < 60) {
+        const container = document.getElementById('viewer-scroll-container');
+        if (container) {
+          if (container.scrollLeft > 50) {
+            container.scrollTo({ left: 0, behavior: 'smooth' });
+          } else if (!isWipingRef.current) {
+            handleBackToSelection();
+          }
+        }
+      }
+    };
+
+    let lastViewerWheel = 0;
+    const handleViewerWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && e.deltaX < -25) {
+        const now = Date.now();
+        if (now - lastViewerWheel < 600) return; 
+        
+        const container = document.getElementById('viewer-scroll-container');
+        if (container) {
+          if (container.scrollLeft > 50) {
+            container.scrollTo({ left: 0, behavior: 'smooth' });
+            lastViewerWheel = now;
+          } else if (container.scrollLeft === 0 && !isWipingRef.current) {
+            handleBackToSelection();
+            lastViewerWheel = now;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { capture: true, passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { capture: true, passive: true });
+    window.addEventListener('wheel', handleViewerWheel, { capture: true, passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      window.removeEventListener('touchend', handleTouchEnd, { capture: true });
+      window.removeEventListener('wheel', handleViewerWheel, { capture: true });
+    };
+  }, [currentScreen]);
+
   // Sync leads from LocalStorage on mount
   useEffect(() => {
     try {
@@ -237,6 +362,43 @@ export default function App() {
     }
   }, [selectedLot, currentScreen]);
 
+  // Animejs hook for Landing Screen staggered entrance
+  useEffect(() => {
+    if (currentScreen === 'landing') {
+      anime({
+        targets: '.landing-element',
+        opacity: [0, 1],
+        translateY: [30, 0],
+        delay: anime.stagger(150),
+        easing: 'easeOutExpo',
+        duration: 900
+      });
+    }
+  }, [currentScreen]);
+
+  // Animejs hook for Selection Screen staggered entrance
+  useEffect(() => {
+    if (currentScreen === 'selection') {
+      anime({
+        targets: '.selection-header-element',
+        opacity: [0, 1],
+        translateY: [-20, 0],
+        delay: anime.stagger(100),
+        easing: 'easeOutQuad',
+        duration: 500
+      });
+
+      anime({
+        targets: '.selection-indicator-element',
+        opacity: [0, 1],
+        translateY: [20, 0],
+        delay: 350,
+        easing: 'easeOutQuad',
+        duration: 500
+      });
+    }
+  }, [currentScreen]);
+
 
 
   // Filter lots of active selected project
@@ -246,21 +408,25 @@ export default function App() {
   }, [selectedProject]);
 
   const handleProjectSelect = (project: CommercialProject) => {
-    if (project.id === 'filinvest-city') {
-      setAlabangClicks(prev => {
-        const next = prev + 1;
-        if (next >= 5) {
-          handleAdminToggle();
-          return 0;
-        }
-        return next;
-      });
-    } else {
-      setAlabangClicks(0);
-    }
     setSelectedProject(project);
-    setSelectedLot(null);
-    setCurrentScreen('viewer');
+    // Pick a random color from the provided palette for the horizontal wipe
+    const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
+    setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
+    setWipeDirection('forward');
+    setIsWiping(true);
+    isWipingRef.current = true;
+    
+    // Halfway through the wipe (when screen is covered), change screen state
+    setTimeout(() => {
+      setSelectedLot(null);
+      setCurrentScreen('viewer');
+      
+      // Let the exit wipe animation play
+      setTimeout(() => {
+        setIsWiping(false);
+        isWipingRef.current = false;
+      }, 100); // Trigger exit slightly after the screen swap
+    }, 600); // Increased to 600ms for smoother pacing
   };
 
   const handleLotClick = (lot: CommercialLot) => {
@@ -339,6 +505,20 @@ export default function App() {
       style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)', color: 'var(--theme-text-primary, #f1f5f9)' }}
     >
 
+      {/* Global Color Wipe Overlay */}
+      <AnimatePresence>
+        {isWiping && (
+          <motion.div
+            className="fixed inset-0 z-[99999] pointer-events-none"
+            initial={{ x: wipeDirection === 'forward' ? '-100%' : '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: wipeDirection === 'forward' ? '100%' : '-100%' }}
+            transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
+            style={{ backgroundColor: wipeColor }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Universal Embedded Content Frame */}
       <div className="flex-1 overflow-hidden relative" style={{ minHeight: 0 }}>
         <AnimatePresence mode="wait">
@@ -357,9 +537,21 @@ export default function App() {
               onClick={() => setCurrentScreen('selection')}
             >
               <CursorGlow />
+              
+              {/* Immersive Atmospheric Background Image Backdrop */}
+              <div className="absolute inset-0 z-0 select-none pointer-events-none">
+                <img
+                  src="/filinvest_city.png"
+                  alt="Filinvest City backdrop"
+                  className="w-full h-full object-cover opacity-20 filter saturate-[0.8] scale-102 blur-[1px]"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#0a1220]/90 via-[#0a1220]/75 to-[#0a1220]/95" />
+              </div>
+
               <div className="absolute inset-0 bg-[radial-gradient(#ffffff02_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none z-0" />
 
-              <div className="pt-12">
+              <div className="pt-12 landing-element opacity-0 z-10">
                 <div className="text-[#D4AF37] uppercase tracking-[0.45em] text-2xl font-bold mb-3 font-sans">
                   Filinvest Townships
                 </div>
@@ -368,8 +560,7 @@ export default function App() {
                 </h2>
               </div>
 
-              <div className="space-y-6 max-w-3xl px-6 z-10">
-
+              <div className="space-y-6 max-w-3xl px-6 z-10 landing-element opacity-0">
                 <h1 className="text-4xl sm:text-7xl font-display font-medium tracking-tight text-white leading-tight mt-4">
                   Q2 Investors <span className="font-bold font-display">Night</span>
                 </h1>
@@ -379,14 +570,14 @@ export default function App() {
                 </p>
               </div>
 
-              <div className="pb-12 z-10">
-                <button className="px-10 py-4.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 border border-amber-500/20 text-white rounded-none shadow-xl font-medium tracking-widest uppercase text-xs transition-colors animate-pulse">
+              <div className="pb-12 z-10 landing-element opacity-0">
+                <button className="px-10 py-4.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 border border-amber-500/20 text-white rounded-none shadow-xl font-medium tracking-widest uppercase text-xs transition-colors animate-pulse cursor-pointer">
                   Tap Anywhere to Begin
                 </button>
               </div>
 
               {/* QR Code - Desktop only, far bottom-right */}
-              <div className="hidden md:flex flex-col items-center gap-2 pointer-events-none absolute bottom-6 right-8 z-20">
+              <div className="hidden md:flex flex-col items-center gap-2 pointer-events-none absolute bottom-6 right-8 z-20 landing-element opacity-0">
                 <div className="bg-[#111c2e] p-2.5 rounded-sm shadow-lg shadow-black/40 border border-[#D4AF37]/30">
                   <QRCodeSVG
                     value="https://filinvest-properties-explorer.vercel.app/"
@@ -409,178 +600,200 @@ export default function App() {
           {currentScreen === 'selection' && (
             <motion.div
               key="selection"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 overflow-y-auto"
               style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)', WebkitOverflowScrolling: 'touch' }}
             >
               <CursorGlow />
-              <div className="max-w-7xl mx-auto w-full space-y-6 relative z-10 p-5 sm:p-8 lg:p-12 pb-32">
-                <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                  <div>
-                    <span className="text-[#D4AF37] tracking-[0.35em] text-xs font-bold uppercase block">
-                      Filinvest Townships
-                    </span>
-                    <h1 className="text-2xl md:text-3xl font-display font-medium text-white mt-1">
-                      Explore Commercial Portfolios
-                    </h1>
+              
+              {/* Full-Screen Immersive Swipeable Carousel */}
+              <div 
+                className="absolute inset-0 overflow-hidden select-none bg-black"
+                onWheel={handleCarouselWheel}
+              >
+                {/* Header overlay */}
+                <div className="absolute top-0 left-0 w-full z-50 p-5 sm:p-8 lg:p-12 pointer-events-none">
+                  <div className="max-w-7xl mx-auto w-full flex justify-between items-start selection-header-element opacity-0">
+                    <div>
+                      <span className="text-[#D4AF37] tracking-[0.35em] text-xs font-bold uppercase block font-sans drop-shadow-md">
+                        Filinvest Townships
+                      </span>
+                      <h1 className="text-2xl md:text-3xl font-display font-medium text-white mt-1 drop-shadow-lg">
+                        Explore Commercial Portfolios
+                      </h1>
+                    </div>
+                    <button
+                      onClick={() => setCurrentScreen('landing')}
+                      className="flex items-center justify-center p-2 text-slate-200 hover:text-[#D4AF37] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/10 pointer-events-auto backdrop-blur-sm bg-black/20"
+                      aria-label="Back to landing"
+                    >
+                      <ArrowLeft size={24} />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setCurrentScreen('landing')}
-                    className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold px-3.5 py-2 text-slate-400 hover:text-white border border-white/10 rounded-none bg-white/[0.01] hover:bg-white/5 transition-all"
-                  >
-                    <ArrowLeft size={12} /> Back
-                  </button>
                 </div>
 
-                {/* Vertical flow: Horizontal Hero above, then 3 columns below */}
-                <div className="flex flex-col gap-6 w-full">
+                {/* Left & Right Chevron Overlay Buttons (Desktop Navigation helper) */}
+                <button
+                  onClick={() => setActiveCarouselIndex(prev => prev - 1)}
+                  className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 p-3.5 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-slate-950 transition-all hover:scale-105 active:scale-95 bg-black/40 backdrop-blur-md rounded-full shadow-lg cursor-pointer group animate-fade-in selection-indicator-element opacity-0"
+                  aria-label="Previous Township"
+                >
+                  <ChevronLeft size={28} className="group-hover:-translate-x-0.5 transition-transform" />
+                </button>
+                <button
+                  onClick={() => setActiveCarouselIndex(prev => prev + 1)}
+                  className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 p-3.5 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-slate-950 transition-all hover:scale-105 active:scale-95 bg-black/40 backdrop-blur-md rounded-full shadow-lg cursor-pointer group animate-fade-in selection-indicator-element opacity-0"
+                  aria-label="Next Township"
+                >
+                  <ChevronRight size={28} className="group-hover:translate-x-0.5 transition-transform" />
+                </button>
 
-                  {/* HERO DETACHED MODULE: FILINVEST CITY (Featured Block 14 Launch) - HORIZONTAL COMPACT DESIGN */}
-                  <div className="flex flex-col">
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
-                      <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#D4AF37] font-sans">
-                        Sovereign Priority Launch
-                      </span>
-                    </div>
+                {/* Full Screen Slides */}
+                {(() => {
+                  const indicesToRender = [activeCarouselIndex - 1, activeCarouselIndex, activeCarouselIndex + 1];
+                  const getProjectIndex = (index: number) => {
+                    return ((index % COMMERCIAL_PROJECTS.length) + COMMERCIAL_PROJECTS.length) % COMMERCIAL_PROJECTS.length;
+                  };
+                  return indicesToRender.map((index) => {
+                    const projectIndex = getProjectIndex(index);
+                    const project = COMMERCIAL_PROJECTS[projectIndex];
+                    const offset = index - activeCarouselIndex;
+                    const isCenter = offset === 0;
 
-                    {(() => {
-                      const project = COMMERCIAL_PROJECTS.find(p => p.id === 'filinvest-city');
-                      if (!project) return null;
-                      return (
-                        <div
-                          key={project.id}
-                          onClick={() => handleProjectSelect(project)}
-                          className="relative group bg-[#112440] border-2 border-[#D4AF37] overflow-hidden min-h-[220px] p-6 sm:p-8 flex flex-col md:flex-row justify-between cursor-pointer transition-all duration-300 shadow-[0_0_30px_rgba(212,175,55,0.08)] hover:shadow-[0_0_40px_rgba(212,175,55,0.18)]"
-                        >
-                          {/* Background Image overlay */}
-                          <div className="absolute inset-0 z-0 select-none pointer-events-none">
-                            <img
-                              src={project.bgImage}
-                              alt={project.name}
-                              className="w-full h-full object-cover opacity-25 group-hover:opacity-40 transition-all duration-700"
-                              referrerPolicy="no-referrer"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#0e1726]/95 via-[#0e1726]/80 to-transparent" />
-                          </div>
+                    return (
+                      <motion.div
+                        key={index}
+                        initial={false}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          willChange: 'transform',
+                        }}
+                        animate={{
+                          x: `calc(${offset * 100}vw)`,
+                          zIndex: isCenter ? 30 : 10,
+                        }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 300,
+                          damping: 30,
+                        }}
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.8}
+                        onDragEnd={(e, info) => {
+                          const threshold = window.innerWidth * 0.15; // 15% of screen width to swipe
+                          if (info.offset.x < -threshold) {
+                            setActiveCarouselIndex(prev => prev + 1);
+                          } else if (info.offset.x > threshold) {
+                            setActiveCarouselIndex(prev => prev - 1);
+                          }
+                        }}
+                        className={`overflow-hidden cursor-grab active:cursor-grabbing group`}
+                      >
+                        {/* Background Image */}
+                        <img
+                          src={project.bgImage}
+                          alt={project.name}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 scale-100 group-hover:scale-105"
+                          style={{ filter: isCenter ? 'brightness(0.8) contrast(1.1)' : 'brightness(0.4) blur(4px)' }}
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a1220]/95 via-[#0e1726]/40 to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
-                          {/* Left side: Info & Copy */}
-                          <div className="z-10 flex-1 flex flex-col justify-between space-y-4 md:pr-12">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                              <span className="bg-[#D4AF37] text-slate-950 text-[10px] uppercase font-bold tracking-[0.25em] px-3 py-1 rounded-none flex items-center justify-center gap-1.5 shadow-md w-fit">
-                                <Sparkles size={11} fill="currentColor" />
-                                Block 14 Featured Launch
-                              </span>
-                              <span className="bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] px-2.5 py-1 uppercase font-bold tracking-widest border border-[#D4AF37]/25 w-fit">
+                        {/* Content Overlay */}
+                        <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 pb-24 md:pb-32 flex flex-col md:flex-row items-end justify-between max-w-7xl mx-auto right-0 gap-8 pointer-events-none">
+                          
+                          <div className="flex-1 max-w-2xl space-y-4">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="bg-[#D4AF37] text-slate-950 text-[10px] uppercase font-bold tracking-[0.25em] px-3 py-1 shadow-md">
                                 {project.brand}
                               </span>
-                            </div>
-
-                            <div className="space-y-1">
-                              <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase flex items-center gap-1.5">
-                                <MapPin size={11} /> {project.location}
+                              <span className="text-xs font-bold tracking-[0.2em] text-[#D4AF37] uppercase flex items-center gap-1.5 font-sans drop-shadow-md">
+                                <MapPin size={12} className="text-[#D4AF37]" /> {project.location.split(',')[0]}
                               </span>
-                              <h2 className="text-2xl sm:text-3.5xl font-display font-medium text-white group-hover:text-amber-400 transition-colors leading-tight">
-                                {project.name}
-                              </h2>
-                              <p className="text-sm text-slate-200 leading-relaxed font-sans max-w-2xl">
-                                {project.fullDescription || project.shortDescription}
-                              </p>
+                            </div>
+                            
+                            <h2 className="text-4xl md:text-6xl font-display font-medium text-white tracking-wide leading-tight drop-shadow-xl">
+                              {project.name}
+                            </h2>
+
+                            <div className="flex gap-8 pt-4 uppercase font-sans">
+                              <div>
+                                <span className="block text-[9px] md:text-[10px] font-semibold tracking-widest text-slate-300 drop-shadow">Avg Lot Sizing</span>
+                                <span className="block text-sm md:text-base font-bold text-white mt-1 drop-shadow-md">{project.averageLotSize}</span>
+                              </div>
+                              <div>
+                                <span className="block text-[9px] md:text-[10px] font-semibold tracking-widest text-slate-300 drop-shadow">Est. Market Rates</span>
+                                <span className="block text-sm md:text-base font-bold text-[#D4AF37] mt-1 drop-shadow-md">{project.averagePriceRange.split(' ')[0]} / sqm</span>
+                              </div>
                             </div>
                           </div>
 
-                          {/* Right side: Specs block & main Button */}
-                          <div className="z-10 flex flex-col justify-between md:items-end md:text-right mt-6 md:mt-0 min-w-[220px] border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-8">
-                            <div className="space-y-3 font-sans">
-                              <div>
-                                <span className="block uppercase text-[9px] tracking-widest text-slate-300 font-semibold">Avg Portion Sizing</span>
-                                <span className="block text-white text-lg font-bold mt-0.5">{project.averageLotSize}</span>
-                              </div>
-                              <div>
-                                <span className="block uppercase text-[9px] tracking-widest text-slate-300 font-semibold">Est. Market Rates</span>
-                                <span className="block text-[#D4AF37] text-lg font-bold mt-0.5">{project.averagePriceRange}</span>
-                              </div>
-                            </div>
-
-                            <button className="mt-4 md:mt-0 px-6 py-2.5 bg-[#D4AF37] hover:bg-amber-400 text-slate-950 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs font-extrabold uppercase tracking-widest">
-                              Explore Lots
+                          <div className="shrink-0 pointer-events-auto w-full md:w-auto">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleProjectSelect(project);
+                              }}
+                              className="w-full md:w-auto px-8 py-4 text-xs uppercase font-bold tracking-[0.2em] bg-[#D4AF37] text-slate-950 hover:bg-amber-400 hover:scale-[1.02] transition-all shadow-[0_0_30px_rgba(212,175,55,0.3)] flex items-center justify-center gap-3 pointer-events-auto"
+                            >
+                              Explore Township
                             </button>
                           </div>
                         </div>
+                      </motion.div>
+                    );
+                  });
+                })()}
+
+                {/* Segmented Bottom Active Page Indicators */}
+                <div className="absolute bottom-8 left-0 w-full flex flex-col items-center gap-3 z-40 select-none pointer-events-none selection-indicator-element opacity-0">
+                  <div className="flex items-center gap-3 pointer-events-auto">
+                    {COMMERCIAL_PROJECTS.map((project, idx) => {
+                      const getProjectIndex = (index: number) => {
+                        return ((index % COMMERCIAL_PROJECTS.length) + COMMERCIAL_PROJECTS.length) % COMMERCIAL_PROJECTS.length;
+                      };
+                      const activeIdx = getProjectIndex(activeCarouselIndex);
+                      const isActive = idx === activeIdx;
+                      return (
+                        <button
+                          key={project.id}
+                          onClick={() => {
+                            const diff = idx - activeIdx;
+                            if (diff !== 0) {
+                              setActiveCarouselIndex(prev => prev + diff);
+                            }
+                          }}
+                          className={`h-1.5 transition-all duration-300 rounded-full cursor-pointer shadow-sm ${
+                            isActive ? 'w-12 bg-[#D4AF37]' : 'w-4 bg-white/40 hover:bg-white/70'
+                          }`}
+                          aria-label={`Go to slide ${idx + 1}`}
+                        />
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/70 font-sans flex items-center gap-2 drop-shadow-md">
+                    {(() => {
+                      const getProjectIndex = (index: number) => {
+                        return ((index % COMMERCIAL_PROJECTS.length) + COMMERCIAL_PROJECTS.length) % COMMERCIAL_PROJECTS.length;
+                      };
+                      return (
+                        <>
+                          <span className="text-white">Township {String(getProjectIndex(activeCarouselIndex) + 1).padStart(2, '0')}</span>
+                          <span className="text-white/40">/</span>
+                          <span>{String(COMMERCIAL_PROJECTS.length).padStart(2, '0')}</span>
+                        </>
                       );
                     })()}
                   </div>
-
-                  {/* PREMIUM TOWNSHIPS: THREE TALL CARDS BELOW FILINVEST CITY */}
-                  <div className="flex flex-col">
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-slate-400 font-sans">
-                        Premium Regional Portfolios
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {COMMERCIAL_PROJECTS.filter(p => p.id !== 'filinvest-city').map((project, idx) => {
-                        return (
-                          <div
-                            key={project.id}
-                            onClick={() => handleProjectSelect(project)}
-                            className="relative group bg-[#111c2e] border border-white/5 hover:border-white/15 overflow-hidden min-h-[350px] p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px]"
-                          >
-                            {/* Background Image overlay */}
-                            <div className="absolute inset-0 z-0 select-none pointer-events-none">
-                              <img
-                                src={project.bgImage}
-                                alt={project.name}
-                                className="w-full h-full object-cover opacity-15 group-hover:opacity-35 transition-all duration-700"
-                                referrerPolicy="no-referrer"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-[#0e1726]/95 via-[#0e1726]/75 to-transparent" />
-                            </div>
-
-                            {/* Top Tag */}
-                            <div className="z-10">
-                              <span className="bg-white/5 text-slate-300 text-[9px] uppercase tracking-widest font-semibold px-2.5 py-1 border border-white/5 inline-block font-sans">
-                                {project.brand}
-                              </span>
-                            </div>
-
-                            {/* Details & Specs */}
-                            <div className="z-10 space-y-3 pt-6">
-                              <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase flex items-center gap-1 font-sans">
-                                <MapPin size={10} className="text-[#38BDF8]" /> {project.location.split(',')[0]}
-                              </span>
-                              <h2 className="text-xl font-display font-medium text-white group-hover:text-amber-400 transition-colors leading-tight">
-                                {project.name}
-                              </h2>
-                              <p className="text-xs text-slate-200 leading-relaxed font-sans line-clamp-4">
-                                {project.shortDescription}
-                              </p>
-
-                              {/* Specs grid */}
-                              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/10 uppercase font-sans">
-                                <div>
-                                  <span className="block text-[9px] font-semibold tracking-widest text-slate-400">Avg Portion</span>
-                                  <span className="block text-sm font-bold text-white mt-0.5">{project.averageLotSize}</span>
-                                </div>
-                                <div>
-                                  <span className="block text-[9px] font-semibold tracking-widest text-slate-400">Est. Rates</span>
-                                  <span className="block text-sm font-bold text-[#D4AF37] mt-0.5">{project.averagePriceRange.split(' ')[0]} / sqm</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="mt-4 pt-3 border-t border-white/5 flex justify-end items-center text-[10px] uppercase font-bold tracking-widest z-10 font-sans">
-                              <span className="text-amber-500 font-semibold group-hover:translate-x-1.5 transition-transform duration-200">Explore &rarr;</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
                 </div>
               </div>
             </motion.div>
@@ -608,19 +821,29 @@ export default function App() {
                 <div className="flex items-center gap-3 justify-between md:justify-start">
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => {
-                        setCurrentScreen('selection');
-                        setSelectedLot(null);
-                      }}
-                      className="p-2 md:p-2.5 text-slate-400 hover:text-white border border-white/10 rounded-none bg-[#0a1220]/50 hover:bg-white/5 transition-all shrink-0"
+                      onClick={handleBackToSelection}
+                      className="flex items-center justify-center p-2 text-slate-400 hover:text-[#D4AF37] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/5 shrink-0"
+                      aria-label="Back to selection"
                     >
-                      <ArrowLeft size={18} />
+                      <ArrowLeft size={24} />
                     </button>
                     <div className="min-w-0">
                       <h2 className="text-base md:text-2xl font-display font-medium text-white flex items-center gap-2 truncate">
                         <span className="truncate">{selectedProject.name}</span>
                         {selectedProject.id === 'filinvest-city' && (
-                          <span className="text-[9px] md:text-[10px] bg-[#D4AF37]/25 text-[#D4AF37] border border-[#D4AF37]/35 px-1.5 md:px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans shrink-0">
+                          <span 
+                            onClick={() => {
+                              setAlabangClicks(prev => {
+                                const next = prev + 1;
+                                if (next >= 5) {
+                                  handleAdminToggle();
+                                  return 0;
+                                }
+                                return next;
+                              });
+                            }}
+                            className="cursor-pointer text-[9px] md:text-[10px] bg-[#D4AF37]/25 text-[#D4AF37] border border-[#D4AF37]/35 px-1.5 md:px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans shrink-0 pointer-events-auto"
+                          >
                             Featured
                           </span>
                         )}
@@ -632,21 +855,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Row 2 on mobile: Quick Switch Tabs */}
-                <div className="flex items-center bg-[#0a1220] p-1 md:p-1.5 border border-white/10 justify-self-center w-full md:w-auto overflow-x-auto scrollbar-hide">
-                  {COMMERCIAL_PROJECTS.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => handleProjectSelect(p)}
-                      className={`px-3 md:px-4 py-1.5 md:py-2 text-[10px] md:text-[11px] uppercase font-bold tracking-wider transition-all rounded-none whitespace-nowrap flex-1 md:flex-none ${selectedProject.id === p.id
-                        ? 'bg-amber-600 text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
-                        }`}
-                    >
-                      {p.id === 'filinvest-city' ? 'Alabang' : p.id === 'city-di-mare' ? 'Cebu' : p.id === 'daang-hari-lots' ? 'Cavite' : 'Laguna'}
-                    </button>
-                  ))}
-                </div>
+                {/* Quick Switch Tabs Removed */}
 
                 {/* Desktop-only admin controls row */}
                 <div className="hidden md:flex items-center justify-self-end">
@@ -711,12 +920,61 @@ export default function App() {
                 </div>
               </header>
 
-              {/* Core Interactive Screen Layout */}
-              <div className="flex-1 w-full flex flex-col md:flex-row relative overflow-hidden">
+              {/* Core Interactive Screen Layout - Horizontal Scroll Container */}
+              <div id="viewer-scroll-container" className="flex-1 w-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide relative" style={{ scrollBehavior: 'smooth' }}>
 
-                {/* Interactive Map Area (Fills Center) */}
-                <div className="flex-1 bg-slate-950/20 flex flex-col relative overflow-hidden">
-                  <div className="flex-1 h-full w-full relative">
+                {/* Panel 1: Split Screen Project Intro */}
+                <div className="w-full shrink-0 snap-center snap-always flex flex-col md:flex-row relative h-full">
+                  {/* Left Side: Township Image */}
+                  <div className="w-full md:w-1/2 h-1/2 md:h-full relative overflow-hidden bg-black">
+                    <img 
+                      src={selectedProject.bgImage} 
+                      alt={selectedProject.name} 
+                      className="w-full h-full object-cover opacity-80" 
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1220]/90 via-[#0a1220]/20 to-transparent md:bg-gradient-to-r md:from-transparent md:via-[#0a1220]/50 md:to-[#0a1220]" />
+                  </div>
+
+                  {/* Right Side: Description */}
+                  <div className="w-full md:w-1/2 h-1/2 md:h-full bg-[#0a1220] flex flex-col justify-center p-8 md:p-16 lg:p-24 overflow-y-auto" style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)' }}>
+                    <span className="text-[#D4AF37] tracking-[0.3em] text-xs font-bold uppercase block font-sans mb-4">
+                      {selectedProject.brand}
+                    </span>
+                    <h2 className="text-4xl md:text-5xl font-display font-medium text-white mb-6">
+                      {selectedProject.name}
+                    </h2>
+                    <div className="h-[1px] w-16 bg-[#D4AF37]/50 mb-8"></div>
+                    <p className="text-slate-300 font-sans font-light leading-relaxed mb-6">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                    </p>
+                    <p className="text-slate-300 font-sans font-light leading-relaxed mb-12">
+                      Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.
+                    </p>
+                    
+                    <button 
+                      onClick={(e) => {
+                        const container = e.currentTarget.closest('.snap-mandatory');
+                        if (container) {
+                          container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+                        }
+                      }}
+                      className="flex items-center gap-3 text-[#D4AF37] text-xs font-bold tracking-[0.2em] uppercase hover:text-amber-400 transition-colors w-max group"
+                    >
+                      <span className="border border-[#D4AF37]/30 p-3 rounded-full group-hover:bg-[#D4AF37]/10 transition-colors">
+                        <ArrowLeft size={16} className="rotate-180" />
+                      </span>
+                      Scroll To Map
+                    </button>
+                  </div>
+                </div>
+
+                {/* Panel 2: Interactive Map */}
+                <div className="w-full shrink-0 snap-center snap-always flex flex-col md:flex-row kiosk-portrait-container relative h-full">
+
+                  {/* Interactive Map Area (Fills Center) */}
+                  <div className="flex-1 bg-slate-950/20 flex flex-col relative overflow-hidden">
+                    <div className="flex-1 h-full w-full relative">
                     <InteractiveSDP
                       project={selectedProject}
                       lots={activeProjectLots}
@@ -730,93 +988,121 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Right Side Fixed Details Panel Layout (Screen 5 Compliance) */}
-                {selectedLot && (
-                  <div className="w-full md:w-[30rem] border-t md:border-t-0 md:border-l border-white/10 flex flex-col justify-between p-8 sm:p-10 lg:p-12 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto" style={{ backgroundColor: 'var(--theme-sidebar-bg, #0c1524)' }}>
-                    <div className="flex-1 flex flex-col justify-between min-h-0">
-                      <div className="flex items-center gap-3 border-b border-white/10 pb-6 shrink-0">
-                        <Building2 size={26} style={{ color: 'var(--theme-accent, #D4AF37)' }} />
-                        <h3 className="font-display text-3xl font-bold tracking-wide" style={{ color: 'var(--theme-text-primary, #fff)' }}>
-                          Lot Parameters
+                  {/* Right Side Fixed Details Panel Layout (Screen 5 Compliance) */}
+                  {selectedLot && (
+                    <div className="w-full md:w-[30rem] border-t md:border-t-0 md:border-l border-white/10 flex flex-col justify-between p-8 sm:p-10 lg:p-12 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto kiosk-portrait-sidebar" style={{ backgroundColor: 'var(--theme-sidebar-bg, #0c1524)' }}>
+                      <div className="flex-1 flex flex-col justify-between min-h-0">
+                      
+                      {/* Editorial Double Rule Header */}
+                      <div className="border-b-4 border-double border-white/20 pb-5 shrink-0 mb-6">
+                        <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#D4AF37] block mb-1.5 font-sans">
+                          Lot Specification
+                        </span>
+                        <h3 className="font-display text-2.5xl font-medium tracking-wide italic text-white">
+                          Lot Registry
                         </h3>
                       </div>
-                      <div className="flex-1 flex flex-col justify-around py-6 font-sans text-sm gap-6">
-                        <div className="lot-detail-item opacity-0">
-                          <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
-                            <FileText size={16} /> Lot Identifier
-                          </label>
-                          <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
-                            {selectedLot.blockNumber} • {selectedLot.lotNumber}
+
+                      {/* Content Scroll Area */}
+                      <div className="flex-1 flex flex-col justify-start py-2 font-sans text-sm gap-4">
+                        
+                        {/* CAD / Architectural Design Image Placeholder */}
+                        <div className="lot-detail-item opacity-0 pb-4 border-b border-white/5 mb-2">
+                          <div className="w-full h-48 bg-slate-950/40 border border-white/5 flex flex-col items-center justify-center relative overflow-hidden text-slate-500 hover:text-slate-400 transition-colors cursor-crosshair">
+                            <svg className="w-8 h-8 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-[9px] font-mono font-bold tracking-widest uppercase">
+                              CAD / Architectural Plan
+                            </span>
+                            <span className="text-[8px] font-sans mt-1 opacity-50 uppercase tracking-wider">
+                              (Image Placeholder)
+                            </span>
                           </div>
                         </div>
 
-                        <div className="lot-detail-item opacity-0">
-                          <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
-                            <Maximize2 size={16} /> Lot Area
-                          </label>
-                          <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
-                            {selectedLot.areaSqm.toLocaleString()} sqm
+                        {/* Architectural Ledger List */}
+                        <div className="space-y-3 font-sans">
+                          
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                              Lot Identifier
+                            </span>
+                            <span className="text-sm font-semibold text-white">
+                              Block {selectedLot.blockNumber} • Lot {selectedLot.lotNumber}
+                            </span>
                           </div>
-                        </div>
 
-                        <div className="lot-detail-item opacity-0">
-                          <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
-                            <Layers size={16} /> FAR Limit
-                          </label>
-                          <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
-                            FAR {selectedLot.far}.0
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                              Lot Area
+                            </span>
+                            <span className="text-sm font-semibold text-white">
+                              {selectedLot.areaSqm.toLocaleString()} sqm
+                            </span>
                           </div>
-                        </div>
 
-                        <div className="lot-detail-item opacity-0">
-                          <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
-                            <PhilippinePeso size={16} /> Price per SQM
-                          </label>
-                          <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
-                            ₱ {selectedLot.pricePerSqm.toLocaleString()}
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                              FAR Limit
+                            </span>
+                            <span className="text-sm font-semibold text-white">
+                              FAR {selectedLot.far}.0
+                            </span>
                           </div>
-                        </div>
 
-                        {selectedLot.structureSize !== undefined && selectedLot.structurePrice !== undefined && (
-                          <>
-                            <div className="lot-detail-item opacity-0">
-                              <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
-                                <Building2 size={16} /> Structure Size
-                              </label>
-                              <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
-                                {selectedLot.structureSize.toLocaleString()} sqm
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                              Price per SQM
+                            </span>
+                            <span className="text-sm font-semibold text-white">
+                              ₱ {selectedLot.pricePerSqm.toLocaleString()} / sqm
+                            </span>
+                          </div>
+
+                          {selectedLot.structureSize !== undefined && selectedLot.structurePrice !== undefined && (
+                            <>
+                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                                  Structure Size
+                                </span>
+                                <span className="text-sm font-semibold text-white">
+                                  {selectedLot.structureSize.toLocaleString()} sqm
+                                </span>
                               </div>
-                            </div>
-                            <div className="lot-detail-item opacity-0">
-                              <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
-                                <PhilippinePeso size={16} /> Structure Price
-                              </label>
-                              <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
-                                ₱ {selectedLot.structurePrice.toLocaleString()}
+                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-white/5">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                                  Structure Price
+                                </span>
+                                <span className="text-sm font-semibold text-white">
+                                  ₱ {selectedLot.structurePrice.toLocaleString()}
+                                </span>
                               </div>
-                            </div>
-                          </>
-                        )}
-
-                        <div className="lot-detail-item opacity-0 pt-4 border-t border-white/5">
-                          <label className="text-sm sm:text-base font-extrabold uppercase tracking-[0.22em] flex items-center gap-2" style={{ color: 'var(--theme-accent, #D4AF37)' }}>
-                            <PhilippinePeso size={16} style={{ color: 'var(--theme-accent, #D4AF37)' }} /> Total Contract Price (TCP)
-                          </label>
-                          <div className="text-3xl sm:text-4xl font-black mt-3 pl-6 ml-1" style={{ color: 'var(--theme-accent-hover, #f59e0b)', borderLeft: '2px solid var(--theme-accent, #D4AF37)' }}>
-                            ₱ {((selectedLot.areaSqm * selectedLot.pricePerSqm) + (selectedLot.structurePrice || 0)).toLocaleString()}
+                            </>
+                          )}
+                          
+                          {/* Total Contract Value Ledger Box */}
+                          <div className="lot-detail-item opacity-0 mt-6 py-4.5 px-5 bg-white/[0.02] border-y-4 border-double border-[#D4AF37]/35 flex justify-between items-center">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#D4AF37] font-sans">
+                              Contract Value (TCP)
+                            </span>
+                            <span className="text-2xl font-display font-bold text-[#D4AF37]">
+                              ₱ {((selectedLot.areaSqm * selectedLot.pricePerSqm) + (selectedLot.structurePrice || 0)).toLocaleString()}
+                            </span>
                           </div>
+
                         </div>
                       </div>
                     </div>
 
-                    <div>
+                    <div className="mt-8">
                       {inquiriesEnabled && (
                         <button
                           onClick={() => {
                             setFormSubmitted(false);
                             setShowInquiryModal(true);
                           }}
-                          className="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-all shadow"
+                          className="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-all shadow cursor-pointer"
                         >
                           Inquire For This Lot
                         </button>
@@ -824,8 +1110,8 @@ export default function App() {
                     </div>
                   </div>
                 )}
-
-              </div>
+                </div> {/* End Panel 2 */}
+              </div> {/* End Horizontal Scroll Container */}
             </motion.div>
           )}
 

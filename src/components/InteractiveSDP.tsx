@@ -774,17 +774,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
         </div>
       )}
 
-      {/* HUD Controller / Header Overlay */}
-      <div className="absolute top-3 left-3 z-[1000] pointer-events-auto">
-        <div className="bg-[#111c2e]/95 backdrop-blur-md px-3.5 py-2.5 border border-white/10 shadow-2xl flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS_COMMERCIAL[project.brand] }} />
-            <span className="text-xs font-bold tracking-[0.15em] uppercase text-slate-100 font-sans">
-              {project.name}
-            </span>
-          </div>
-        </div>
-      </div>
+      {/* HUD Controller / Header Overlay Removed */}
 
       {/* Map Toggle Controls - hidden on mobile when a lot is selected */}
       <div className={`absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[1000] pointer-events-auto ${selectedLot ? 'hidden md:block' : ''}`}>
@@ -809,7 +799,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
       </div>
 
       {/* Primary React Leaflet Component Viewport */}
-      <div className="w-full flex-1 min-h-0 relative z-0 grayscale-map">
+      <div className={`w-full flex-1 min-h-0 relative z-0 ${activeViewMode === 'actual' ? 'light-theme-map' : 'grayscale-map'}`}>
         {activeViewMode === 'concept' && isConceptMapLoading && project.conceptMapSvg && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#0a1220]/90 backdrop-blur-sm transition-opacity duration-300">
             <div className="flex flex-col items-center">
@@ -830,8 +820,8 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
           >
             {/* Custom tile coordinates */}
             <TileLayer
-              attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               maxZoom={19}
             />
 
@@ -893,9 +883,9 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                 positions={lot.coordinates}
                 pathOptions={{
                   fillColor: isAdminSelected ? '#fb7185' : themeColor, // rose-400 for admin selection
-                  fillOpacity: (isSelected || isAdminSelected) ? 0.45 : 0.25,
-                  color: (isSelected || isAdminSelected) ? '#ffffff' : themeColor,
-                  weight: (isSelected || isAdminSelected) ? 3.5 : 1.5,
+                  fillOpacity: (isSelected || isAdminSelected) ? 0.75 : 0.4,
+                  color: themeColor,
+                  weight: (isSelected || isAdminSelected) ? 4.5 : 1.5,
                   dashArray: isAdminSelected ? '5, 5' : undefined,
                   // @ts-ignore - injecting custom option
                   lotId: lot.id,
@@ -916,32 +906,25 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                   mouseover: (e) => {
                     const layer = e.target;
                     if (!isSelected && !isAdminSelected) {
-                      layer.setStyle({ fillOpacity: 0.6, weight: 2.5, color: '#ffffff' });
+                      layer.setStyle({ fillOpacity: 0.7, weight: 2.5, color: themeColor });
                     }
                   },
                   mouseout: (e) => {
                     const layer = e.target;
                     if (!isSelected && !isAdminSelected) {
-                      layer.setStyle({ fillOpacity: 0.25, weight: 1.5, color: themeColor });
+                      layer.setStyle({ fillOpacity: 0.4, weight: 1.5, color: themeColor });
                     }
                   }
                 }}
               >
-                {/* Tooltip on hover (desktop only) OR permanent when selected (both desktop and mobile) */}
-                {(isSelected || !isMobile) && (
-                  <Tooltip 
-                    key={`tooltip-${lot.id}-${isSelected ? 'perm' : 'hover'}`} 
-                    direction="top" 
-                    permanent={isSelected}
-                    className="custom-hover-tooltip"
-                  >
-                    <div className="p-1 text-slate-100 font-sans">
-                      <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
-                        <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                      </h4>
-                    </div>
-                  </Tooltip>
-                )}
+                <Tooltip 
+                  key={`tooltip-${lot.id}-perm`} 
+                  direction="center" 
+                  permanent={true}
+                  className="lot-label-tooltip"
+                >
+                  {lot.labelText || lot.lotNumber}
+                </Tooltip>
               </Polygon>
             );
           })}
@@ -1021,55 +1004,48 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
                   smoothFactor={0}
                   pathOptions={{
                     fillColor: isAdminSelected ? '#fb7185' : themeColor,
-                    fillOpacity: (isSelected || isAdminSelected) ? 0.45 : 0.25,
-                    color: (isSelected || isAdminSelected) ? '#ffffff' : themeColor,
-                    weight: (isSelected || isAdminSelected) ? 3.5 : 1.5,
-                    dashArray: isAdminSelected ? '5, 5' : undefined,
-                    // @ts-ignore
-                    lotId: lot.id,
-                    // @ts-ignore
-                    pmIgnore: false
-                  }}
-                  eventHandlers={{
-                    click: (e) => {
-                      polygonClickedRef.current = true;
-                      if (!isEditMode) {
-                        onLotSelect(lot);
-                      } else if ((e.originalEvent as MouseEvent).shiftKey) {
-                        setAdminSelectedIds(prev =>
-                          prev.includes(lot.id) ? prev.filter(id => id !== lot.id) : [...prev, lot.id]
-                        );
-                      }
-                    },
-                    mouseover: (e) => {
-                      const layer = e.target;
-                      if (!isSelected && !isAdminSelected) {
-                        layer.setStyle({ fillOpacity: 0.6, weight: 2.5, color: '#ffffff' });
-                      }
-                    },
-                    mouseout: (e) => {
-                      const layer = e.target;
-                      if (!isSelected && !isAdminSelected) {
-                        layer.setStyle({ fillOpacity: 0.25, weight: 1.5, color: themeColor });
-                      }
+                  fillOpacity: (isSelected || isAdminSelected) ? 0.75 : 0.4,
+                  color: themeColor,
+                  weight: (isSelected || isAdminSelected) ? 4.5 : 1.5,
+                  dashArray: isAdminSelected ? '5, 5' : undefined,
+                  // @ts-ignore
+                  lotId: lot.id,
+                  // @ts-ignore
+                  pmIgnore: false
+                }}
+                eventHandlers={{
+                  click: (e) => {
+                    polygonClickedRef.current = true;
+                    if (!isEditMode) {
+                      onLotSelect(lot);
+                    } else if ((e.originalEvent as MouseEvent).shiftKey) {
+                      setAdminSelectedIds(prev =>
+                        prev.includes(lot.id) ? prev.filter(id => id !== lot.id) : [...prev, lot.id]
+                      );
                     }
-                  }}
+                  },
+                  mouseover: (e) => {
+                    const layer = e.target;
+                    if (!isSelected && !isAdminSelected) {
+                      layer.setStyle({ fillOpacity: 0.7, weight: 2.5, color: themeColor });
+                    }
+                  },
+                  mouseout: (e) => {
+                    const layer = e.target;
+                    if (!isSelected && !isAdminSelected) {
+                      layer.setStyle({ fillOpacity: 0.4, weight: 1.5, color: themeColor });
+                    }
+                  }
+                }}
                 >
-                  {/* Tooltip on hover (desktop only) OR permanent when selected (both desktop and mobile) */}
-                  {(isSelected || !isMobile) && (
-                    <Tooltip 
-                      key={`tooltip-${lot.id}-${isSelected ? 'perm' : 'hover'}`} 
-                      direction="top" 
-                      permanent={isSelected}
-                      className="custom-hover-tooltip"
-                    >
-                      <div className="p-1 text-slate-100 font-sans">
-                        <h4 className="text-[11px] font-bold tracking-wider uppercase text-[#D4AF37] flex items-center justify-between m-0">
-                          <span>{lot.blockNumber} • {lot.lotNumber}</span>
-                        </h4>
-                      </div>
-                    </Tooltip>
-                  )}
+                  <Tooltip 
+                    key={`tooltip-${lot.id}-perm`} 
+                    direction="center" 
+                    permanent={true}
+                    className="lot-label-tooltip"
+                  >
+                    {lot.labelText || lot.lotNumber}
+                  </Tooltip>
                 </Polygon>
               );
             })}

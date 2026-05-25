@@ -3,7 +3,7 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", serif;
   --color-editorial-bg: #1a2b4b;
   --color-editorial-black: #f8fafc;
 }
@@ -21,6 +21,14 @@
 
 .grayscale-map .leaflet-tile {
   filter: grayscale(100%) invert(95%) sepia(5%) saturate(200%) hue-rotate(190deg) contrast(95%) brightness(95%);
+}
+
+.light-theme-map .leaflet-tile {
+  filter: grayscale(100%) contrast(108%) brightness(92%) saturate(0%);
+}
+
+.light-theme-map .leaflet-container {
+  background: #f8fafc !important;
 }
 
 .lot-label-tooltip {
@@ -147,4 +155,125 @@
     visibility: hidden !important;
     pointer-events: none !important;
   }
+}
+
+/* Kiosk Portrait Layout and Typography Accommodations (e.g., 2304x4032) */
+@media (orientation: portrait) {
+  /* Scale root font-size slightly for tablets and normal portrait displays */
+  html {
+    font-size: 18px;
+  }
+
+  /* Force layout to flow vertically ONLY on small mobile portrait screens (< 768px wide) */
+  .kiosk-portrait-container {
+    flex-direction: column !important;
+  }
+
+  .kiosk-portrait-sidebar {
+    width: 100% !important;
+    height: 48vh !important; /* Allocates 52vh for the Leaflet Map container */
+    border-left: none !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Stack regional catalog cards in one beautiful column to take advantage of high vertical screens */
+  .kiosk-portrait-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  
+  /* Increase card heights inside the portrait grid to feel extremely premium */
+  .kiosk-portrait-grid > div {
+    min-height: 500px !important;
+    padding: 2.5rem !important;
+  }
+
+  /* Spacing overrides for details items inside the bottom sidebar */
+  .kiosk-portrait-sidebar .lot-detail-item {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* Force side-by-side horizontal magazine view on large tablets and vertical kiosks (width >= 768px) */
+@media (orientation: portrait) and (min-width: 768px) {
+  .kiosk-portrait-container {
+    flex-direction: row !important; /* Double-page magazine split */
+  }
+
+  .kiosk-portrait-sidebar {
+    width: 42% !important; /* Elegant 42% details sidebar column */
+    height: 100% !important; /* Full height architectural catalog sheet */
+    border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: none !important;
+  }
+}
+
+/* Medium Kiosk / High-Res Portrait screens (e.g. 1080x1920 or larger) */
+@media (orientation: portrait) and (min-width: 1024px) {
+  html {
+    font-size: 24px;
+  }
+
+  /* Scale Lucide SVG icons dynamically with the scaled parent text */
+  svg.lucide {
+    width: 1.3em !important;
+    height: 1.3em !important;
+  }
+
+  /* Override hardcoded small arbitrary font-size utility classes for legibility */
+  .text-\[8px\] { font-size: 14px !important; }
+  .text-\[9px\] { font-size: 16px !important; }
+  .text-\[10px\] { font-size: 18px !important; }
+  .text-\[11px\] { font-size: 20px !important; }
+  .text-\[12px\] { font-size: 22px !important; }
+}
+
+/* Ultra High-Res Portrait Kiosks (specifically 2304x4032 display scale) */
+@media (orientation: portrait) and (min-width: 2000px) {
+  html {
+    font-size: 32px; /* Full 2x proportional scale */
+  }
+
+  svg.lucide {
+    width: 1.6em !important;
+    height: 1.6em !important;
+  }
+
+  .text-\[8px\] { font-size: 18px !important; }
+  .text-\[9px\] { font-size: 20px !important; }
+  .text-\[10px\] { font-size: 22px !important; }
+  .text-\[11px\] { font-size: 24px !important; }
+  .text-\[12px\] { font-size: 26px !important; }
+}
+
+/* Magazine and Newsletter Style Typography/Layout Overrides */
+.magazine-double-rules {
+  border-top: 4px double rgba(255, 255, 255, 0.15) !important;
+  border-bottom: 4px double rgba(255, 255, 255, 0.15) !important;
+}
+
+.magazine-header-rule {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.magazine-thin-rule {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.magazine-dropcap::first-letter {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 3rem;
+  font-weight: 700;
+  float: left;
+  line-height: 0.85;
+  margin-right: 0.6rem;
+  margin-top: 0.1rem;
+  color: var(--theme-accent, #D4AF37);
+  text-transform: uppercase;
+}
+
+.magazine-column-container {
+  column-count: 2;
+  column-gap: 1.5rem;
+  column-rule: 1px solid rgba(255, 255, 255, 0.08);
 }

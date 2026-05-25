@@ -87,7 +87,7 @@ const generateFCPalmsLots = (): CommercialLot[] => {
       status: 'Available',
       points: '50,120 90,120 90,170 50,170',
       labelText: '2-B-7',
-      colorOverride: '#DC2626',
+      colorOverride: '#fdb10c',
       coordinates: [
         [14.41620, 121.03340],
         [14.41620, 121.03410],
@@ -106,7 +106,7 @@ const generateFCPalmsLots = (): CommercialLot[] => {
       status: 'Available',
       points: '100,120 140,120 140,170 100,170',
       labelText: '2-B-6',
-      colorOverride: '#DC2626',
+      colorOverride: '#fdb10c',
       coordinates: [
         [14.41575, 121.03340],
         [14.41575, 121.03410],
@@ -125,7 +125,7 @@ const generateFCPalmsLots = (): CommercialLot[] => {
       status: 'Available',
       points: '150,120 190,120 190,170 150,170',
       labelText: '2-B-5',
-      colorOverride: '#DC2626',
+      colorOverride: '#fdb10c',
       coordinates: [
         [14.41525, 121.03340],
         [14.41525, 121.03415],
@@ -144,7 +144,7 @@ const generateFCPalmsLots = (): CommercialLot[] => {
       status: 'Available',
       points: '200,120 240,120 240,170 200,170',
       labelText: '2-B-4',
-      colorOverride: '#DC2626',
+      colorOverride: '#fdb10c',
       coordinates: [
         [14.41470, 121.03340],
         [14.41470, 121.03420],
@@ -163,7 +163,7 @@ const generateFCPalmsLots = (): CommercialLot[] => {
       status: 'Available',
       points: '250,120 330,120 330,170 250,170',
       labelText: '2-B-1',
-      colorOverride: '#DC2626',
+      colorOverride: '#fdb10c',
       coordinates: [
         [14.41410, 121.03310],
         [14.41410, 121.03430],
@@ -215,8 +215,8 @@ const generateFCSpectrumLots = (): CommercialLot[] => {
       status: (index === 3 || index === 11 || index === 14 ? 'Reserved' : 'Available') as 'Available' | 'Reserved',
       points: `${100 + col * 90},${220 + row * 80} ${170 + col * 90},${220 + row * 80} ${170 + col * 90},${280 + row * 80} ${100 + col * 90},${280 + row * 80}`,
       labelText: d.num.replace('Lot ', 'L').replace('Blk ', 'B'),
-      // Color tiers matching FC reference map
-      colorOverride: d.price >= 749000 ? '#1A6B8A' : d.price >= 626000 ? '#8B7A2E' : '#C4A84D',
+      // Golden Yellow for all plots
+      colorOverride: '#fdb10c',
       coordinates: [
         [startLat, startLng],
         [startLat + 0.00028, startLng],
@@ -241,7 +241,7 @@ const generateFCNorthgateLots = (): CommercialLot[] => {
       status: 'Available',
       points: '500,100 580,100 580,170 500,170',
       labelText: 'B46 L1',
-      colorOverride: '#6366F1', // Purple-blue
+      colorOverride: '#fdb10c', // Golden Yellow
       coordinates: [
         [northgateCenter[0], northgateCenter[1]],
         [northgateCenter[0] + 0.00025, northgateCenter[1]],
@@ -429,8 +429,8 @@ export const COMMERCIAL_LOTS: CommercialLot[] = [
 });
 
 export const BRAND_COLORS_COMMERCIAL = {
-  'Premier Township': '#D4AF37',    // Luxury Gold
-  'Coastal Hub': '#38BDF8',         // Sky Blue
-  'High Growth Area': '#34D399',     // Emerald Green
-  'Exurban Community': '#F87171'     // Calming Coral Rose
+  'Premier Township': '#fdb10c',    // Golden Yellow
+  'Coastal Hub': '#171796',         // Deep Blue
+  'High Growth Area': '#06b29c',     // Teal
+  'Exurban Community': '#df3703'     // Red-Orange
 };
