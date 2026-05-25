@@ -215,6 +215,8 @@ const generateFCSpectrumLots = (): CommercialLot[] => {
       status: (index === 3 || index === 11 || index === 14 ? 'Reserved' : 'Available') as 'Available' | 'Reserved',
       points: `${100 + col * 90},${220 + row * 80} ${170 + col * 90},${220 + row * 80} ${170 + col * 90},${280 + row * 80} ${100 + col * 90},${280 + row * 80}`,
       labelText: d.num.replace('Lot ', 'L').replace('Blk ', 'B'),
+      // Color tiers matching FC reference map
+      colorOverride: d.price >= 749000 ? '#1A6B8A' : d.price >= 626000 ? '#8B7A2E' : '#C4A84D',
       coordinates: [
         [startLat, startLng],
         [startLat + 0.00028, startLng],
@@ -239,7 +241,7 @@ const generateFCNorthgateLots = (): CommercialLot[] => {
       status: 'Available',
       points: '500,100 580,100 580,170 500,170',
       labelText: 'B46 L1',
-      colorOverride: '#06b6d4', // Cyan color
+      colorOverride: '#6366F1', // Purple-blue
       coordinates: [
         [northgateCenter[0], northgateCenter[1]],
         [northgateCenter[0] + 0.00025, northgateCenter[1]],
