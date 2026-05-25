@@ -716,78 +716,77 @@ export default function App() {
 
                 {/* Right Side Fixed Details Panel Layout (Screen 5 Compliance) */}
                 {selectedLot && (
-                  <div className="w-full md:w-[28rem] border-t md:border-t-0 md:border-l border-white/10 bg-[#0c1524] flex flex-col justify-between p-6 sm:p-8 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto">
+                  <div className="w-full md:w-[30rem] border-t md:border-t-0 md:border-l border-white/10 bg-[#0c1524] flex flex-col justify-between p-8 sm:p-10 lg:p-12 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto">
                     <div className="flex-1 flex flex-col justify-between min-h-0">
-                      <div className="flex items-center gap-3 border-b border-white/10 pb-5 shrink-0">
-                        <Building2 size={24} className="text-[#D4AF37]" />
-                        <h3 className="font-display text-2xl font-semibold text-white">
+                      <div className="flex items-center gap-3 border-b border-white/10 pb-6 shrink-0">
+                        <Building2 size={26} className="text-[#D4AF37]" />
+                        <h3 className="font-display text-3xl font-bold tracking-wide text-white">
                           Lot Parameters
                         </h3>
                       </div>
-                      <div className="flex-1 flex flex-col justify-around py-4 font-sans text-sm gap-4">
+                      <div className="flex-1 flex flex-col justify-around py-6 font-sans text-sm gap-6">
                         <div className="lot-detail-item opacity-0">
-                          <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
-                            <FileText size={14} /> Lot Identifier
+                          <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
+                            <FileText size={16} /> Lot Identifier
                           </label>
-                          <div className="text-lg font-semibold text-slate-200 mt-1 pl-5">
+                          <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
                             {selectedLot.blockNumber} • {selectedLot.lotNumber}
                           </div>
                         </div>
 
-                        <div className="flex flex-col gap-6">
-                          <div className="lot-detail-item opacity-0">
-                            <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
-                              <Maximize2 size={14} /> Lot Area
-                            </label>
-                            <div className="text-lg font-semibold text-slate-200 mt-1 pl-5">
-                              {selectedLot.areaSqm.toLocaleString()} sqm
-                            </div>
-                          </div>
-                          <div className="lot-detail-item opacity-0">
-                            <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
-                              <Layers size={14} /> FAR Limit
-                            </label>
-                            <div className="text-lg font-semibold text-slate-200 mt-1 pl-5">
-                              FAR {selectedLot.far}.0
-                            </div>
+                        <div className="lot-detail-item opacity-0">
+                          <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
+                            <Maximize2 size={16} /> Lot Area
+                          </label>
+                          <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
+                            {selectedLot.areaSqm.toLocaleString()} sqm
                           </div>
                         </div>
 
                         <div className="lot-detail-item opacity-0">
-                          <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
-                            <PhilippinePeso size={14} /> Price per SQM
+                          <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
+                            <Layers size={16} /> FAR Limit
                           </label>
-                          <div className="text-lg font-semibold text-slate-200 mt-1 pl-5">
+                          <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
+                            FAR {selectedLot.far}.0
+                          </div>
+                        </div>
+
+                        <div className="lot-detail-item opacity-0">
+                          <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
+                            <PhilippinePeso size={16} /> Price per SQM
+                          </label>
+                          <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
                             ₱ {selectedLot.pricePerSqm.toLocaleString()}
                           </div>
                         </div>
 
                         {selectedLot.structureSize !== undefined && selectedLot.structurePrice !== undefined && (
-                          <div className="flex flex-col gap-6 pt-4 border-t border-white/5 mt-2">
+                          <>
                             <div className="lot-detail-item opacity-0">
-                              <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
-                                <Building2 size={14} /> Structure Size
+                              <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
+                                <Building2 size={16} /> Structure Size
                               </label>
-                              <div className="text-lg font-semibold text-slate-200 mt-1 pl-5">
+                              <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
                                 {selectedLot.structureSize.toLocaleString()} sqm
                               </div>
                             </div>
                             <div className="lot-detail-item opacity-0">
-                              <label className="text-xs uppercase text-slate-400 tracking-widest font-mono flex items-center gap-1.5">
-                                <PhilippinePeso size={14} /> Structure Price
+                              <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
+                                <PhilippinePeso size={16} /> Structure Price
                               </label>
-                              <div className="text-lg font-semibold text-slate-200 mt-1 pl-5">
+                              <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
                                 ₱ {selectedLot.structurePrice.toLocaleString()}
                               </div>
                             </div>
-                          </div>
+                          </>
                         )}
 
-                        <div className="lot-detail-item opacity-0 pt-2 border-t border-white/5 mt-2">
-                          <label className="text-xs uppercase text-[#D4AF37] tracking-widest font-mono font-bold flex items-center gap-1.5">
-                            <PhilippinePeso size={14} className="text-[#D4AF37]" /> Total Contract Price (TCP)
+                        <div className="lot-detail-item opacity-0 pt-4 border-t border-white/5">
+                          <label className="text-sm sm:text-base font-extrabold uppercase text-[#D4AF37] tracking-[0.22em] flex items-center gap-2">
+                            <PhilippinePeso size={16} className="text-[#D4AF37]" /> Total Contract Price (TCP)
                           </label>
-                          <div className="text-3xl font-bold text-amber-400 mt-1.5 pl-5">
+                          <div className="text-3xl sm:text-4xl font-black text-amber-400 mt-3 pl-6 border-l-2 border-amber-500 ml-1">
                             ₱ {((selectedLot.areaSqm * selectedLot.pricePerSqm) + (selectedLot.structurePrice || 0)).toLocaleString()}
                           </div>
                         </div>
