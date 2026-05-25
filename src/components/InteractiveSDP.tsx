@@ -560,6 +560,61 @@ const ExportAdminPanel: React.FC<{
   );
 };
 
+// DlsuTouchMarker: wraps Marker with native DOM touch listeners for mobile long-press support
+const DlsuTouchMarker: React.FC<{
+  onDlsuClick?: () => void;
+  onPressStart: () => void;
+  onPressEnd: () => void;
+}> = ({ onDlsuClick, onPressStart, onPressEnd }) => {
+  const markerRef = React.useRef<L.Marker | null>(null);
+
+  useEffect(() => {
+    const marker = markerRef.current;
+    if (!marker) return;
+    const el = marker.getElement();
+    if (!el) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault(); // prevent scroll & context menu
+      onPressStart();
+    };
+    const handleTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      onPressEnd();
+    };
+    const handleContextMenu = (e: Event) => {
+      e.preventDefault(); // block native long-press menu on mobile
+    };
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd, { passive: false });
+    el.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+    el.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchend', handleTouchEnd);
+      el.removeEventListener('touchcancel', handleTouchEnd);
+      el.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [onPressStart, onPressEnd]);
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={[14.32422, 120.95754]}
+      icon={dlsuDIcon}
+      eventHandlers={{
+        click: () => {
+          if (onDlsuClick) onDlsuClick();
+        },
+        mousedown: onPressStart,
+        mouseup: onPressEnd,
+      }}
+    />
+  );
+};
+
 const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   project,
   lots,
@@ -573,29 +628,40 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   const [adminSelectedIds, setAdminSelectedIds] = React.useState<string[]>([]);
   const polygonClickedRef = React.useRef(false);
 
-  // --- La Salle Easter Egg (long-press) ---
+  // --- La Salle Easter Egg (long-press: audio at 5s, image at 10s) ---
   const [showLasalle, setShowLasalle] = React.useState(false);
-  const lasallTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lasalleAudioTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lasalleImageTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const lasalleAudioRef = React.useRef<HTMLAudioElement | null>(null);
 
   const handleDlsuPressStart = React.useCallback(() => {
-    // Clear any previous timer
-    if (lasallTimerRef.current) clearTimeout(lasallTimerRef.current);
-    lasallTimerRef.current = setTimeout(() => {
-      setShowLasalle(true);
-      // Create and play audio
+    // Clear any previous timers
+    if (lasalleAudioTimerRef.current) clearTimeout(lasalleAudioTimerRef.current);
+    if (lasalleImageTimerRef.current) clearTimeout(lasalleImageTimerRef.current);
+
+    // Stage 1: Start music at 5 seconds
+    lasalleAudioTimerRef.current = setTimeout(() => {
       const audio = new Audio('/lasalle.mp3');
       audio.loop = true;
       audio.play().catch(() => {});
       lasalleAudioRef.current = audio;
-    }, 10000); // 10 seconds
+    }, 5000);
+
+    // Stage 2: Show image at 10 seconds
+    lasalleImageTimerRef.current = setTimeout(() => {
+      setShowLasalle(true);
+    }, 10000);
   }, []);
 
   const handleDlsuPressEnd = React.useCallback(() => {
-    // Clear the timer if released early
-    if (lasallTimerRef.current) {
-      clearTimeout(lasallTimerRef.current);
-      lasallTimerRef.current = null;
+    // Clear both timers
+    if (lasalleAudioTimerRef.current) {
+      clearTimeout(lasalleAudioTimerRef.current);
+      lasalleAudioTimerRef.current = null;
+    }
+    if (lasalleImageTimerRef.current) {
+      clearTimeout(lasalleImageTimerRef.current);
+      lasalleImageTimerRef.current = null;
     }
     // Stop audio & hide overlay
     if (lasalleAudioRef.current) {
@@ -609,7 +675,8 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (lasallTimerRef.current) clearTimeout(lasallTimerRef.current);
+      if (lasalleAudioTimerRef.current) clearTimeout(lasalleAudioTimerRef.current);
+      if (lasalleImageTimerRef.current) clearTimeout(lasalleImageTimerRef.current);
       if (lasalleAudioRef.current) {
         lasalleAudioRef.current.pause();
         lasalleAudioRef.current = null;
@@ -739,21 +806,12 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             {/* Synchronized lot coordinate tracker focus */}
             <SelectedLotUpdater selectedLot={selectedLot} mapType="actual" />
 
-            {/* Easter Egg: DLSU - Dasmariñas Marker */}
+            {/* Easter Egg: DLSU - Dasmariñas Marker with native touch support */}
             {easterEggEnabled && project.id === 'daang-hari-lots' && (
-              <Marker
-                position={[14.32422, 120.95754]}
-                icon={dlsuDIcon}
-                eventHandlers={{
-                  click: () => {
-                    if (onDlsuClick) onDlsuClick();
-                  },
-                  mousedown: handleDlsuPressStart,
-                  mouseup: handleDlsuPressEnd,
-                  // @ts-ignore – Leaflet does fire touchstart/touchend on markers
-                  touchstart: handleDlsuPressStart,
-                  touchend: handleDlsuPressEnd,
-                }}
+              <DlsuTouchMarker
+                onDlsuClick={onDlsuClick}
+                onPressStart={handleDlsuPressStart}
+                onPressEnd={handleDlsuPressEnd}
               />
             )}
 
