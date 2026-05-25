@@ -23,6 +23,7 @@ import { COMMERCIAL_PROJECTS, COMMERCIAL_LOTS, BRAND_COLORS_COMMERCIAL } from '.
 import InteractiveSDP from './components/InteractiveSDP';
 import { Chatbot } from './components/Chatbot';
 import { QRCodeSVG } from 'qrcode.react';
+import ThemeEditor, { SiteTheme, DEFAULT_THEME, loadThemeFromStorage, applyThemeToDOM } from './components/ThemeEditor';
 
 const CursorGlow = () => {
   const trailRef = useRef<HTMLDivElement>(null);
@@ -172,6 +173,14 @@ export default function App() {
   const [chatbotEnabled, setChatbotEnabled] = useState<boolean>(false);
   const [easterEggEnabled, setEasterEggEnabled] = useState<boolean>(true);
   const [alabangClicks, setAlabangClicks] = useState<number>(0);
+
+  // --- THEME EDITOR STATE ---
+  const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => loadThemeFromStorage());
+
+  // Apply theme on mount and whenever it changes
+  useEffect(() => {
+    applyThemeToDOM(siteTheme);
+  }, [siteTheme]);
 
   // --- EASTER EGG STATES ---
   const [dlsuClicks, setDlsuClicks] = useState<number>(0);
@@ -325,7 +334,10 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-[100dvh] bg-[#0a1220] text-slate-100 font-sans select-none overflow-hidden relative flex flex-col">
+    <div
+      className="w-full h-[100dvh] text-slate-100 font-sans select-none overflow-hidden relative flex flex-col"
+      style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)', color: 'var(--theme-text-primary, #f1f5f9)' }}
+    >
 
       {/* Universal Embedded Content Frame */}
       <div className="flex-1 overflow-hidden relative" style={{ minHeight: 0 }}>
@@ -340,7 +352,8 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col items-center justify-between p-6 sm:p-12 bg-gradient-to-b from-[#111c2e] to-[#0a1220] text-center cursor-pointer overflow-hidden z-0"
+              className="absolute inset-0 flex flex-col items-center justify-between p-6 sm:p-12 text-center cursor-pointer overflow-hidden z-0"
+              style={{ background: `linear-gradient(to bottom, var(--theme-secondary-bg, #111c2e), var(--theme-primary-bg, #0a1220))` }}
               onClick={() => setCurrentScreen('selection')}
             >
               <CursorGlow />
@@ -399,8 +412,8 @@ export default function App() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 overflow-y-auto bg-[#0a1220]"
-              style={{ WebkitOverflowScrolling: 'touch' }}
+              className="absolute inset-0 overflow-y-auto"
+              style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)', WebkitOverflowScrolling: 'touch' }}
             >
               <CursorGlow />
               <div className="max-w-7xl mx-auto w-full space-y-6 relative z-10 p-5 sm:p-8 lg:p-12 pb-32">
@@ -582,13 +595,15 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col bg-[#0a1220]"
+              className="absolute inset-0 flex flex-col"
+              style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)' }}
             >
 
               {/* Top Persistent Navigation Header */}
-              <header className="border-b border-white/10 bg-[#111c2e]/95 backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
+              <header className="border-b border-white/10 backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
                 flex flex-col gap-3 py-3
-                md:grid md:grid-cols-3 md:h-24 md:py-0 md:gap-0 md:items-center">
+                md:grid md:grid-cols-3 md:h-24 md:py-0 md:gap-0 md:items-center"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--theme-header-bg, #111c2e) 95%, transparent)' }}>
                 {/* Row 1 on mobile: Back + Title + Admin */}
                 <div className="flex items-center gap-3 justify-between md:justify-start">
                   <div className="flex items-center gap-3">
@@ -664,6 +679,7 @@ export default function App() {
                         />
                         Inquiries
                       </label>
+                      <ThemeEditor theme={siteTheme} setTheme={setSiteTheme} />
                       <button
                         onClick={() => {
                           setChatbotEnabled(false);
@@ -716,11 +732,11 @@ export default function App() {
 
                 {/* Right Side Fixed Details Panel Layout (Screen 5 Compliance) */}
                 {selectedLot && (
-                  <div className="w-full md:w-[30rem] border-t md:border-t-0 md:border-l border-white/10 bg-[#0c1524] flex flex-col justify-between p-8 sm:p-10 lg:p-12 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto">
+                  <div className="w-full md:w-[30rem] border-t md:border-t-0 md:border-l border-white/10 flex flex-col justify-between p-8 sm:p-10 lg:p-12 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto" style={{ backgroundColor: 'var(--theme-sidebar-bg, #0c1524)' }}>
                     <div className="flex-1 flex flex-col justify-between min-h-0">
                       <div className="flex items-center gap-3 border-b border-white/10 pb-6 shrink-0">
-                        <Building2 size={26} className="text-[#D4AF37]" />
-                        <h3 className="font-display text-3xl font-bold tracking-wide text-white">
+                        <Building2 size={26} style={{ color: 'var(--theme-accent, #D4AF37)' }} />
+                        <h3 className="font-display text-3xl font-bold tracking-wide" style={{ color: 'var(--theme-text-primary, #fff)' }}>
                           Lot Parameters
                         </h3>
                       </div>
@@ -729,7 +745,7 @@ export default function App() {
                           <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
                             <FileText size={16} /> Lot Identifier
                           </label>
-                          <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
+                          <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
                             {selectedLot.blockNumber} • {selectedLot.lotNumber}
                           </div>
                         </div>
@@ -738,7 +754,7 @@ export default function App() {
                           <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
                             <Maximize2 size={16} /> Lot Area
                           </label>
-                          <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
+                          <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
                             {selectedLot.areaSqm.toLocaleString()} sqm
                           </div>
                         </div>
@@ -747,7 +763,7 @@ export default function App() {
                           <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
                             <Layers size={16} /> FAR Limit
                           </label>
-                          <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
+                          <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
                             FAR {selectedLot.far}.0
                           </div>
                         </div>
@@ -756,7 +772,7 @@ export default function App() {
                           <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
                             <PhilippinePeso size={16} /> Price per SQM
                           </label>
-                          <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
+                          <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
                             ₱ {selectedLot.pricePerSqm.toLocaleString()}
                           </div>
                         </div>
@@ -767,7 +783,7 @@ export default function App() {
                               <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
                                 <Building2 size={16} /> Structure Size
                               </label>
-                              <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
+                              <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
                                 {selectedLot.structureSize.toLocaleString()} sqm
                               </div>
                             </div>
@@ -775,7 +791,7 @@ export default function App() {
                               <label className="text-xs sm:text-sm font-bold uppercase text-slate-400 tracking-[0.2em] flex items-center gap-2">
                                 <PhilippinePeso size={16} /> Structure Price
                               </label>
-                              <div className="text-xl sm:text-2xl font-semibold text-slate-100 mt-2 pl-6 border-l border-[#D4AF37]/40 ml-1">
+                              <div className="text-xl sm:text-2xl font-semibold mt-2 pl-6 ml-1" style={{ color: 'var(--theme-text-primary, #f1f5f9)', borderLeft: '1px solid color-mix(in srgb, var(--theme-accent, #D4AF37) 40%, transparent)' }}>
                                 ₱ {selectedLot.structurePrice.toLocaleString()}
                               </div>
                             </div>
@@ -783,10 +799,10 @@ export default function App() {
                         )}
 
                         <div className="lot-detail-item opacity-0 pt-4 border-t border-white/5">
-                          <label className="text-sm sm:text-base font-extrabold uppercase text-[#D4AF37] tracking-[0.22em] flex items-center gap-2">
-                            <PhilippinePeso size={16} className="text-[#D4AF37]" /> Total Contract Price (TCP)
+                          <label className="text-sm sm:text-base font-extrabold uppercase tracking-[0.22em] flex items-center gap-2" style={{ color: 'var(--theme-accent, #D4AF37)' }}>
+                            <PhilippinePeso size={16} style={{ color: 'var(--theme-accent, #D4AF37)' }} /> Total Contract Price (TCP)
                           </label>
-                          <div className="text-3xl sm:text-4xl font-black text-amber-400 mt-3 pl-6 border-l-2 border-amber-500 ml-1">
+                          <div className="text-3xl sm:text-4xl font-black mt-3 pl-6 ml-1" style={{ color: 'var(--theme-accent-hover, #f59e0b)', borderLeft: '2px solid var(--theme-accent, #D4AF37)' }}>
                             ₱ {((selectedLot.areaSqm * selectedLot.pricePerSqm) + (selectedLot.structurePrice || 0)).toLocaleString()}
                           </div>
                         </div>
