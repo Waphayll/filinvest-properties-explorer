@@ -455,6 +455,25 @@ export default function App() {
     }, 600); // Increased to 600ms for smoother pacing
   };
 
+  const handleBackToSelection = () => {
+    if (isWipingRef.current) return;
+    const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
+    setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
+    setWipeDirection('backward');
+    setIsWiping(true);
+    isWipingRef.current = true;
+    
+    setTimeout(() => {
+      setSelectedLot(null);
+      setCurrentScreen('selection');
+      
+      setTimeout(() => {
+        setIsWiping(false);
+        isWipingRef.current = false;
+      }, 100);
+    }, 600);
+  };
+
   const handleLotClick = (lot: CommercialLot) => {
     setSelectedLot(prev => prev?.id === lot.id ? null : lot);
   };
@@ -901,10 +920,7 @@ export default function App() {
                     <div className="flex items-center gap-3 justify-between md:justify-start">
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => {
-                            setCurrentScreen('selection');
-                            setSelectedLot(null);
-                          }}
+                          onClick={handleBackToSelection}
                           className="flex items-center justify-center p-2 text-slate-400 hover:text-[#D4AF37] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/5 shrink-0"
                           aria-label="Back to selection"
                         >
