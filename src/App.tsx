@@ -597,20 +597,20 @@ export default function App() {
 
               <div className="pt-12 landing-element opacity-0 z-10">
                 <div className="text-[#171796] uppercase tracking-[0.45em] text-2xl font-bold mb-3 font-sans">
-                  Filinvest Townships
+                  Lorem Ipsum
                 </div>
                 <h2 className="text-base tracking-[0.5em] text-slate-500 uppercase font-bold">
-                  Commercial Portfolio
+                  Consectetur Adipiscing
                 </h2>
               </div>
 
               <div className="space-y-6 max-w-3xl px-6 z-10 landing-element opacity-0">
                 <h1 className="text-4xl sm:text-7xl font-display font-medium tracking-tight text-[#171796] leading-tight mt-4">
-                  Q2 Investors <span className="font-bold font-display">Night</span>
+                  Lorem Ipsum <span className="font-bold font-display">Dolor</span>
                 </h1>
                 <div className="h-[1px] w-24 bg-[#171796]/30 mx-auto my-6"></div>
                 <p className="text-base sm:text-lg text-slate-600 font-sans font-light max-w-2xl mx-auto leading-relaxed px-4">
-                  Step into the future of urban development with Filinvest Townships. Navigate through our interactive digital blueprints and select a project to explore premium commercial spaces available for development.
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud.
                 </p>
               </div>
 
