@@ -864,9 +864,9 @@ export default function App() {
               <div id="viewer-scroll-container" className="flex-1 w-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide relative" style={{ scrollBehavior: 'smooth' }}>
 
                 {/* Panel 1: Split Screen Project Intro */}
-                <div className="w-full shrink-0 snap-center snap-always flex flex-col md:flex-row relative h-full">
+                <div className="w-full shrink-0 snap-center snap-always flex flex-col md:flex-row relative h-full overflow-y-auto md:overflow-y-hidden bg-white">
                   {/* Left Side: Township Image */}
-                  <div className="w-full md:w-1/2 h-1/2 md:h-full relative overflow-hidden bg-black">
+                  <div className="w-full md:w-1/2 h-[35vh] md:h-full shrink-0 relative overflow-hidden bg-black">
                     <img 
                       src={selectedProject.bgImage} 
                       alt={selectedProject.name} 
@@ -877,7 +877,7 @@ export default function App() {
                   </div>
 
                   {/* Right Side: Description */}
-                  <div className="w-full md:w-1/2 h-1/2 md:h-full bg-white flex flex-col justify-center p-8 md:p-16 lg:p-24 overflow-y-auto">
+                  <div className="w-full md:w-1/2 bg-white flex flex-col justify-start md:justify-center p-6 sm:p-10 md:p-16 lg:p-24 shrink-0">
                     <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase block font-sans mb-4">
                       {selectedProject.brand}
                     </span>
