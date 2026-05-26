@@ -537,8 +537,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col items-center justify-between p-6 sm:p-12 text-center cursor-pointer overflow-hidden z-0"
-              style={{ background: `linear-gradient(to bottom, var(--theme-secondary-bg, #111c2e), var(--theme-primary-bg, #0a1220))` }}
+              className="absolute inset-0 flex flex-col items-center justify-between p-6 sm:p-12 text-center cursor-pointer overflow-hidden z-0 bg-white"
               onClick={() => setCurrentScreen('selection')}
             >
               <CursorGlow />
@@ -548,51 +547,51 @@ export default function App() {
                 <img
                   src="/filinvest_city.png"
                   alt="Filinvest City backdrop"
-                  className="w-full h-full object-cover opacity-20 filter saturate-[0.8] scale-102 blur-[1px]"
+                  className="w-full h-full object-cover opacity-20 filter grayscale saturate-0 scale-102 blur-[1px]"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0a1220]/90 via-[#0a1220]/75 to-[#0a1220]/95" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/80 to-white/95" />
               </div>
 
-              <div className="absolute inset-0 bg-[radial-gradient(#ffffff02_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none z-0" />
+              <div className="absolute inset-0 bg-[radial-gradient(#17179615_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none z-0" />
 
               <div className="pt-12 landing-element opacity-0 z-10">
-                <div className="text-[#D4AF37] uppercase tracking-[0.45em] text-2xl font-bold mb-3 font-sans">
+                <div className="text-[#171796] uppercase tracking-[0.45em] text-2xl font-bold mb-3 font-sans">
                   Filinvest Townships
                 </div>
-                <h2 className="text-base tracking-[0.5em] text-slate-400 uppercase font-bold">
+                <h2 className="text-base tracking-[0.5em] text-slate-500 uppercase font-bold">
                   Commercial Portfolio
                 </h2>
               </div>
 
               <div className="space-y-6 max-w-3xl px-6 z-10 landing-element opacity-0">
-                <h1 className="text-4xl sm:text-7xl font-display font-medium tracking-tight text-white leading-tight mt-4">
+                <h1 className="text-4xl sm:text-7xl font-display font-medium tracking-tight text-[#171796] leading-tight mt-4">
                   Q2 Investors <span className="font-bold font-display">Night</span>
                 </h1>
-                <div className="h-[1px] w-24 bg-[#D4AF37]/40 mx-auto my-6"></div>
-                <p className="text-base sm:text-lg text-slate-300 font-sans font-light max-w-2xl mx-auto leading-relaxed px-4">
+                <div className="h-[1px] w-24 bg-[#171796]/30 mx-auto my-6"></div>
+                <p className="text-base sm:text-lg text-slate-600 font-sans font-light max-w-2xl mx-auto leading-relaxed px-4">
                   Step into the future of urban development with Filinvest Townships. Navigate through our interactive digital blueprints and select a project to explore premium commercial spaces available for development.
                 </p>
               </div>
 
               <div className="pb-12 z-10 landing-element opacity-0">
-                <button className="px-10 py-4.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 border border-amber-500/20 text-white rounded-none shadow-xl font-medium tracking-widest uppercase text-xs transition-colors animate-pulse cursor-pointer">
+                <button className="px-10 py-4.5 bg-[#171796] hover:bg-blue-800 shadow-lg shadow-[#171796]/20 border-none text-white rounded-none font-medium tracking-widest uppercase text-xs transition-colors animate-pulse cursor-pointer">
                   Tap Anywhere to Begin
                 </button>
               </div>
 
               {/* QR Code - Desktop only, far bottom-right */}
               <div className="hidden md:flex flex-col items-center gap-2 pointer-events-none absolute bottom-6 right-8 z-20 landing-element opacity-0">
-                <div className="bg-[#111c2e] p-2.5 rounded-sm shadow-lg shadow-black/40 border border-[#D4AF37]/30">
+                <div className="bg-white p-2.5 rounded-sm shadow-lg shadow-black/10 border border-[#171796]/10">
                   <QRCodeSVG
                     value="https://filinvest-properties-explorer.vercel.app/"
                     size={80}
-                    bgColor="#111c2e"
-                    fgColor="#D4AF37"
+                    bgColor="#ffffff"
+                    fgColor="#171796"
                     level="M"
                   />
                 </div>
-                <span className="text-[8px] text-[#D4AF37]/60 uppercase tracking-[0.2em] font-bold font-sans">
+                <span className="text-[8px] text-[#171796]/60 uppercase tracking-[0.2em] font-bold font-sans">
                   Scan to open on mobile
                 </span>
               </div>
@@ -678,15 +677,19 @@ export default function App() {
                           width: '100%',
                           height: '100%',
                           willChange: 'transform',
+                          WebkitFontSmoothing: 'antialiased',
+                          backfaceVisibility: 'hidden',
+                          WebkitBackfaceVisibility: 'hidden',
+                          transform: 'translateZ(0)',
                         }}
                         animate={{
                           x: `calc(${offset * 100}vw)`,
                           zIndex: isCenter ? 30 : 10,
                         }}
                         transition={{
-                          type: 'spring',
-                          stiffness: 300,
-                          damping: 30,
+                          type: 'tween',
+                          ease: [0.25, 1, 0.5, 1],
+                          duration: 0.8,
                         }}
                         drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
