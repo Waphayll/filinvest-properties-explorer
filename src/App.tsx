@@ -258,14 +258,83 @@ export default function App() {
 
     let touchStartX = 0;
     let touchStartY = 0;
+    let twoFingerStartX = 0;
+    let twoFingerStartY = 0;
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+    let isTwoFingerSwipe = false;
+    let startDistance = 0;
+    let maxDistanceDiff = 0;
+
+    const triggerBackNavigation = () => {
+      const container = document.getElementById('viewer-scroll-container');
+      if (container) {
+        if (container.scrollLeft > 50) {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else if (!isWipingRef.current) {
+          const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
+          setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
+          setWipeDirection('backward');
+          setIsWiping(true);
+          isWipingRef.current = true;
+          setTimeout(() => {
+            setCurrentScreen('selection');
+            setTimeout(() => {
+              setIsWiping(false);
+              isWipingRef.current = false;
+            }, 100);
+          }, 600);
+        }
+      }
+    };
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        isTwoFingerSwipe = false;
+      } else if (e.touches.length === 2) {
+        twoFingerStartX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        twoFingerStartY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        lastTouchX = twoFingerStartX;
+        lastTouchY = twoFingerStartY;
+        
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        startDistance = Math.sqrt(dx * dx + dy * dy);
+        maxDistanceDiff = 0;
+        isTwoFingerSwipe = true;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && isTwoFingerSwipe) {
+        lastTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        lastTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const currentDistance = Math.sqrt(dx * dx + dy * dy);
+        const distDiff = Math.abs(currentDistance - startDistance);
+        if (distDiff > maxDistanceDiff) {
+          maxDistanceDiff = distDiff;
+        }
+      }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      if (isTwoFingerSwipe) {
+        const deltaX = lastTouchX - twoFingerStartX;
+        const deltaY = lastTouchY - twoFingerStartY;
+        
+        // Detect horizontal two-finger swipe right. Must not be a zoom/pinch gesture (distance diff < 40px)
+        if (deltaX > 80 && Math.abs(deltaY) < 100 && maxDistanceDiff < 40) {
+          triggerBackNavigation();
+        }
+        isTwoFingerSwipe = false;
+        return;
+      }
+
       if (e.changedTouches.length !== 1) return;
       const touchEndX = e.changedTouches[0].clientX;
       const touchEndY = e.changedTouches[0].clientY;
@@ -277,64 +346,30 @@ export default function App() {
       
       // Detect strong rightward swipe (scroll back gesture)
       if (deltaX > (isEdgeSwipe ? 50 : 120) && Math.abs(deltaY) < 60) {
-        const container = document.getElementById('viewer-scroll-container');
-        if (container) {
-          if (container.scrollLeft > 50) {
-            container.scrollTo({ left: 0, behavior: 'smooth' });
-          } else if (!isWipingRef.current) {
-            const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
-            setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
-            setWipeDirection('backward');
-            setIsWiping(true);
-            isWipingRef.current = true;
-            setTimeout(() => {
-              setCurrentScreen('selection');
-              setTimeout(() => {
-                setIsWiping(false);
-                isWipingRef.current = false;
-              }, 100);
-            }, 600);
-          }
-        }
+        triggerBackNavigation();
       }
     };
 
     let lastViewerWheel = 0;
     const handleViewerWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && e.deltaX < -25) {
+      // Touchpad scrolling (two-finger scroll) generates horizontal wheel events (negative deltaX is swipe right)
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && e.deltaX < -15) {
         const now = Date.now();
         if (now - lastViewerWheel < 600) return; 
         
-        const container = document.getElementById('viewer-scroll-container');
-        if (container) {
-          if (container.scrollLeft > 50) {
-            container.scrollTo({ left: 0, behavior: 'smooth' });
-            lastViewerWheel = now;
-          } else if (container.scrollLeft === 0 && !isWipingRef.current) {
-            const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
-            setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
-            setWipeDirection('backward');
-            setIsWiping(true);
-            isWipingRef.current = true;
-            setTimeout(() => {
-              setCurrentScreen('selection');
-              setTimeout(() => {
-                setIsWiping(false);
-                isWipingRef.current = false;
-              }, 100);
-            }, 600);
-            lastViewerWheel = now;
-          }
-        }
+        triggerBackNavigation();
+        lastViewerWheel = now;
       }
     };
 
     window.addEventListener('touchstart', handleTouchStart, { capture: true, passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { capture: true, passive: true });
     window.addEventListener('touchend', handleTouchEnd, { capture: true, passive: true });
     window.addEventListener('wheel', handleViewerWheel, { capture: true, passive: true });
 
     return () => {
       window.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      window.removeEventListener('touchmove', handleTouchMove, { capture: true });
       window.removeEventListener('touchend', handleTouchEnd, { capture: true });
       window.removeEventListener('wheel', handleViewerWheel, { capture: true });
     };
@@ -819,115 +854,6 @@ export default function App() {
               className="absolute inset-0 flex flex-col bg-white"
             >
 
-              {/* Top Persistent Navigation Header */}
-              <header className="border-b border-[#171796]/10 backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
-                flex flex-col gap-3 py-3
-                md:grid md:grid-cols-3 md:h-24 md:py-0 md:gap-0 md:items-center bg-white/95 text-[#171796]">
-                {/* Row 1 on mobile: Back + Title + Admin */}
-                <div className="flex items-center gap-3 justify-between md:justify-start">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => {
-                        setCurrentScreen('selection');
-                        setSelectedLot(null);
-                      }}
-                      className="flex items-center justify-center p-2 text-slate-400 hover:text-[#D4AF37] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/5 shrink-0"
-                      aria-label="Back to selection"
-                    >
-                      <ArrowLeft size={24} />
-                    </button>
-                    <div className="min-w-0">
-                      <h2 className="text-base md:text-2xl font-display font-medium text-[#171796] flex items-center gap-2 truncate">
-                        <span className="truncate">{selectedProject.name}</span>
-                        {selectedProject.id === 'filinvest-city' && (
-                          <span 
-                            onClick={() => {
-                              setAlabangClicks(prev => {
-                                const next = prev + 1;
-                                if (next >= 5) {
-                                  handleAdminToggle();
-                                  return 0;
-                                }
-                                return next;
-                              });
-                            }}
-                            className="cursor-pointer text-[9px] md:text-[10px] bg-[#171796]/10 text-[#171796] border border-[#171796]/20 px-1.5 md:px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans shrink-0 pointer-events-auto"
-                          >
-                            Featured
-                          </span>
-                        )}
-                      </h2>
-                      <p className="text-xs text-slate-500 uppercase tracking-widest truncate max-w-sm hidden md:block mt-0.5">
-                        {selectedProject.location} • {selectedProject.brand}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Switch Tabs Removed */}
-
-                {/* Desktop-only admin controls row */}
-                <div className="hidden md:flex items-center justify-self-end">
-                  {isEditMode && (
-                    <>
-                      <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={chatbotEnabled}
-                          onChange={(e) => setChatbotEnabled(e.target.checked)}
-                          className="accent-amber-500 w-3.5 h-3.5"
-                        />
-                        Chatbot
-                      </label>
-                      <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={easterEggEnabled}
-                          onChange={(e) => setEasterEggEnabled(e.target.checked)}
-                          className="accent-amber-500 w-3.5 h-3.5"
-                        />
-                        Easter Egg
-                      </label>
-                      <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={inquiriesEnabled}
-                          onChange={(e) => setInquiriesEnabled(e.target.checked)}
-                          className="accent-indigo-500 w-3.5 h-3.5"
-                        />
-                        Inquiries
-                      </label>
-                      <ThemeEditor theme={siteTheme} setTheme={setSiteTheme} />
-                      <button
-                        onClick={() => {
-                          setChatbotEnabled(false);
-                          setEasterEggEnabled(false);
-                        }}
-                        className="mr-3 px-3 py-2 text-[9px] uppercase font-bold tracking-widest transition-all rounded-none border bg-rose-600 text-white border-rose-500 shadow-[0_0_10px_rgba(225,29,72,0.5)] hover:bg-rose-500"
-                      >
-                        Showcase Mode
-                      </button>
-                      <button
-                        onClick={handleAdminToggle}
-                        className="mr-4 px-3 py-2 text-[9px] uppercase font-bold tracking-widest transition-all rounded-none border bg-indigo-600 text-white border-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.5)] hover:bg-indigo-500"
-                      >
-                        Exit Edit Mode
-                      </button>
-                    </>
-                  )}
-                  {inquiriesEnabled && (
-                    <button
-                      onClick={() => {
-                        setFormSubmitted(false);
-                        setShowInquiryModal(true);
-                      }}
-                      className="px-6 py-2.5 bg-slate-100 hover:bg-white text-slate-950 text-xs uppercase font-bold tracking-widest transition-all rounded-none shadow"
-                    >
-                      Inquire Now
-                    </button>
-                  )}
-                </div>
-              </header>
 
               {/* Core Interactive Screen Layout - Horizontal Scroll Container */}
               <div id="viewer-scroll-container" className="flex-1 w-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide relative" style={{ scrollBehavior: 'smooth' }}>
@@ -979,10 +905,122 @@ export default function App() {
                 </div>
 
                 {/* Panel 2: Interactive Map */}
-                <div className="w-full shrink-0 snap-center snap-always flex flex-col md:flex-row kiosk-portrait-container relative h-full">
+                <div className="w-full shrink-0 snap-center snap-always flex flex-col relative h-full bg-white">
 
-                  {/* Interactive Map Area (Fills Center) */}
-                  <div className="flex-1 bg-slate-950/20 flex flex-col relative overflow-hidden">
+                  {/* Top Persistent Navigation Header */}
+                  <header className="border-b border-[#171796]/10 backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
+                    flex flex-col gap-3 py-3
+                    md:grid md:grid-cols-3 md:h-24 md:py-0 md:gap-0 md:items-center bg-white/95 text-[#171796]">
+                    {/* Row 1 on mobile: Back + Title + Admin */}
+                    <div className="flex items-center gap-3 justify-between md:justify-start">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            setCurrentScreen('selection');
+                            setSelectedLot(null);
+                          }}
+                          className="flex items-center justify-center p-2 text-slate-400 hover:text-[#D4AF37] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/5 shrink-0"
+                          aria-label="Back to selection"
+                        >
+                          <ArrowLeft size={24} />
+                        </button>
+                        <div className="min-w-0">
+                          <h2 className="text-base md:text-2xl font-display font-medium text-[#171796] flex items-center gap-2 truncate">
+                            <span className="truncate">{selectedProject.name}</span>
+                            {selectedProject.id === 'filinvest-city' && (
+                              <span 
+                                onClick={() => {
+                                  setAlabangClicks(prev => {
+                                    const next = prev + 1;
+                                    if (next >= 5) {
+                                      handleAdminToggle();
+                                      return 0;
+                                    }
+                                    return next;
+                                  });
+                                }}
+                                className="cursor-pointer text-[9px] md:text-[10px] bg-[#171796]/10 text-[#171796] border border-[#171796]/20 px-1.5 md:px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans shrink-0 pointer-events-auto"
+                              >
+                                Featured
+                              </span>
+                            )}
+                          </h2>
+                          <p className="text-xs text-slate-500 uppercase tracking-widest truncate max-w-sm hidden md:block mt-0.5">
+                            {selectedProject.location} • {selectedProject.brand}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Switch Tabs Removed */}
+
+                    {/* Desktop-only admin controls row */}
+                    <div className="hidden md:flex items-center justify-self-end">
+                      {isEditMode && (
+                        <>
+                          <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={chatbotEnabled}
+                              onChange={(e) => setChatbotEnabled(e.target.checked)}
+                              className="accent-amber-500 w-3.5 h-3.5"
+                            />
+                            Chatbot
+                          </label>
+                          <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={easterEggEnabled}
+                              onChange={(e) => setEasterEggEnabled(e.target.checked)}
+                              className="accent-amber-500 w-3.5 h-3.5"
+                            />
+                            Easter Egg
+                          </label>
+                          <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={inquiriesEnabled}
+                              onChange={(e) => setInquiriesEnabled(e.target.checked)}
+                              className="accent-indigo-500 w-3.5 h-3.5"
+                            />
+                            Inquiries
+                          </label>
+                          <ThemeEditor theme={siteTheme} setTheme={setSiteTheme} />
+                          <button
+                            onClick={() => {
+                              setChatbotEnabled(false);
+                              setEasterEggEnabled(false);
+                            }}
+                            className="mr-3 px-3 py-2 text-[9px] uppercase font-bold tracking-widest transition-all rounded-none border bg-rose-600 text-white border-rose-500 shadow-[0_0_10px_rgba(225,29,72,0.5)] hover:bg-rose-500"
+                          >
+                            Showcase Mode
+                          </button>
+                          <button
+                            onClick={handleAdminToggle}
+                            className="mr-4 px-3 py-2 text-[9px] uppercase font-bold tracking-widest transition-all rounded-none border bg-indigo-600 text-white border-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.5)] hover:bg-indigo-500"
+                          >
+                            Exit Edit Mode
+                          </button>
+                        </>
+                      )}
+                      {inquiriesEnabled && (
+                        <button
+                          onClick={() => {
+                            setFormSubmitted(false);
+                            setShowInquiryModal(true);
+                          }}
+                          className="px-6 py-2.5 bg-slate-100 hover:bg-white text-slate-950 text-xs uppercase font-bold tracking-widest transition-all rounded-none shadow"
+                        >
+                          Inquire Now
+                        </button>
+                      )}
+                    </div>
+                  </header>
+
+                  <div className="flex-1 flex flex-col md:flex-row kiosk-portrait-container relative min-h-0">
+
+                    {/* Interactive Map Area (Fills Center) */}
+                    <div className="flex-1 bg-slate-950/20 flex flex-col relative overflow-hidden">
                     <div className="flex-1 h-full w-full relative">
                     <InteractiveSDP
                       project={selectedProject}
@@ -1117,8 +1155,9 @@ export default function App() {
                         </button>
                       )}
                     </div>
+                    </div>
+                  )}
                   </div>
-                )}
                 </div> {/* End Panel 2 */}
               </div> {/* End Horizontal Scroll Container */}
             </motion.div>
