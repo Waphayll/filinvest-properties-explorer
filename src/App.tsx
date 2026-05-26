@@ -334,20 +334,6 @@ export default function App() {
         isTwoFingerSwipe = false;
         return;
       }
-
-      if (e.changedTouches.length !== 1) return;
-      const touchEndX = e.changedTouches[0].clientX;
-      const touchEndY = e.changedTouches[0].clientY;
-      const deltaX = touchEndX - touchStartX;
-      const deltaY = touchEndY - touchStartY;
-
-      // Edge swipe is more lenient
-      const isEdgeSwipe = touchStartX < 100;
-      
-      // Detect strong rightward swipe (scroll back gesture)
-      if (deltaX > (isEdgeSwipe ? 50 : 120) && Math.abs(deltaY) < 60) {
-        triggerBackNavigation();
-      }
     };
 
     let lastViewerWheel = 0;
