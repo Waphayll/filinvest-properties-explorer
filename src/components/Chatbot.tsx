@@ -39,7 +39,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ projects, lots, onOpenInquiry 
     'Which lots are available in Filinvest City?',
     'What is the maximum FAR limit?',
     'How do I submit a Letter of Intent?',
-    'Show me the pricing for City di Mare Cebu.',
+    'Which lots are available in Cebu?',
   ];
 
   const handleSendMessage = (text: string) => {
@@ -104,30 +104,22 @@ export const Chatbot: React.FC<ChatbotProps> = ({ projects, lots, onOpenInquiry 
 
       if (filteredLots.length === 1) {
         const lot = filteredLots[0];
-        const tcp = (lot.areaSqm * lot.pricePerSqm) + (lot.structurePrice || 0);
-        return `Here are the details for ${lot.blockNumber} ${lot.lotNumber}:\n• Status: ${lot.status}\n• Size: ${lot.areaSqm.toLocaleString()} sqm\n• Price per sqm: ₱${lot.pricePerSqm.toLocaleString()}\n• FAR Limit: ${lot.far}.0\n• Total Contract Price: ₱${tcp.toLocaleString()}`;
+        return `Here are the details for ${lot.blockNumber} ${lot.lotNumber}:\n• Status: ${lot.status}\n• Size: ${lot.areaSqm.toLocaleString()} sqm\n• FAR Limit: ${lot.far}.0`;
       } else if (filteredLots.length > 1 && filteredLots.length <= 5) {
         const names = filteredLots.map(l => `${l.blockNumber} ${l.lotNumber}`).join(', ');
         return `I found multiple lots matching your query: ${names}. Could you be more specific?`;
       }
     }
 
-    // Budget/Price Parsing
-    if (text.includes("price") || text.includes("how much") || text.includes("cost") || text.includes("budget") || text.includes("below") || text.includes("under")) {
-       const priceMatch = text.match(/(?:under|below|less than|maximum)\s*(?:of\s*)?(?:php|p|₱)?\s*([\d,]+)/i);
-       if (priceMatch) {
-           const budget = parseInt(priceMatch[1].replace(/,/g, ''));
-           if (!isNaN(budget)) {
-               const affordableLots = lots.filter(l => l.pricePerSqm <= budget && l.status === 'Available');
-               return `We have ${affordableLots.length} available lots with a price per sqm under ₱${budget.toLocaleString()}. Would you like to explore them in a specific location?`;
-           }
-       }
+    // Budget/Price Parsing (Polite redirection to avoid pricing / money listings)
+    if (text.includes("price") || text.includes("how much") || text.includes("cost") || text.includes("budget") || text.includes("below") || text.includes("under") || text.includes("money") || text.includes("rate") || text.includes("pricing")) {
+      return `For current commercial pricing and tailored financial assessments, please click "Inquire Now" or submit an inquiry for your chosen lot. Our Commercial Investment Directors will provide the official pricing sheet directly.`;
     }
 
     // 1. Filinvest City / Alabang
     if (text.includes('filinvest city') || text.includes('alabang')) {
       const avail = lots.filter(l => l.projectId === 'filinvest-city' && l.status === 'Available').length;
-      return `Filinvest City in Alabang is our premier 244-hectare green-certified garden business district. We currently have ${avail} premium commercial lots available, including high-density slots in Block 13 (Palms) and Block 14 (Spectrum) with FAR limits up to 10.0. Prices range from ₱396,000 to ₱766,000 per sqm.`;
+      return `Filinvest City in Alabang is our premier 244-hectare green-certified garden business district. We currently have ${avail} premium commercial lots available, including high-density slots in Block 13 (Palms) and Block 14 (Spectrum) with FAR limits up to 10.0. Please contact our investment team or submit an inquiry to receive our exclusive inventory catalog.`;
     }
 
     // 2. City di Mare / Cebu
@@ -220,13 +212,13 @@ export const Chatbot: React.FC<ChatbotProps> = ({ projects, lots, onOpenInquiry 
             {/* Header */}
             <div className="bg-[#080d17] border-b border-white/10 px-4 py-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-[#1e2d42] border border-[#D4AF37]/30 flex items-center justify-center">
-                  <Bot size={16} className="text-[#D4AF37]" />
+                <div className="w-8 h-8 rounded-full bg-[#1e2d42] border border-blue-500/30 flex items-center justify-center">
+                  <Bot size={16} className="text-blue-400" />
                 </div>
                 <div>
                   <h3 className="font-display text-sm font-semibold text-white tracking-wider uppercase flex items-center gap-1.5">
                     Filinvest Concierge
-                    <Sparkles size={11} className="text-[#D4AF37] animate-pulse" />
+                    <Sparkles size={11} className="text-blue-400 animate-pulse" />
                   </h3>
                   <p className="text-[10px] text-emerald-400 font-medium tracking-wide flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
@@ -252,7 +244,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ projects, lots, onOpenInquiry 
                   <div
                     className={`max-w-[85%] px-3.5 py-2.5 rounded-sm text-xs leading-relaxed ${
                       msg.sender === 'user'
-                        ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-md'
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
                         : 'bg-[#152238] border border-white/5 text-slate-100'
                     }`}
                   >
@@ -267,9 +259,9 @@ export const Chatbot: React.FC<ChatbotProps> = ({ projects, lots, onOpenInquiry 
               {isTyping && (
                 <div className="flex justify-start">
                   <div className="bg-[#152238] border border-white/5 px-3.5 py-2.5 rounded-sm flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                   </div>
                 </div>
               )}
@@ -284,7 +276,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ projects, lots, onOpenInquiry 
                   onClick={() => handleSendMessage(prompt)}
                   className="px-3 py-1.5 rounded-full bg-[#18273e] hover:bg-[#203452] border border-white/5 text-slate-300 text-[10px] font-medium transition-all active:scale-95 flex items-center gap-1"
                 >
-                  <HelpCircle size={10} className="text-[#D4AF37]" />
+                  <HelpCircle size={10} className="text-blue-400" />
                   {prompt}
                 </button>
               ))}
@@ -302,7 +294,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ projects, lots, onOpenInquiry 
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask about lots, prices, FAR ratios..."
+                placeholder="Ask about lots, FAR ratios, specifications..."
                 className="flex-1 bg-[#101926] border border-white/10 rounded-sm px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50 transition-all font-sans"
               />
               <button

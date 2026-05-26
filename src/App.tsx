@@ -8,6 +8,7 @@ import {
   PhilippinePeso,
   Maximize2,
   ArrowLeft,
+  ArrowRight,
   User,
   Phone,
   Mail,
@@ -25,7 +26,7 @@ import { COMMERCIAL_PROJECTS, COMMERCIAL_LOTS, BRAND_COLORS_COMMERCIAL } from '.
 import InteractiveSDP from './components/InteractiveSDP';
 import { Chatbot } from './components/Chatbot';
 import { QRCodeSVG } from 'qrcode.react';
-import ThemeEditor, { SiteTheme, DEFAULT_THEME, loadThemeFromStorage, applyThemeToDOM } from './components/ThemeEditor';
+import { SiteTheme, DEFAULT_THEME, loadThemeFromStorage, applyThemeToDOM } from './components/ThemeEditor';
 
 const CursorGlow = () => {
   const trailRef = useRef<HTMLDivElement>(null);
@@ -180,7 +181,7 @@ export default function App() {
   // --- TRANSITION STATE ---
   const [isWiping, setIsWiping] = useState<boolean>(false);
   const isWipingRef = useRef<boolean>(false);
-  const [wipeColor, setWipeColor] = useState<string>('#D4AF37');
+  const [wipeColor, setWipeColor] = useState<string>('#171796');
   const [wipeDirection, setWipeDirection] = useState<'forward' | 'backward'>('forward');
 
   // --- CAROUSEL WHEEL SCROLL STATE ---
@@ -661,7 +662,7 @@ export default function App() {
                 <div className="absolute top-0 left-0 w-full z-50 p-5 sm:p-8 lg:p-12 pointer-events-none">
                   <div className="max-w-7xl mx-auto w-full flex justify-between items-start selection-header-element opacity-0">
                     <div>
-                      <span className="text-[#D4AF37] tracking-[0.35em] text-xs font-bold uppercase block font-sans drop-shadow-md">
+                      <span className="text-blue-300 tracking-[0.35em] text-xs font-bold uppercase block font-sans drop-shadow-md">
                         Filinvest Townships
                       </span>
                       <h1 className="text-2xl md:text-3xl font-display font-medium text-white mt-1 drop-shadow-lg">
@@ -670,7 +671,7 @@ export default function App() {
                     </div>
                     <button
                       onClick={() => setCurrentScreen('landing')}
-                      className="flex items-center justify-center p-2 text-slate-200 hover:text-[#D4AF37] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/10 pointer-events-auto backdrop-blur-sm bg-black/20"
+                      className="flex items-center justify-center p-2 text-slate-200 hover:text-blue-400 hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/10 pointer-events-auto backdrop-blur-sm bg-black/20"
                       aria-label="Back to landing"
                     >
                       <ArrowLeft size={24} />
@@ -679,20 +680,26 @@ export default function App() {
                 </div>
 
                 {/* Left & Right Chevron Overlay Buttons (Desktop Navigation helper) */}
-                <button
+                <motion.button
+                  initial={{ opacity: 0, y: '-50%', x: -15 }}
+                  animate={{ opacity: 1, y: '-50%', x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
                   onClick={() => setActiveCarouselIndex(prev => prev - 1)}
-                  className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 p-3.5 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-slate-950 transition-all hover:scale-105 active:scale-95 bg-black/40 backdrop-blur-md rounded-full shadow-lg cursor-pointer group animate-fade-in selection-indicator-element opacity-0"
+                  className="absolute left-4 md:left-8 top-1/2 z-50 p-3.5 border border-[#171796]/20 text-[#171796] bg-white/90 hover:bg-[#171796] hover:text-white hover:border-[#171796] transition-all hover:scale-105 active:scale-95 backdrop-blur-md rounded-full shadow-lg cursor-pointer group pointer-events-auto"
                   aria-label="Previous Township"
                 >
                   <ChevronLeft size={28} className="group-hover:-translate-x-0.5 transition-transform" />
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  initial={{ opacity: 0, y: '-50%', x: 15 }}
+                  animate={{ opacity: 1, y: '-50%', x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
                   onClick={() => setActiveCarouselIndex(prev => prev + 1)}
-                  className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 p-3.5 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-slate-950 transition-all hover:scale-105 active:scale-95 bg-black/40 backdrop-blur-md rounded-full shadow-lg cursor-pointer group animate-fade-in selection-indicator-element opacity-0"
+                  className="absolute right-4 md:right-8 top-1/2 z-50 p-3.5 border border-[#171796]/20 text-[#171796] bg-white/90 hover:bg-[#171796] hover:text-white hover:border-[#171796] transition-all hover:scale-105 active:scale-95 backdrop-blur-md rounded-full shadow-lg cursor-pointer group pointer-events-auto"
                   aria-label="Next Township"
                 >
                   <ChevronRight size={28} className="group-hover:translate-x-0.5 transition-transform" />
-                </button>
+                </motion.button>
 
                 {/* Full Screen Slides */}
                 {(() => {
@@ -760,10 +767,10 @@ export default function App() {
                           
                           <div className="flex-1 max-w-2xl space-y-4">
                             <div className="flex items-center gap-3 mb-2">
-                              <span className="bg-[#171796] text-white text-[10px] uppercase font-bold tracking-[0.25em] px-3 py-1 shadow-md">
+                              <span className="bg-[#171796] text-white text-[11px] uppercase font-bold tracking-[0.25em] px-3.5 py-1.5 shadow-md">
                                 {project.brand}
                               </span>
-                              <span className="text-xs font-bold tracking-[0.2em] text-[#171796] uppercase flex items-center gap-1.5 font-sans drop-shadow-sm">
+                              <span className="text-xs md:text-sm font-bold tracking-[0.2em] text-[#171796] uppercase flex items-center gap-1.5 font-sans drop-shadow-sm">
                                 <MapPin size={12} className="text-[#171796]" /> {project.location.split(',')[0]}
                               </span>
                             </div>
@@ -774,12 +781,8 @@ export default function App() {
 
                             <div className="flex gap-8 pt-4 uppercase font-sans">
                               <div>
-                                <span className="block text-[9px] md:text-[10px] font-semibold tracking-widest text-slate-500">Avg Lot Sizing</span>
-                                <span className="block text-sm md:text-base font-bold text-[#171796] mt-1">{project.averageLotSize}</span>
-                              </div>
-                              <div>
-                                <span className="block text-[9px] md:text-[10px] font-semibold tracking-widest text-slate-500">Est. Market Rates</span>
-                                <span className="block text-sm md:text-base font-bold text-[#171796] mt-1">{project.averagePriceRange.split(' ')[0]} / sqm</span>
+                                <span className="block text-[10px] md:text-[11px] font-semibold tracking-widest text-slate-500">Avg Lot Sizing</span>
+                                <span className="block text-base md:text-lg font-bold text-[#171796] mt-1">{project.averageLotSize}</span>
                               </div>
                             </div>
                           </div>
@@ -790,7 +793,7 @@ export default function App() {
                                 e.stopPropagation();
                                 handleProjectSelect(project);
                               }}
-                              className="w-full md:w-auto px-8 py-4 text-xs uppercase font-bold tracking-[0.2em] bg-[#171796] text-white hover:bg-blue-800 hover:scale-[1.02] transition-all shadow-lg flex items-center justify-center gap-3 pointer-events-auto"
+                              className="w-full md:w-auto px-10 py-5 text-sm uppercase font-extrabold tracking-[0.25em] bg-[#171796] text-white hover:bg-blue-800 hover:scale-[1.02] transition-all shadow-lg flex items-center justify-center gap-3 pointer-events-auto"
                             >
                               Explore Township
                             </button>
@@ -802,7 +805,12 @@ export default function App() {
                 })()}
 
                 {/* Segmented Bottom Active Page Indicators */}
-                <div className="absolute bottom-8 left-0 w-full flex flex-col items-center gap-3 z-40 select-none pointer-events-none selection-indicator-element opacity-0">
+                <motion.div 
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="absolute bottom-8 left-0 w-full flex flex-col items-center gap-3 z-40 select-none pointer-events-none"
+                >
                   <div className="flex items-center gap-3 pointer-events-auto">
                     {COMMERCIAL_PROJECTS.map((project, idx) => {
                       const getProjectIndex = (index: number) => {
@@ -820,7 +828,7 @@ export default function App() {
                             }
                           }}
                           className={`h-1.5 transition-all duration-300 rounded-full cursor-pointer shadow-sm ${
-                            isActive ? 'w-12 bg-[#D4AF37]' : 'w-4 bg-white/40 hover:bg-white/70'
+                            isActive ? 'w-12 bg-white' : 'w-4 bg-white/30 hover:bg-white/60'
                           }`}
                           aria-label={`Go to slide ${idx + 1}`}
                         />
@@ -842,7 +850,11 @@ export default function App() {
                       );
                     })()}
                   </div>
-                </div>
+
+                  <div className="text-[9px] uppercase tracking-[0.25em] font-medium text-white/40 font-sans flex items-center gap-2 mt-1 drop-shadow-md select-none animate-pulse">
+                    <span>← Swipe or Drag to Explore Townships →</span>
+                  </div>
+                </motion.div>
               </div>
             </motion.div>
           )}
@@ -892,28 +904,69 @@ export default function App() {
                       Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.
                     </p>
                     
-                    <button 
-                      onClick={(e) => {
-                        const container = e.currentTarget.closest('.snap-mandatory');
-                        if (container) {
-                          container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
-                        }
-                      }}
-                      className="flex items-center gap-3 text-[#171796] text-xs font-bold tracking-[0.2em] uppercase hover:text-blue-800 transition-colors w-max group pb-6 md:pb-0"
-                    >
-                      <span className="border border-[#171796]/30 p-3 rounded-full group-hover:bg-[#171796]/10 transition-colors">
-                        <ArrowLeft size={16} className="rotate-180" />
-                      </span>
-                      Scroll To Map
-                    </button>
+                  </div>
+
+                  {/* Floating Left Swipe-to-Townships Indicator Guides */}
+                  <div 
+                    onClick={handleBackToSelection}
+                    className="absolute left-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-4 py-8 px-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 shadow-lg text-white transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto group"
+                  >
+                    <span className="p-1.5 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors animate-bounce-horizontal-left">
+                      <ArrowLeft size={14} />
+                    </span>
+                    <span className="text-[9px] font-bold tracking-[0.32em] uppercase [writing-mode:vertical-lr] select-none text-white transition-colors">
+                      Swipe to Townships
+                    </span>
+                  </div>
+
+                  <div 
+                    onClick={handleBackToSelection}
+                    className="absolute left-4 bottom-4 z-40 md:hidden flex items-center gap-2.5 py-3 px-5 bg-white/90 backdrop-blur border border-[#171796]/15 shadow-md text-[#171796] transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto"
+                  >
+                    <ArrowLeft size={12} className="animate-bounce-horizontal-left" />
+                    <span className="text-[9px] font-bold tracking-[0.2em] uppercase select-none text-[#171796]/80">
+                      Townships
+                    </span>
+                  </div>
+
+                  {/* Floating Right Swipe-to-Map Indicator Guides */}
+                  <div 
+                    onClick={(e) => {
+                      const container = document.getElementById('viewer-scroll-container');
+                      if (container) {
+                        container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+                      }
+                    }}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-4 py-8 px-4 bg-[#171796]/5 hover:bg-[#171796]/15 border border-[#171796]/15 hover:border-[#171796]/30 shadow-lg text-[#171796] transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto group"
+                  >
+                    <span className="text-[9px] font-bold tracking-[0.32em] uppercase [writing-mode:vertical-lr] select-none text-[#171796] transition-colors">
+                      Swipe to Map
+                    </span>
+                    <span className="p-1.5 rounded-full bg-[#171796]/10 group-hover:bg-[#171796]/20 transition-colors animate-bounce-horizontal">
+                      <ArrowRight size={14} />
+                    </span>
+                  </div>
+
+                  <div 
+                    onClick={(e) => {
+                      const container = document.getElementById('viewer-scroll-container');
+                      if (container) {
+                        container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+                      }
+                    }}
+                    className="absolute right-4 bottom-4 z-40 md:hidden flex items-center gap-2.5 py-3 px-5 bg-white/90 backdrop-blur border border-[#171796]/15 shadow-md text-[#171796] transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto"
+                  >
+                    <span className="text-[9px] font-bold tracking-[0.2em] uppercase select-none text-[#171796]/80">
+                      Swipe to Map
+                    </span>
+                    <ArrowRight size={12} className="animate-bounce-horizontal" />
                   </div>
                 </div>
 
                 {/* Panel 2: Interactive Map */}
                 <div className="w-full shrink-0 snap-center snap-always flex flex-col relative h-full bg-white">
 
-                  {/* Top Persistent Navigation Header */}
-                  <header className="border-b border-[#171796]/10 backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
+                  <header className="border-b-2 border-[#171796] backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
                     flex flex-col gap-3 py-3
                     md:grid md:grid-cols-3 md:h-24 md:py-0 md:gap-0 md:items-center bg-white/95 text-[#171796]">
                     {/* Row 1 on mobile: Back + Title + Admin */}
@@ -921,7 +974,7 @@ export default function App() {
                       <div className="flex items-center gap-3">
                         <button
                           onClick={handleBackToSelection}
-                          className="flex items-center justify-center p-2 text-slate-400 hover:text-[#D4AF37] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/5 shrink-0"
+                          className="flex items-center justify-center p-2 text-slate-400 hover:text-[#171796] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/5 shrink-0"
                           aria-label="Back to selection"
                         >
                           <ArrowLeft size={24} />
@@ -987,7 +1040,7 @@ export default function App() {
                             />
                             Inquiries
                           </label>
-                          <ThemeEditor theme={siteTheme} setTheme={setSiteTheme} />
+
                           <button
                             onClick={() => {
                               setChatbotEnabled(false);
@@ -1044,41 +1097,32 @@ export default function App() {
                       
                       {/* Editorial Double Rule Header */}
                       <div className="border-b-4 border-double border-[#171796]/20 pb-5 shrink-0 mb-6">
-                        <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-[#171796] block mb-1.5 font-sans">
+                        <h3 className="text-lg md:text-xl font-bold uppercase tracking-[0.25em] text-[#171796] font-sans">
                           Lot Specification
-                        </span>
-                        <h3 className="font-display text-2.5xl font-medium tracking-wide italic text-[#171796]">
-                          Lot Registry
                         </h3>
                       </div>
 
                       {/* Content Scroll Area */}
                       <div className="flex-1 flex flex-col justify-start py-2 font-sans text-sm gap-4">
-                        
-                        {/* CAD / Architectural Design Image Placeholder */}
-                        <div className="lot-detail-item opacity-0 pb-4 border-b border-[#171796]/10 mb-2">
-                          <div className="w-full h-48 bg-slate-50 border border-[#171796]/10 flex flex-col items-center justify-center relative overflow-hidden text-slate-400 hover:text-slate-500 transition-colors cursor-crosshair">
-                            <svg className="w-8 h-8 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span className="text-[9px] font-mono font-bold tracking-widest uppercase">
-                              CAD / Architectural Plan
-                            </span>
-                            <span className="text-[8px] font-sans mt-1 opacity-50 uppercase tracking-wider">
-                              (Image Placeholder)
-                            </span>
-                          </div>
-                        </div>
 
                         {/* Architectural Ledger List */}
                         <div className="space-y-3 font-sans">
                           
                           <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
                             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                              {selectedProject?.id === 'filinvest-city' ? 'District' : 'Block'}
+                            </span>
+                            <span className="text-sm font-semibold text-[#171796]">
+                              {selectedLot.blockNumber}
+                            </span>
+                          </div>
+
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
                               Lot Identifier
                             </span>
                             <span className="text-sm font-semibold text-[#171796]">
-                              Block {selectedLot.blockNumber} • Lot {selectedLot.lotNumber}
+                              {selectedLot.lotNumber}
                             </span>
                           </div>
 
@@ -1100,16 +1144,7 @@ export default function App() {
                             </span>
                           </div>
 
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                              Price per SQM
-                            </span>
-                            <span className="text-sm font-semibold text-[#171796]">
-                              ₱ {selectedLot.pricePerSqm.toLocaleString()} / sqm
-                            </span>
-                          </div>
-
-                          {selectedLot.structureSize !== undefined && selectedLot.structurePrice !== undefined && (
+                          {selectedLot.structureSize !== undefined && (
                             <>
                               <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
                                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
@@ -1119,26 +1154,8 @@ export default function App() {
                                   {selectedLot.structureSize.toLocaleString()} sqm
                                 </span>
                               </div>
-                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                                  Structure Price
-                                </span>
-                                <span className="text-sm font-semibold text-[#171796]">
-                                  ₱ {selectedLot.structurePrice.toLocaleString()}
-                                </span>
-                              </div>
                             </>
                           )}
-                          
-                          {/* Total Contract Value Ledger Box */}
-                          <div className="lot-detail-item opacity-0 mt-6 py-4.5 px-5 bg-[#171796]/[0.02] border-y-4 border-double border-[#171796]/30 flex justify-between items-center">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#171796] font-sans">
-                              Contract Value (TCP)
-                            </span>
-                            <span className="text-2xl font-display font-bold text-[#171796]">
-                              ₱ {((selectedLot.areaSqm * selectedLot.pricePerSqm) + (selectedLot.structurePrice || 0)).toLocaleString()}
-                            </span>
-                          </div>
 
                         </div>
                       </div>
@@ -1188,7 +1205,7 @@ export default function App() {
 
               <div className="p-6 border-b border-white/10 flex items-center justify-between">
                 <div>
-                  <h4 className="text-[9px] font-bold tracking-[0.3em] uppercase text-[#D4AF37]">
+                  <h4 className="text-[9px] font-bold tracking-[0.3em] uppercase text-blue-400">
                     Filinvest Townships
                   </h4>
                   <h3 className="text-xl font-display font-semibold text-white mt-1">
@@ -1200,7 +1217,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => setShowInquiryModal(false)}
-                  className="p-1.5 bg-[#0a1220] border border-white/10 hover:text-[#D4AF37] transition-all text-slate-400"
+                  className="p-1.5 bg-[#0a1220] border border-white/10 hover:text-blue-400 transition-all text-slate-400"
                 >
                   <X size={15} />
                 </button>
@@ -1220,7 +1237,7 @@ export default function App() {
                   {selectedLot && (
                     <div className="bg-[#0a1220] p-3 rounded-none border border-white/5 text-[10px] uppercase font-bold tracking-widest flex justify-between items-center mb-1">
                       <span className="text-slate-400">Attached Parameter:</span>
-                      <span className="font-mono text-[#D4AF37] bg-[#D4AF37]/10 px-2.5 py-0.5 border border-[#D4AF37]/25">
+                      <span className="font-mono text-blue-400 bg-blue-500/10 px-2.5 py-0.5 border border-blue-500/25">
                         {selectedProject?.name.substring(0, 15)} - {selectedLot.lotNumber}
                       </span>
                     </div>
@@ -1235,7 +1252,7 @@ export default function App() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Attendee Name"
-                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-[#D4AF37] transition-all"
+                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all"
                     />
                     {errors.name && <p className="text-[10px] text-rose-400 font-semibold mt-0.5">{errors.name}</p>}
                   </div>
@@ -1249,7 +1266,7 @@ export default function App() {
                       value={formData.contactNumber}
                       onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
                       placeholder="+63 900 000 0000"
-                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-[#D4AF37] transition-all"
+                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all"
                     />
                     {errors.contactNumber && <p className="text-[10px] text-rose-400 font-semibold mt-0.5">{errors.contactNumber}</p>}
                   </div>
@@ -1263,7 +1280,7 @@ export default function App() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="investor@example.com"
-                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-[#D4AF37] transition-all"
+                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all"
                     />
                     {errors.email && <p className="text-[10px] text-rose-400 font-semibold mt-0.5">{errors.email}</p>}
                   </div>
@@ -1291,7 +1308,7 @@ export default function App() {
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white transition-all shadow"
+                      className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white transition-all shadow"
                     >
                       Submit Sheet
                     </button>
@@ -1317,19 +1334,19 @@ export default function App() {
       {showEasterEggLoading && (
         <div className="fixed inset-0 bg-[#0a1220] z-[9999] flex flex-col items-center justify-center text-center p-6">
           <div className="space-y-6 max-w-md">
-            <div className="text-[#D4AF37] uppercase tracking-[0.45em] text-[10px] font-bold font-sans animate-pulse">
+            <div className="text-blue-400 uppercase tracking-[0.45em] text-[10px] font-bold font-sans animate-pulse">
               Interactive Properties Explorer
             </div>
             
             <h1 className="text-3xl font-display font-medium text-white leading-tight">
-              This was made by <span className="font-bold text-[#D4AF37] block mt-1 tracking-wider">Waphayll</span>
+              This was made by <span className="font-bold text-blue-400 block mt-1 tracking-wider">Waphayll</span>
             </h1>
             
-            <div className="h-[2px] w-28 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto"></div>
+            <div className="h-[2px] w-28 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto"></div>
             
             <div className="flex flex-col items-center gap-3">
               {/* Spinner */}
-              <div className="w-8 h-8 border-2 border-[#D4AF37]/20 border-t-[#D4AF37] rounded-full animate-spin"></div>
+              <div className="w-8 h-8 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
               <p className="text-slate-400 text-[10px] tracking-widest uppercase animate-pulse">
                 Redirecting to Portfolio...
               </p>

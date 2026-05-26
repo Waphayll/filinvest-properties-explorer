@@ -289,3 +289,21 @@ img {
   pointer-events: none;
 }
 
+@keyframes bounceHorizontal {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
+}
+
+.animate-bounce-horizontal {
+  animation: bounceHorizontal 1s ease-in-out infinite;
+}
+
+@keyframes bounceHorizontalLeft {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-6px); }
+}
+
+.animate-bounce-horizontal-left {
+  animation: bounceHorizontalLeft 1s ease-in-out infinite;
+}
+
