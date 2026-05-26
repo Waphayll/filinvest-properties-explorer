@@ -713,7 +713,7 @@ export default function App() {
                         <div className="absolute inset-0 bg-black/5 pointer-events-none" />
 
                         {/* Content Overlay */}
-                        <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 pb-24 md:pb-32 flex flex-col md:flex-row items-end justify-between max-w-7xl mx-auto right-0 gap-8 pointer-events-none">
+                        <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 pb-24 md:pb-32 flex flex-col md:flex-row items-start md:items-end justify-between max-w-7xl mx-auto right-0 gap-8 pointer-events-none">
                           
                           <div className="flex-1 max-w-2xl space-y-4">
                             <div className="flex items-center gap-3 mb-2">
