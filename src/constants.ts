@@ -41,7 +41,7 @@ export const COMMERCIAL_PROJECTS: CommercialProject[] = [
     id: 'daang-hari-lots',
     name: 'Daang Hari Commercial Lots',
     brand: 'High Growth Area',
-    location: 'Las Piñas - Cavite Corridor',
+    location: 'Las Piñas',
     shortDescription: 'High-visibility highwaycommercial opportunities.',
     fullDescription: 'Daang Hari commercial strips offer maximum highway visibility along a booming transportation avenue. Ideal for high-density commercial strips, retail showrooms, regional offices, and institutional developments.',
     highlightText: 'HIGH-WAY VISIBILITY FRONTAGE',
@@ -277,7 +277,7 @@ const generateCDMLots = (): CommercialLot[] => {
     { num: 'Lot 12', size: 1808, price: 294000, far: 10 },
     { num: 'Lot 11', size: 2189, price: 345000, far: 10 }
   ];
-  
+
   const greenwayLots = greenwayData.map((d, index) => {
     const colLength = 4;
     const row = Math.floor(index / colLength);
