@@ -866,7 +866,7 @@ export default function App() {
                 {/* Panel 1: Split Screen Project Intro */}
                 <div className="w-full shrink-0 snap-center snap-always flex flex-col md:flex-row relative h-full">
                   {/* Left Side: Township Image */}
-                  <div className="w-full md:w-1/2 h-1/2 md:h-full relative overflow-hidden bg-black">
+                  <div className="w-full md:w-1/2 h-[35vh] md:h-full relative overflow-hidden bg-black">
                     <img 
                       src={selectedProject.bgImage} 
                       alt={selectedProject.name} 
@@ -877,18 +877,18 @@ export default function App() {
                   </div>
 
                   {/* Right Side: Description */}
-                  <div className="w-full md:w-1/2 h-1/2 md:h-full bg-white flex flex-col justify-center p-8 md:p-16 lg:p-24 overflow-y-auto">
-                    <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase block font-sans mb-4">
+                  <div className="w-full md:w-1/2 h-[65vh] md:h-full bg-white flex flex-col justify-start md:justify-center p-6 sm:p-10 md:p-16 lg:p-24 overflow-y-auto min-h-0">
+                    <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase block font-sans mb-2 md:mb-4">
                       {selectedProject.brand}
                     </span>
-                    <h2 className="text-4xl md:text-5xl font-display font-medium text-[#171796] mb-6">
+                    <h2 className="text-3xl md:text-5xl font-display font-medium text-[#171796] mb-4 md:mb-6">
                       {selectedProject.name}
                     </h2>
-                    <div className="h-[1px] w-16 bg-[#171796]/30 mb-8"></div>
-                    <p className="text-slate-600 font-sans font-light leading-relaxed mb-6">
+                    <div className="h-[1px] w-16 bg-[#171796]/30 mb-4 md:mb-8"></div>
+                    <p className="text-sm md:text-base text-slate-600 font-sans font-light leading-relaxed mb-4 md:mb-6">
                       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
                     </p>
-                    <p className="text-slate-600 font-sans font-light leading-relaxed mb-12">
+                    <p className="text-sm md:text-base text-slate-600 font-sans font-light leading-relaxed mb-6 md:mb-12">
                       Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.
                     </p>
                     
@@ -899,7 +899,7 @@ export default function App() {
                           container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
                         }
                       }}
-                      className="flex items-center gap-3 text-[#171796] text-xs font-bold tracking-[0.2em] uppercase hover:text-blue-800 transition-colors w-max group"
+                      className="flex items-center gap-3 text-[#171796] text-xs font-bold tracking-[0.2em] uppercase hover:text-blue-800 transition-colors w-max group pb-6 md:pb-0"
                     >
                       <span className="border border-[#171796]/30 p-3 rounded-full group-hover:bg-[#171796]/10 transition-colors">
                         <ArrowLeft size={16} className="rotate-180" />
