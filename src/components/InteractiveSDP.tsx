@@ -6,7 +6,7 @@ import '@geoman-io/leaflet-geoman-free';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import { CommercialLot, CommercialProject } from '../types';
 import { BRAND_COLORS_COMMERCIAL } from '../constants';
-import { MapPin, Layers } from 'lucide-react';
+import { MapPin, Layers, Plus, Minus, Target } from 'lucide-react';
 
 
 const CONCEPT_BOUNDS = L.latLngBounds([0, 0], [800, 1000]);
@@ -432,9 +432,7 @@ const ExportAdminPanel: React.FC<{
   svgLocked: boolean;
   setSvgLocked: React.Dispatch<React.SetStateAction<boolean>>;
   mapType?: 'actual' | 'concept';
-  watermarkEnabled: boolean;
-  setWatermarkEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ isEditMode, adminSelectedIds, setAdminSelectedIds, svgUrl, setSvgUrl, svgScale, setSvgScale, svgRotation, setSvgRotation, svgOpacity, setSvgOpacity, svgLocked, setSvgLocked, mapType = 'actual', watermarkEnabled, setWatermarkEnabled }) => {
+}> = ({ isEditMode, adminSelectedIds, setAdminSelectedIds, svgUrl, setSvgUrl, svgScale, setSvgScale, svgRotation, setSvgRotation, svgOpacity, setSvgOpacity, svgLocked, setSvgLocked, mapType = 'actual' }) => {
   const map = useMap();
   const [saveStatus, setSaveStatus] = React.useState<string | null>(null);
 
@@ -567,15 +565,7 @@ const ExportAdminPanel: React.FC<{
           )}
         </div>
 
-        <div className="mt-1 flex flex-col gap-1 border-t border-indigo-500/30 pt-2">
-          <div className="text-[10px] font-bold text-indigo-400 mb-1">Watermark Settings</div>
-          <button 
-            onClick={() => setWatermarkEnabled(!watermarkEnabled)} 
-            className={`text-[8px] px-2 py-1 rounded border shadow-sm w-full text-center transition-all ${watermarkEnabled ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 hover:bg-emerald-500/30' : 'bg-rose-500/20 border-rose-400 text-rose-300 hover:bg-rose-500/30'}`}
-          >
-            {watermarkEnabled ? '🔒 Watermark: Enabled' : '🔓 Watermark: Disabled'}
-          </button>
-        </div>
+
 
         {saveStatus && (
           <div className={`text-[9px] font-bold mt-1 ${saveStatus.includes('Error') || saveStatus.includes('Failed') ? 'text-rose-400' : 'text-emerald-400'}`}>
@@ -646,6 +636,89 @@ const DlsuTouchMarker: React.FC<{
         mouseup: onPressEnd,
       }}
     />
+  );
+ };
+
+interface MapControlsProps {
+  mapType: 'actual' | 'concept';
+  centerCoord?: [number, number];
+  defaultZoom?: number;
+  conceptBounds?: L.LatLngBounds;
+  selectedLot?: any;
+  projectLots: CommercialLot[];
+}
+
+const MapControls: React.FC<MapControlsProps> = ({
+  mapType,
+  centerCoord,
+  defaultZoom,
+  conceptBounds,
+  selectedLot,
+  projectLots,
+}) => {
+  const map = useMap();
+
+  const handleZoomIn = () => {
+    map.zoomIn();
+  };
+
+  const handleZoomOut = () => {
+    map.zoomOut();
+  };
+
+  const handleCenter = () => {
+    if (mapType === 'actual') {
+      const allCoords = projectLots.flatMap(lot => lot.coordinates || []);
+      if (allCoords.length > 0) {
+        const bounds = L.latLngBounds(allCoords);
+        map.fitBounds(bounds, { animate: true, padding: [40, 40] });
+      } else if (centerCoord && defaultZoom !== undefined) {
+        map.setView(centerCoord, defaultZoom, { animate: true });
+      }
+    } else if (mapType === 'concept') {
+      const allPoints: [number, number][] = projectLots.flatMap(lot => {
+        if (!lot.points) return [];
+        return lot.points.trim().split(/\s+/).map(p => {
+          const [x, y] = p.split(',').map(Number);
+          return [800 - y, x];
+        });
+      });
+      if (allPoints.length > 0) {
+        const bounds = L.latLngBounds(allPoints);
+        map.fitBounds(bounds, { animate: true, padding: [40, 40] });
+      } else if (conceptBounds) {
+        map.fitBounds(conceptBounds, { animate: true });
+      }
+    }
+  };
+
+  return (
+    <div className={`absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[1000] flex flex-col gap-2 pointer-events-auto ${selectedLot ? 'hidden md:flex' : 'flex'}`}>
+      {/* Zoom In */}
+      <button
+        onClick={handleZoomIn}
+        className="w-10 h-10 bg-white/95 border border-[#171796]/10 text-[#171796] hover:bg-[#171796] hover:text-white active:bg-[#171796] flex items-center justify-center shadow-lg transition-all rounded-none hover:scale-105 cursor-pointer"
+        title="Zoom In"
+      >
+        <Plus size={20} />
+      </button>
+      {/* Zoom Out */}
+      <button
+        onClick={handleZoomOut}
+        className="w-10 h-10 bg-white/95 border border-[#171796]/10 text-[#171796] hover:bg-[#171796] hover:text-white active:bg-[#171796] flex items-center justify-center shadow-lg transition-all rounded-none hover:scale-105 cursor-pointer"
+        title="Zoom Out"
+      >
+        <Minus size={20} />
+      </button>
+      {/* Center Map */}
+      <button
+        onClick={handleCenter}
+        className="w-10 h-10 bg-[#171796] hover:bg-blue-800 text-white flex items-center justify-center shadow-lg transition-all rounded-none hover:scale-105 cursor-pointer"
+        title="Center Map"
+      >
+        <Target size={20} />
+      </button>
+    </div>
   );
 };
 
@@ -718,7 +791,6 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
   const [isConceptMapLoading, setIsConceptMapLoading] = React.useState<boolean>(true);
 
   const [viewMode, setViewMode] = React.useState<'actual' | 'concept'>('actual');
-  const [watermarkEnabled, setWatermarkEnabled] = React.useState<boolean>(true);
 
   useEffect(() => {
     if (viewMode === 'concept') {
@@ -761,18 +833,7 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
         </filter>
       </svg>
 
-      {/* Repeating Diagonal Watermark */}
-      {watermarkEnabled && (
-        <div className="absolute inset-0 z-[999] pointer-events-none overflow-hidden flex flex-col justify-around select-none opacity-[0.22] rotate-[-25deg] scale-125">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex justify-around whitespace-nowrap text-white font-sans text-xl sm:text-2xl font-black uppercase tracking-[0.3em]">
-              {Array.from({ length: 4 }).map((_, j) => (
-                <span key={j}>this is a project not a video game!</span>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+
 
       {/* HUD Controller / Header Overlay Removed */}
 
@@ -855,8 +916,6 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
               svgOpacity={svgOpacity} setSvgOpacity={setSvgOpacity}
               svgLocked={svgLocked} setSvgLocked={setSvgLocked}
               mapType="actual"
-              watermarkEnabled={watermarkEnabled}
-              setWatermarkEnabled={setWatermarkEnabled}
             />
           <SVGOverlayManager
             svgUrl={svgUrl}
@@ -929,6 +988,13 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
             );
           })}
 
+          <MapControls
+            mapType="actual"
+            centerCoord={centerCoord}
+            defaultZoom={defaultZoom}
+            selectedLot={selectedLot}
+            projectLots={projectLots}
+          />
         </MapContainer>
         ) : (
           <MapContainer
@@ -976,8 +1042,6 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
               svgOpacity={svgOpacity} setSvgOpacity={setSvgOpacity}
               svgLocked={svgLocked} setSvgLocked={setSvgLocked}
               mapType="concept"
-              watermarkEnabled={watermarkEnabled}
-              setWatermarkEnabled={setWatermarkEnabled}
             />
             
             <SelectedLotUpdater selectedLot={selectedLot} mapType="concept" />
@@ -1050,6 +1114,12 @@ const InteractiveSDP: React.FC<InteractiveSDPProps> = ({
               );
             })}
 
+            <MapControls
+              mapType="concept"
+              conceptBounds={project.id === 'filinvest-city' ? CONCEPT_BOUNDS : L.latLngBounds([-200, -250], [1000, 1250])}
+              selectedLot={selectedLot}
+              projectLots={projectLots}
+            />
           </MapContainer>
         )}
       </div>

@@ -555,9 +555,9 @@ export default function App() {
         {isWiping && (
           <motion.div
             className="fixed inset-0 z-[99999] pointer-events-none"
-            initial={{ x: wipeDirection === 'forward' ? '-100%' : '100%' }}
+            initial={{ x: wipeDirection === 'forward' ? '100%' : '-100%' }}
             animate={{ x: 0 }}
-            exit={{ x: wipeDirection === 'forward' ? '100%' : '-100%' }}
+            exit={{ x: wipeDirection === 'forward' ? '-100%' : '100%' }}
             transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
             style={{ backgroundColor: wipeColor }}
           />
