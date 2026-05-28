@@ -775,7 +775,7 @@ export default function App() {
                               </span>
                             </div>
                             
-                            <h2 className="text-4xl md:text-6xl font-display font-medium text-[#171796] tracking-wide leading-tight drop-shadow-sm">
+                            <h2 className="text-4xl md:text-6xl font-display font-medium text-[#171796] tracking-wide leading-tight drop-shadow-sm selection-slide-heading">
                               {project.name}
                             </h2>
 
@@ -889,11 +889,11 @@ export default function App() {
                   </div>
 
                   {/* Right Side: Description */}
-                  <div className="w-full md:w-1/2 h-[65vh] md:h-full bg-white flex flex-col justify-start md:justify-center p-6 sm:p-10 md:p-16 lg:p-24 overflow-y-auto min-h-0">
+                  <div className="w-full md:w-1/2 h-[65vh] md:h-full bg-white flex flex-col justify-start md:justify-center p-6 sm:p-10 md:p-16 lg:p-24 overflow-y-auto min-h-0 project-intro-description">
                     <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase block font-sans mb-2 md:mb-4">
                       {selectedProject.brand}
                     </span>
-                    <h2 className="text-3xl md:text-5xl font-display font-medium text-[#171796] mb-4 md:mb-6">
+                    <h2 className="text-3xl md:text-5xl font-display font-medium text-[#171796] mb-4 md:mb-6 project-intro-heading">
                       {selectedProject.name}
                     </h2>
                     <div className="h-[1px] w-16 bg-[#171796]/30 mb-4 md:mb-8"></div>
@@ -937,7 +937,7 @@ export default function App() {
                         container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
                       }
                     }}
-                    className="absolute right-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-4 py-8 px-4 bg-[#171796]/5 hover:bg-[#171796]/15 border border-[#171796]/15 hover:border-[#171796]/30 shadow-lg text-[#171796] transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto group"
+                    className="absolute right-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-4 py-8 px-4 bg-white/30 backdrop-blur-md hover:bg-white/50 border border-[#171796]/10 hover:border-[#171796]/25 shadow-lg text-[#171796] transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto group"
                   >
                     <span className="text-[9px] font-bold tracking-[0.32em] uppercase [writing-mode:vertical-lr] select-none text-[#171796] transition-colors">
                       Swipe to Map

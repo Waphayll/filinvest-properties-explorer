@@ -206,6 +206,25 @@
     border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-top: none !important;
   }
+
+  .project-intro-description {
+    padding-top: 3.5rem !important;
+    padding-bottom: 3.5rem !important;
+    padding-left: 2rem !important;
+    padding-right: 5.2rem !important; /* Elegant 5.2rem (125px) gutter clears the absolute pill while maximizing text container width */
+  }
+
+  .project-intro-heading {
+    font-size: 1.95rem !important; /* Optimally sized title scale so long words like "Commercial" fit beautifully on their own line */
+    line-height: 1.2 !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important; /* Guarantees words are never split across characters */
+  }
+
+  .selection-slide-heading {
+    font-size: 2.6rem !important; /* Capped for portrait/kiosk screens to fit slide titles beautifully without excessive wrapping */
+    line-height: 1.15 !important;
+  }
 }
 
 /* Medium Kiosk / High-Res Portrait screens (e.g. 1080x1920 or larger) */
