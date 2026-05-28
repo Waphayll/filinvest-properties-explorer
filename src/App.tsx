@@ -1106,51 +1106,51 @@ export default function App() {
                       <div className="flex-1 flex flex-col justify-start py-2 font-sans text-sm gap-4">
 
                         {/* Architectural Ledger List */}
-                        <div className="space-y-3 font-sans">
+                        <div className="space-y-4 md:space-y-6 font-sans">
                           
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
+                            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
                               {selectedProject?.id === 'filinvest-city' ? 'District' : 'Block'}
                             </span>
-                            <span className="text-sm font-semibold text-[#171796]">
+                            <span className="text-base md:text-lg font-bold text-[#171796]">
                               {selectedLot.blockNumber}
                             </span>
                           </div>
 
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
+                            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
                               Lot Identifier
                             </span>
-                            <span className="text-sm font-semibold text-[#171796]">
+                            <span className="text-base md:text-lg font-bold text-[#171796]">
                               {selectedLot.lotNumber}
                             </span>
                           </div>
 
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
+                            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
                               Lot Area
                             </span>
-                            <span className="text-sm font-semibold text-[#171796]">
+                            <span className="text-base md:text-lg font-bold text-[#171796]">
                               {selectedLot.areaSqm.toLocaleString()} sqm
                             </span>
                           </div>
 
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
+                            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
                               FAR Limit
                             </span>
-                            <span className="text-sm font-semibold text-[#171796]">
+                            <span className="text-base md:text-lg font-bold text-[#171796]">
                               FAR {selectedLot.far}.0
                             </span>
                           </div>
 
                           {selectedLot.structureSize !== undefined && (
                             <>
-                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-2.5 border-b border-[#171796]/10">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
+                                <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
                                   Structure Size
                                 </span>
-                                <span className="text-sm font-semibold text-[#171796]">
+                                <span className="text-base md:text-lg font-bold text-[#171796]">
                                   {selectedLot.structureSize.toLocaleString()} sqm
                                 </span>
                               </div>

@@ -225,6 +225,11 @@
     font-size: 2.6rem !important; /* Capped for portrait/kiosk screens to fit slide titles beautifully without excessive wrapping */
     line-height: 1.15 !important;
   }
+
+  .kiosk-portrait-sidebar .lot-detail-item {
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
+  }
 }
 
 /* Medium Kiosk / High-Res Portrait screens (e.g. 1080x1920 or larger) */
