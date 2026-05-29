@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 import { CommercialProject, CommercialLot, InvestorLead } from './types';
-import { COMMERCIAL_PROJECTS, COMMERCIAL_LOTS, BRAND_COLORS_COMMERCIAL } from './constants';
+import { COMMERCIAL_PROJECTS, COMMERCIAL_LOTS, BRAND_COLORS_COMMERCIAL, LANDING_BACKDROPS } from './constants';
 import InteractiveSDP from './components/InteractiveSDP';
 import { Chatbot } from './components/Chatbot';
 import { QRCodeSVG } from 'qrcode.react';
@@ -165,7 +165,10 @@ const CursorGlow = () => {
 
 export default function App() {
   // --- APPLICATION STATES ---
-  const [currentScreen, setCurrentScreen] = useState<'landing' | 'selection' | 'viewer'>('landing');
+  const [currentScreen, setCurrentScreen] = useState<'loading' | 'landing' | 'selection' | 'viewer'>('loading');
+  const [activeLandingBgIndex, setActiveLandingBgIndex] = useState<number>(0);
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
+  const [activeLoadingLogoIndex, setActiveLoadingLogoIndex] = useState<number>(0);
   const [selectedProject, setSelectedProject] = useState<CommercialProject | null>(null);
   const [selectedLot, setSelectedLot] = useState<CommercialLot | null>(null);
   const [showInquiryModal, setShowInquiryModal] = useState<boolean>(false);
@@ -216,6 +219,114 @@ export default function App() {
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
+
+  // --- INACTIVITY TIMEOUT ---
+  useEffect(() => {
+    let idleTimer: NodeJS.Timeout;
+
+    const resetIdleTimer = () => {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (currentScreen !== 'landing' && currentScreen !== 'loading') {
+          setCurrentScreen('landing');
+          setSelectedProject(null);
+          setSelectedLot(null);
+          setShowInquiryModal(false);
+          setActiveCarouselIndex(0);
+        }
+      }, 3 * 60 * 1000); // 3 minutes of inactivity
+    };
+
+    resetIdleTimer();
+
+    const events = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'wheel', 'touchmove'];
+    const handleActivity = () => resetIdleTimer();
+    
+    events.forEach(event => window.addEventListener(event, handleActivity, { passive: true }));
+
+    return () => {
+      clearTimeout(idleTimer);
+      events.forEach(event => window.removeEventListener(event, handleActivity));
+    };
+  }, [currentScreen]);
+
+  // --- ASSET PRELOADER ---
+  useEffect(() => {
+    if (currentScreen !== 'loading') return;
+
+    const urlsToPreload: string[] = [
+      '/landing.svg',
+      '/lasalle.jpg',
+      ...COMMERCIAL_PROJECTS.map(p => p.carouselImage).filter(Boolean) as string[],
+      ...COMMERCIAL_PROJECTS.map(p => p.bgImage).filter(Boolean) as string[],
+      ...COMMERCIAL_PROJECTS.map(p => p.logoImage).filter(Boolean) as string[],
+      ...COMMERCIAL_PROJECTS.map(p => p.conceptMapSvg ? `/${p.conceptMapSvg}` : '').filter(Boolean) as string[]
+    ];
+
+    let loadedCount = 0;
+    const totalCount = urlsToPreload.length;
+
+    // Persist loaded images in the window object to prevent aggressive browser garbage collection
+    if (!(window as any).__preloadedImages) {
+      (window as any).__preloadedImages = [];
+    }
+
+    const handleLoad = () => {
+      loadedCount++;
+      setLoadingProgress(Math.round((loadedCount / totalCount) * 100));
+      if (loadedCount === totalCount) {
+        setTimeout(() => setCurrentScreen('landing'), 800); // Brief pause at 100%
+      }
+    };
+
+    urlsToPreload.forEach(url => {
+      const img = new Image();
+      img.src = url;
+      // Force hardware decoding before resolving the load
+      if (img.decode) {
+        img.decode().then(handleLoad).catch(handleLoad);
+      } else {
+        img.onload = handleLoad;
+        img.onerror = handleLoad;
+      }
+      (window as any).__preloadedImages.push(img);
+    });
+
+    const timeout = setTimeout(() => {
+      setCurrentScreen('landing');
+    }, 15000); // 15 seconds max
+
+    return () => clearTimeout(timeout);
+  }, [currentScreen]);
+
+  // Loading Screen Logo Cycling
+  useEffect(() => {
+    if (currentScreen !== 'loading') return;
+    
+    const loadingLogos = COMMERCIAL_PROJECTS.map(p => p.logoImage).filter(Boolean) as string[];
+    if (loadingLogos.length === 0) return;
+
+    const interval = setInterval(() => {
+      setActiveLoadingLogoIndex(prev => (prev + 1) % loadingLogos.length);
+    }, 800);
+
+    return () => clearInterval(interval);
+  }, [currentScreen]);
+
+  // Landing Screen Background Cycling
+  useEffect(() => {
+    if (currentScreen !== 'landing') return;
+    const interval = setInterval(() => {
+      setActiveLandingBgIndex(prev => {
+        let next = prev;
+        while (next === prev) {
+          next = Math.floor(Math.random() * LANDING_BACKDROPS.length);
+        }
+        return next;
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [currentScreen]);
 
   // --- THEME EDITOR STATE ---
   const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => loadThemeFromStorage());
@@ -475,6 +586,26 @@ export default function App() {
     }, 600);
   };
 
+  const handleBackToLanding = () => {
+    if (isWipingRef.current) return;
+    const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
+    setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
+    setWipeDirection('backward');
+    setIsWiping(true);
+    isWipingRef.current = true;
+    
+    setTimeout(() => {
+      setSelectedProject(null);
+      setSelectedLot(null);
+      setCurrentScreen('landing');
+      
+      setTimeout(() => {
+        setIsWiping(false);
+        isWipingRef.current = false;
+      }, 100);
+    }, 600);
+  };
+
   const handleLotClick = (lot: CommercialLot) => {
     setSelectedLot(prev => prev?.id === lot.id ? null : lot);
   };
@@ -570,6 +701,57 @@ export default function App() {
         <AnimatePresence mode="wait">
 
           {/* ========================================================
+              SCREEN 0: LOADING SCREEN
+              ======================================================== */}
+          {currentScreen === 'loading' && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-50 bg-white"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(#17179615_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none z-0" />
+              
+              <div className="z-10 h-32 md:h-40 relative flex items-center justify-center w-full max-w-sm mb-12">
+                <AnimatePresence mode="wait">
+                  {(() => {
+                    const loadingLogos = COMMERCIAL_PROJECTS.map(p => p.logoImage).filter(Boolean) as string[];
+                    const currentLogo = loadingLogos.length > 0 ? loadingLogos[activeLoadingLogoIndex] : '';
+                    return currentLogo ? (
+                      <motion.img
+                        key={currentLogo}
+                        src={currentLogo}
+                        alt="Loading logo"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.05 }}
+                        transition={{ duration: 0.4 }}
+                        className="absolute object-contain max-w-full max-h-full h-24 md:h-28"
+                      />
+                    ) : null;
+                  })()}
+                </AnimatePresence>
+              </div>
+
+              <div className="z-10 w-48 md:w-64 space-y-4">
+                <div className="h-[2px] w-full bg-[#171796]/10 overflow-hidden rounded-full">
+                  <motion.div 
+                    className="h-full bg-[#171796]"
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${loadingProgress}%` }}
+                    transition={{ ease: 'easeOut', duration: 0.2 }}
+                  />
+                </div>
+                <div className="text-[9px] md:text-[10px] text-[#171796]/60 uppercase tracking-[0.3em] font-sans font-bold flex justify-between">
+                  <span>Loading Assets</span>
+                  <span>{loadingProgress}%</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ========================================================
               SCREEN 1: LANDING SCREEN WITH EDITORIAL TOUCH
               ======================================================== */}
           {currentScreen === 'landing' && (
@@ -584,45 +766,47 @@ export default function App() {
               <CursorGlow />
               
               {/* Immersive Atmospheric Background Image Backdrop */}
-              <div className="absolute inset-0 z-0 select-none pointer-events-none">
-                <img
-                  src="/filinvest_city.png"
-                  alt="Filinvest City backdrop"
-                  className="w-full h-full object-cover opacity-20 filter grayscale saturate-0 scale-102 blur-[1px]"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/80 to-white/95" />
+              <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
+                <AnimatePresence>
+                  <motion.img
+                    key={LANDING_BACKDROPS[activeLandingBgIndex]}
+                    src={LANDING_BACKDROPS[activeLandingBgIndex]}
+                    alt="Landing backdrop"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.6 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 2, ease: 'easeInOut' }}
+                    className="absolute inset-0 w-full h-full object-cover scale-102 blur-[0.5px]"
+                    referrerPolicy="no-referrer"
+                  />
+                </AnimatePresence>
+                <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/40 to-white/80 pointer-events-none z-10" />
               </div>
 
               <div className="absolute inset-0 bg-[radial-gradient(#17179615_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none z-0" />
 
-              <div className="pt-12 landing-element opacity-0 z-10">
-                <div className="text-[#171796] uppercase tracking-[0.45em] text-2xl font-bold mb-3 font-sans">
-                  Lorem Ipsum
-                </div>
-                <h2 className="text-base tracking-[0.5em] text-slate-500 uppercase font-bold">
-                  Consectetur Adipiscing
-                </h2>
+              <div className="pt-12 landing-element z-10 flex justify-center">
+                <img src="/landing.svg" alt="Filinvest Townships" className="h-16 sm:h-20 md:h-28 lg:h-36 mb-2 object-contain" />
               </div>
 
-              <div className="space-y-6 max-w-3xl px-6 z-10 landing-element opacity-0">
-                <h1 className="text-4xl sm:text-7xl font-display font-medium tracking-tight text-[#171796] leading-tight mt-4">
-                  Lorem Ipsum <span className="font-bold font-display">Dolor</span>
+              <div className="space-y-6 max-w-3xl px-6 z-10 landing-element">
+                <h1 className="text-4xl sm:text-6xl font-display font-medium tracking-tight text-[#171796] leading-tight mt-4">
+                  Invest in a Prime Business Address
                 </h1>
                 <div className="h-[1px] w-24 bg-[#171796]/30 mx-auto my-6"></div>
-                <p className="text-base sm:text-lg text-slate-600 font-sans font-light max-w-2xl mx-auto leading-relaxed px-4">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud.
+                <p className="text-base sm:text-lg text-slate-800 font-sans font-normal max-w-2xl mx-auto leading-relaxed px-4 italic">
+                  Explore premium commercial lot properties strategically located in prime growth corridors—ideal for businesses, investments, and future-ready developments.
                 </p>
               </div>
 
-              <div className="pb-12 z-10 landing-element opacity-0">
+              <div className="pb-12 z-10 landing-element">
                 <button className="px-10 py-4.5 bg-[#171796] hover:bg-blue-800 shadow-lg shadow-[#171796]/20 border-none text-white rounded-none font-medium tracking-widest uppercase text-xs transition-colors animate-pulse cursor-pointer">
                   Tap Anywhere to Begin
                 </button>
               </div>
 
               {/* QR Code - Desktop only, far bottom-right */}
-              <div className="hidden md:flex flex-col items-center gap-2 pointer-events-none absolute bottom-6 right-8 z-20 landing-element opacity-0">
+              <div className="hidden md:flex flex-col items-center gap-2 pointer-events-none absolute bottom-6 right-8 z-20 landing-element">
                 <div className="bg-white p-2.5 rounded-sm shadow-lg shadow-black/10 border border-[#171796]/10">
                   <QRCodeSVG
                     value="https://filinvest-properties-explorer.vercel.app/"
@@ -660,21 +844,14 @@ export default function App() {
               >
                 {/* Header overlay */}
                 <div className="absolute top-0 left-0 w-full z-50 p-5 sm:p-8 lg:p-12 pointer-events-none">
-                  <div className="max-w-7xl mx-auto w-full flex justify-between items-start selection-header-element opacity-0">
-                    <div>
-                      <span className="text-blue-300 tracking-[0.35em] text-xs font-bold uppercase block font-sans drop-shadow-md">
-                        Filinvest Townships
-                      </span>
-                      <h1 className="text-2xl md:text-3xl font-display font-medium text-white mt-1 drop-shadow-lg">
-                        Explore Commercial Portfolios
-                      </h1>
-                    </div>
+                  <div className="max-w-7xl mx-auto w-full flex justify-start items-start selection-header-element">
                     <button
-                      onClick={() => setCurrentScreen('landing')}
-                      className="flex items-center justify-center p-2 text-slate-200 hover:text-blue-400 hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/10 pointer-events-auto backdrop-blur-sm bg-black/20"
-                      aria-label="Back to landing"
+                      onClick={handleBackToLanding}
+                      className="flex items-center gap-2 px-4 py-2.5 text-white hover:text-[#171796] hover:bg-white transition-all cursor-pointer rounded-full pointer-events-auto backdrop-blur-md bg-white/10 font-sans text-xs font-bold tracking-[0.15em] uppercase border border-white/20 shadow-lg"
+                      aria-label="Back to landing page"
                     >
-                      <ArrowLeft size={24} />
+                      <ArrowLeft size={16} />
+                      BACK TO LANDING PAGE
                     </button>
                   </div>
                 </div>
@@ -753,33 +930,31 @@ export default function App() {
                       >
                         {/* Background Image */}
                         <img
-                          src={project.bgImage}
+                          src={project.carouselImage || project.bgImage}
                           alt={project.name}
                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 scale-100 group-hover:scale-105"
                           style={{ filter: isCenter ? 'brightness(0.8) contrast(1.1)' : 'brightness(0.4) blur(4px)' }}
                           referrerPolicy="no-referrer"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/50 to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/30 to-transparent pointer-events-none" />
                         <div className="absolute inset-0 bg-black/5 pointer-events-none" />
 
                         {/* Content Overlay */}
                         <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 pb-24 md:pb-32 flex flex-col md:flex-row items-start md:items-end justify-between max-w-7xl mx-auto right-0 gap-8 pointer-events-none">
                           
                           <div className="flex-1 max-w-2xl space-y-4">
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="bg-[#171796] text-white text-[11px] uppercase font-bold tracking-[0.25em] px-3.5 py-1.5 shadow-md">
-                                {project.brand}
-                              </span>
-                              <span className="text-xs md:text-sm font-bold tracking-[0.2em] text-[#171796] uppercase flex items-center gap-1.5 font-sans drop-shadow-sm">
-                                <MapPin size={12} className="text-[#171796]" /> {project.location.split(',')[0]}
-                              </span>
-                            </div>
-                            
-                            <h2 className="text-4xl md:text-6xl font-display font-medium text-[#171796] tracking-wide leading-tight drop-shadow-sm selection-slide-heading">
-                              {project.name}
-                            </h2>
+                            {project.logoImage ? (
+                              <img src={project.logoImage} alt={project.name} className={`object-contain object-left ${project.id === 'city-di-mare' ? 'h-20 md:h-28' : 'h-14 md:h-20'}`} />
+                            ) : (
+                              <h2 className="text-4xl md:text-6xl font-medium text-[#171796] tracking-wide leading-tight drop-shadow-sm selection-slide-heading" style={{ fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' }}>
+                                {project.name}
+                              </h2>
+                            )}
 
-                            <div className="flex gap-8 pt-4 uppercase font-sans">
+                            <div className="flex items-center gap-8 pt-4 uppercase font-sans">
+                              <span className="bg-[#171796] text-white text-[11px] uppercase font-bold tracking-[0.25em] px-3.5 py-2 shadow-md flex items-center gap-1.5 shrink-0">
+                                <MapPin size={12} /> {project.location}
+                              </span>
                               <div>
                                 <span className="block text-[10px] md:text-[11px] font-semibold tracking-widest text-slate-500">Avg Lot Sizing</span>
                                 <span className="block text-base md:text-lg font-bold text-[#171796] mt-1">{project.averageLotSize}</span>
@@ -880,29 +1055,32 @@ export default function App() {
                   {/* Left Side: Township Image */}
                   <div className="w-full md:w-1/2 h-[35vh] md:h-full relative overflow-hidden bg-black">
                     <img 
-                      src={selectedProject.bgImage} 
+                      src={selectedProject.carouselImage || selectedProject.bgImage} 
                       alt={selectedProject.name} 
                       className="w-full h-full object-cover opacity-80" 
                       referrerPolicy="no-referrer"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1220]/90 via-[#0a1220]/20 to-transparent md:bg-gradient-to-r md:from-transparent md:via-[#0a1220]/50 md:to-[#0a1220]" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1220]/70 via-[#0a1220]/10 to-transparent md:bg-gradient-to-r md:from-transparent md:via-[#0a1220]/30 md:to-[#0a1220]/80" />
                   </div>
 
                   {/* Right Side: Description */}
                   <div className="w-full md:w-1/2 h-[65vh] md:h-full bg-white flex flex-col justify-start md:justify-center p-6 sm:p-10 md:p-16 lg:p-24 overflow-y-auto min-h-0 project-intro-description">
-                    <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase block font-sans mb-2 md:mb-4">
-                      {selectedProject.brand}
+                    <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase flex items-center gap-1.5 font-sans mb-2 md:mb-4">
+                      <MapPin size={12} /> {selectedProject.location}
                     </span>
-                    <h2 className="text-3xl md:text-5xl font-display font-medium text-[#171796] mb-4 md:mb-6 project-intro-heading">
-                      {selectedProject.name}
-                    </h2>
+                    {selectedProject.logoImage ? (
+                      <img src={selectedProject.logoImage} alt={selectedProject.name} className={`object-contain object-left mb-4 md:mb-6 ${selectedProject.id === 'city-di-mare' ? 'h-16 md:h-24' : 'h-12 md:h-16'}`} />
+                    ) : (
+                      <h2 className="text-3xl md:text-5xl font-medium text-[#171796] mb-4 md:mb-6 project-intro-heading" style={{ fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' }}>
+                        {selectedProject.name}
+                      </h2>
+                    )}
                     <div className="h-[1px] w-16 bg-[#171796]/30 mb-4 md:mb-8"></div>
-                    <p className="text-sm md:text-base text-slate-600 font-sans font-light leading-relaxed mb-4 md:mb-6">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-                    </p>
-                    <p className="text-sm md:text-base text-slate-600 font-sans font-light leading-relaxed mb-6 md:mb-12">
-                      Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.
-                    </p>
+                    {selectedProject.fullDescription.map((paragraph, idx) => (
+                      <p key={idx} className={`text-sm md:text-base text-slate-600 font-sans font-light leading-relaxed ${idx === selectedProject.fullDescription.length - 1 ? 'mb-6 md:mb-12' : 'mb-4 md:mb-6'}`}>
+                        {paragraph}
+                      </p>
+                    ))}
                     
                   </div>
 
@@ -980,8 +1158,12 @@ export default function App() {
                           <ArrowLeft size={24} />
                         </button>
                         <div className="min-w-0">
-                          <h2 className="text-base md:text-2xl font-display font-medium text-[#171796] flex items-center gap-2 truncate">
-                            <span className="truncate">{selectedProject.name}</span>
+                          <h2 className="text-base md:text-2xl font-display font-medium text-[#171796] flex items-center gap-2 truncate" style={!selectedProject.logoImage ? { fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' } : {}}>
+                            {selectedProject.logoImage ? (
+                              <img src={selectedProject.logoImage} alt={selectedProject.name} className={`object-contain object-left ${selectedProject.id === 'city-di-mare' ? 'h-7 md:h-10' : 'h-6 md:h-8'}`} />
+                            ) : (
+                              <span className="truncate">{selectedProject.name}</span>
+                            )}
                             {selectedProject.id === 'filinvest-city' && (
                               <span 
                                 onClick={() => {
@@ -1001,7 +1183,7 @@ export default function App() {
                             )}
                           </h2>
                           <p className="text-xs text-slate-500 uppercase tracking-widest truncate max-w-sm hidden md:block mt-0.5">
-                            {selectedProject.location} • {selectedProject.brand}
+                            {selectedProject.location}
                           </p>
                         </div>
                       </div>
@@ -1354,6 +1536,20 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Invisible DOM Preloading Container to prevent GPU decode delays */}
+      <div className="fixed top-[-10000px] left-[-10000px] opacity-0 pointer-events-none w-[1px] h-[1px] overflow-hidden z-[-1]">
+        <img src="/landing.svg" alt="" />
+        <img src="/lasalle.jpg" alt="" />
+        {COMMERCIAL_PROJECTS.map(p => (
+          <React.Fragment key={p.id}>
+            {p.carouselImage && <img src={p.carouselImage} alt="" />}
+            {p.bgImage && <img src={p.bgImage} alt="" />}
+            {p.logoImage && <img src={p.logoImage} alt="" />}
+            {p.conceptMapSvg && <img src={`/${p.conceptMapSvg}`} alt="" />}
+          </React.Fragment>
+        ))}
+      </div>
 
     </div>
   );

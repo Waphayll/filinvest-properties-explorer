@@ -5,8 +5,10 @@ export interface CommercialProject {
   name: string;
   brand: TownshipBrand;
   location: string;
-  shortDescription: string;
-  fullDescription: string;
+  carouselImage?: string;
+  logoImage?: string;
+  logoClassName?: string;
+  fullDescription: string[];
   highlightText?: string;
   bgImage: string;
   averageLotSize: string;
