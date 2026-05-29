@@ -6,6 +6,46 @@ const conceptOverrides = conceptOverridesData as unknown as Record<string, strin
 
 export const COMMERCIAL_PROJECTS: CommercialProject[] = [
   {
+    id: 'brentville-front',
+    name: 'Brentville - The Village Front',
+    brand: 'Exurban Community',
+    location: 'Biñan, Laguna',
+    carouselImage: '/TVF/TVF_Carousel.png',
+    logoImage: '/TVF/BVI-logo.png',
+    fullDescription: [
+      'Brentville International Community is an established residential enclave in Biñan, Laguna, strategically located near SLEX, CALAX, and the Mamplasan exit — providing convenient access to Metro Manila, Filinvest City, and the broader CALABARZON growth corridor. Home to Brent International School, the community has long been recognized as one of the South\'s premier residential addresses.',
+      'Located at the entrance of the community is The Village Front, a 4.2 hectare neighborhood retail and lifestyle destination designed to support the daily needs and activities of Brentville\'s growing residential population.'
+    ],
+    highlightText: 'GATEWAY TO CALABARZON',
+    bgImage: '/thevillagefront.jpg',
+    averageLotSize: '780 – 1,250 sqm',
+    averagePriceRange: '₱131,990 – ₱152,851 / sqm',
+    featureBadge: 'SLEX Frontage',
+    center: [14.3142, 121.0833],
+    zoom: 16,
+    conceptMapSvg: 'Brentville.svg'
+  },
+  {
+    id: 'daang-hari-lots',
+    name: 'Daang Hari Commercial Lots',
+    brand: 'High Growth Area',
+    location: 'Las Piñas',
+    carouselImage: '/DH/Daang Hari/DH_Carousel.jpg',
+    fullDescription: [
+      'Located along the rapidly developing Daang Hari corridor, Daang Hari Commercial Lots offers prime commercial opportunities within one of South Metro Manila\'s emerging mixed-use growth areas.',
+      'Strategically positioned with convenient access to MCX, and adjacent to numerous high-end residential developments, the development benefits from increasing commercial activity and regional connectivity.',
+      'With accessible frontage along Daang Hari and proximity to key lifestyle developments, the property is well-positioned for a range of commercial and retail uses.'
+    ],
+    highlightText: 'HIGH-WAY VISIBILITY FRONTAGE',
+    bgImage: '/daanghari.jpg',
+    averageLotSize: '700 – 1,600 sqm',
+    averagePriceRange: '₱226,000 / sqm',
+    featureBadge: 'High Frontage',
+    center: [14.3820, 121.0125],
+    zoom: 16,
+    conceptMapSvg: 'THE ENCLAVE ALABANG.svg'
+  },
+  {
     id: 'filinvest-city',
     name: 'Filinvest City',
     brand: 'Premier Township',
@@ -45,46 +85,6 @@ export const COMMERCIAL_PROJECTS: CommercialProject[] = [
     center: [10.2715, 123.8788],
     zoom: 15,
     conceptMapSvg: 'CDM.svg'
-  },
-  {
-    id: 'daang-hari-lots',
-    name: 'Daang Hari Commercial Lots',
-    brand: 'High Growth Area',
-    location: 'Las Piñas',
-    carouselImage: '/DH/Daang Hari/DH_Carousel.jpg',
-    fullDescription: [
-      'Located along the rapidly developing Daang Hari corridor, Daang Hari Commercial Lots offers prime commercial opportunities within one of South Metro Manila\'s emerging mixed-use growth areas.',
-      'Strategically positioned with convenient access to MCX, and adjacent to numerous high-end residential developments, the development benefits from increasing commercial activity and regional connectivity.',
-      'With accessible frontage along Daang Hari and proximity to key lifestyle developments, the property is well-positioned for a range of commercial and retail uses.'
-    ],
-    highlightText: 'HIGH-WAY VISIBILITY FRONTAGE',
-    bgImage: '/daanghari.jpg',
-    averageLotSize: '700 – 1,600 sqm',
-    averagePriceRange: '₱226,000 / sqm',
-    featureBadge: 'High Frontage',
-    center: [14.3820, 121.0125],
-    zoom: 16,
-    conceptMapSvg: 'THE ENCLAVE ALABANG.svg'
-  },
-  {
-    id: 'brentville-front',
-    name: 'Brentville - The Village Front',
-    brand: 'Exurban Community',
-    location: 'Biñan, Laguna',
-    carouselImage: '/TVF/TVF_Carousel.png',
-    logoImage: '/TVF/BVI-logo.png',
-    fullDescription: [
-      'Brentville International Community is an established residential enclave in Biñan, Laguna, strategically located near SLEX, CALAX, and the Mamplasan exit — providing convenient access to Metro Manila, Filinvest City, and the broader CALABARZON growth corridor. Home to Brent International School, the community has long been recognized as one of the South\'s premier residential addresses.',
-      'Located at the entrance of the community is The Village Front, a 4.2 hectare neighborhood retail and lifestyle destination designed to support the daily needs and activities of Brentville\'s growing residential population.'
-    ],
-    highlightText: 'GATEWAY TO CALABARZON',
-    bgImage: '/thevillagefront.jpg',
-    averageLotSize: '780 – 1,250 sqm',
-    averagePriceRange: '₱131,990 – ₱152,851 / sqm',
-    featureBadge: 'SLEX Frontage',
-    center: [14.3142, 121.0833],
-    zoom: 16,
-    conceptMapSvg: 'Brentville.svg'
   }
 ];
 
