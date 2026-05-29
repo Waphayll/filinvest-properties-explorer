@@ -75,17 +75,17 @@ const ViewerScreen: React.FC<ViewerScreenProps> = ({
 
           {/* Right Side: Description */}
           <div className="w-full md:w-1/2 h-[65vh] md:h-full bg-white flex flex-col justify-start md:justify-center p-6 sm:p-10 md:p-16 lg:p-24 overflow-y-auto min-h-0 project-intro-description">
-            <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase flex items-center gap-1.5 font-sans mb-2 md:mb-4">
-              <MapPin size={12} /> {selectedProject.location}
-            </span>
             {selectedProject.logoImage ? (
-              <img src={selectedProject.logoImage} alt={selectedProject.name} className={`object-contain object-left mb-4 md:mb-6 ${selectedProject.id === 'city-di-mare' ? 'h-16 md:h-24' : selectedProject.id === 'brentville-front' ? 'h-14 md:h-20 drop-shadow-[0_0_15px_rgba(255,255,255,1)]' : 'h-12 md:h-16'}`} />
+              <img src={selectedProject.logoImage} alt={selectedProject.name} className={`object-contain object-left mb-5 md:mb-6 ${selectedProject.id === 'city-di-mare' ? 'h-16 md:h-24' : selectedProject.id === 'brentville-front' ? 'h-14 md:h-20 drop-shadow-[0_0_15px_rgba(255,255,255,1)]' : 'h-12 md:h-16'}`} />
             ) : (
-              <h2 className="text-3xl md:text-5xl font-medium text-[#171796] mb-4 md:mb-6 project-intro-heading" style={{ fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' }}>
+              <h2 className="text-3xl md:text-5xl font-medium text-[#171796] mb-5 md:mb-6 project-intro-heading" style={{ fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' }}>
                 {selectedProject.name}
               </h2>
             )}
-            <div className="h-[1px] w-16 bg-[#171796]/30 mb-4 md:mb-8"></div>
+            <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase flex items-center gap-1.5 font-sans mb-4 md:mb-6">
+              <MapPin size={12} /> {selectedProject.location}
+            </span>
+
             {selectedProject.fullDescription.map((paragraph, idx) => (
               <p key={idx} className={`text-sm md:text-base text-slate-600 font-sans font-light leading-relaxed ${idx === selectedProject.fullDescription.length - 1 ? 'mb-6 md:mb-12' : 'mb-4 md:mb-6'}`}>
                 {paragraph}
