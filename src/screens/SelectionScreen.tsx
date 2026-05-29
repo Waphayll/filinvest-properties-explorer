@@ -156,24 +156,36 @@ const SelectionScreen: React.FC<SelectionScreenProps> = ({
                 <div className="absolute inset-0 bg-black/5 pointer-events-none" />
 
                 {/* Content Overlay */}
-                <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 pb-24 md:pb-32 flex flex-col md:flex-row items-start md:items-end justify-between max-w-7xl mx-auto right-0 gap-8 pointer-events-none">
+                <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 pb-28 md:pb-32 flex flex-col lg:flex-row items-start lg:items-end justify-between max-w-7xl mx-auto right-0 gap-6 lg:gap-8 pointer-events-none">
                   
-                  <div className="flex-1 max-w-2xl space-y-4">
+                  <div className="flex-1 max-w-2xl space-y-1 md:space-y-2 w-full">
                     {project.logoImage ? (
-                      <img src={project.logoImage} alt={project.name} className={`object-contain object-left ${project.id === 'city-di-mare' ? 'h-20 md:h-28' : project.id === 'brentville-front' ? 'h-16 md:h-24 drop-shadow-[0_0_15px_rgba(255,255,255,1)]' : 'h-14 md:h-20'}`} />
+                      <img 
+                        src={project.logoImage} 
+                        alt={project.name} 
+                        className={`object-contain object-left ${
+                          project.id === 'city-di-mare' 
+                            ? 'h-16 md:h-28 w-auto' 
+                            : project.id === 'brentville-front' 
+                              ? 'h-auto w-64 md:w-80 lg:w-[450px] drop-shadow-[0_0_15px_rgba(255,255,255,1)]' 
+                              : project.id === 'filinvest-city' 
+                                ? 'h-auto w-64 md:w-80 lg:w-[450px]' 
+                                : 'h-16 md:h-20 w-auto'
+                        }`} 
+                      />
                     ) : (
-                      <h2 className="text-4xl md:text-6xl font-medium text-[#171796] tracking-wide leading-tight drop-shadow-sm selection-slide-heading" style={{ fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' }}>
+                      <h2 className="text-3xl md:text-6xl font-medium text-[#171796] tracking-wide leading-tight drop-shadow-sm selection-slide-heading" style={{ fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' }}>
                         {project.name}
                       </h2>
                     )}
 
-                    <div className="flex items-center gap-8 pt-4 uppercase font-sans">
-                      <span className="bg-[#171796] text-white text-[11px] uppercase font-bold tracking-[0.25em] px-3.5 py-2 shadow-md flex items-center gap-1.5 shrink-0">
+                    <div className="flex flex-col items-start gap-2 md:gap-3 pt-1 md:pt-2 uppercase font-sans">
+                      <span className="bg-[#171796] text-white text-[9px] md:text-[11px] uppercase font-bold tracking-[0.25em] px-3 md:px-3.5 py-1.5 md:py-2 shadow-md flex items-center gap-1.5 shrink-0 whitespace-nowrap">
                         <MapPin size={12} /> {project.location}
                       </span>
-                      <div>
-                        <span className="block text-[10px] md:text-[11px] font-semibold tracking-widest text-slate-500">Avg Lot Sizing</span>
-                        <span className="block text-base md:text-lg font-bold text-[#171796] mt-1">{project.averageLotSize}</span>
+                      <div className="shrink-0 bg-white/80 sm:bg-transparent px-3 py-1.5 sm:p-0 rounded shadow-sm sm:shadow-none backdrop-blur-sm sm:backdrop-blur-none mt-1">
+                        <span className="block text-[9px] md:text-[11px] font-semibold tracking-widest text-slate-500 whitespace-nowrap">Avg Lot Sizing</span>
+                        <span className="block text-sm md:text-lg font-bold text-[#171796] mt-0.5 md:mt-1 whitespace-nowrap">{project.averageLotSize}</span>
                       </div>
                     </div>
                   </div>
