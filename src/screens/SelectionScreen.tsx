@@ -72,13 +72,13 @@ const SelectionScreen: React.FC<SelectionScreenProps> = ({
           </div>
         </div>
 
-        {/* Left & Right Chevron Overlay Buttons (Desktop Navigation helper) */}
+        {/* Left & Right Chevron Overlay Buttons (Desktop only — mobile users swipe) */}
         <motion.button
           initial={{ opacity: 0, y: '-50%', x: -15 }}
           animate={{ opacity: 1, y: '-50%', x: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
           onClick={() => setActiveCarouselIndex(prev => prev - 1)}
-          className="absolute left-4 md:left-8 top-1/2 z-50 p-3.5 border border-[#171796]/20 text-[#171796] bg-white/90 hover:bg-[#171796] hover:text-white hover:border-[#171796] transition-all hover:scale-105 active:scale-95 backdrop-blur-md rounded-full shadow-lg cursor-pointer group pointer-events-auto"
+          className="hidden md:flex absolute left-4 md:left-8 top-1/2 z-50 p-3.5 border border-[#171796]/20 text-[#171796] bg-white/90 hover:bg-[#171796] hover:text-white hover:border-[#171796] transition-all hover:scale-105 active:scale-95 backdrop-blur-md rounded-full shadow-lg cursor-pointer group pointer-events-auto items-center justify-center"
           aria-label="Previous Township"
         >
           <ChevronLeft size={28} className="group-hover:-translate-x-0.5 transition-transform" />
@@ -88,7 +88,7 @@ const SelectionScreen: React.FC<SelectionScreenProps> = ({
           animate={{ opacity: 1, y: '-50%', x: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
           onClick={() => setActiveCarouselIndex(prev => prev + 1)}
-          className="absolute right-4 md:right-8 top-1/2 z-50 p-3.5 border border-[#171796]/20 text-[#171796] bg-white/90 hover:bg-[#171796] hover:text-white hover:border-[#171796] transition-all hover:scale-105 active:scale-95 backdrop-blur-md rounded-full shadow-lg cursor-pointer group pointer-events-auto"
+          className="hidden md:flex absolute right-4 md:right-8 top-1/2 z-50 p-3.5 border border-[#171796]/20 text-[#171796] bg-white/90 hover:bg-[#171796] hover:text-white hover:border-[#171796] transition-all hover:scale-105 active:scale-95 backdrop-blur-md rounded-full shadow-lg cursor-pointer group pointer-events-auto items-center justify-center"
           aria-label="Next Township"
         >
           <ChevronRight size={28} className="group-hover:translate-x-0.5 transition-transform" />
