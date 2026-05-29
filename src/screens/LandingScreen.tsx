@@ -12,19 +12,50 @@ interface LandingScreenProps {
 const LandingScreen: React.FC<LandingScreenProps> = ({ onStart }) => {
   const [activeLandingBgIndex, setActiveLandingBgIndex] = useState<number>(0);
 
-  // Landing Screen Background Cycling
+  // Landing Screen Background Cycling with Preloading
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveLandingBgIndex(prev => {
-        let next = prev;
-        while (next === prev) {
-          next = Math.floor(Math.random() * LANDING_BACKDROPS.length);
-        }
-        return next;
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    let isCancelled = false;
+    let timerId: NodeJS.Timeout;
+
+    const loadNextImage = () => {
+      let next = activeLandingBgIndex;
+      while (next === activeLandingBgIndex) {
+        next = Math.floor(Math.random() * LANDING_BACKDROPS.length);
+      }
+
+      const img = new Image();
+      img.src = LANDING_BACKDROPS[next];
+      
+      const handleLoadComplete = () => {
+        if (isCancelled) return;
+        // Wait 5 seconds from the moment it finishes loading to transition
+        timerId = setTimeout(() => {
+          if (!isCancelled) {
+            setActiveLandingBgIndex(next);
+          }
+        }, 5000);
+      };
+
+      if (img.complete) {
+        handleLoadComplete();
+      } else {
+        img.onload = handleLoadComplete;
+        img.onerror = () => {
+           // If error, just try another one after 5s
+           timerId = setTimeout(() => {
+             if (!isCancelled) loadNextImage();
+           }, 5000);
+        };
+      }
+    };
+
+    loadNextImage();
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timerId);
+    };
+  }, [activeLandingBgIndex]);
 
   // Animejs hook for Landing Screen staggered entrance
   useEffect(() => {
