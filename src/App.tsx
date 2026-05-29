@@ -1,184 +1,38 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import anime from 'animejs/lib/anime.es.js';
-import { motion, AnimatePresence } from 'motion/react';
-import {
-  Building2,
-  MapPin,
-  Layers,
-  PhilippinePeso,
-  Maximize2,
-  ArrowLeft,
-  ArrowRight,
-  User,
-  Phone,
-  Mail,
-  Briefcase,
-  X,
-  Sparkles,
-  CheckCircle2,
-  FileText,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
 
 import { CommercialProject, CommercialLot, InvestorLead } from './types';
-import { COMMERCIAL_PROJECTS, COMMERCIAL_LOTS, BRAND_COLORS_COMMERCIAL, LANDING_BACKDROPS } from './constants';
-import InteractiveSDP from './components/InteractiveSDP';
+import { COMMERCIAL_PROJECTS, COMMERCIAL_LOTS } from './constants';
 import { Chatbot } from './components/Chatbot';
-import { QRCodeSVG } from 'qrcode.react';
-import { SiteTheme, DEFAULT_THEME, loadThemeFromStorage, applyThemeToDOM } from './components/ThemeEditor';
+import { SiteTheme, loadThemeFromStorage, applyThemeToDOM } from './components/ThemeEditor';
 
-const CursorGlow = () => {
-  const trailRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
+// Hooks
+import { useInactivityTimeout } from './hooks/useInactivityTimeout';
 
-  const dots = useRef<{ x: number; y: number }[]>(Array.from({ length: 25 }, () => ({ x: 0, y: 0 })));
-  const mouse = useRef({ x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0, y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0 });
-  const glowPos = useRef({ x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0, y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0 });
-  const isHolding = useRef(false);
-
-  useEffect(() => {
-    let animationFrameId: number;
-    let isActive = false;
-
-    const handleMouseMove = (e: MouseEvent | TouchEvent) => {
-      mouse.current.x = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
-      mouse.current.y = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
-
-      if (!isActive) {
-        dots.current.forEach(dot => {
-          dot.x = mouse.current.x;
-          dot.y = mouse.current.y;
-        });
-        glowPos.current = { x: mouse.current.x, y: mouse.current.y };
-        isActive = true;
-      }
-    };
-
-    const handleMouseDown = () => {
-      isHolding.current = true;
-      if (trailRef.current) {
-        trailRef.current.style.opacity = '1';
-      }
-    };
-
-    const handleMouseUp = () => {
-      isHolding.current = false;
-      if (trailRef.current) {
-        trailRef.current.style.opacity = '0';
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('touchmove', handleMouseMove, { passive: true });
-    window.addEventListener('mousedown', handleMouseDown, { passive: true });
-    window.addEventListener('touchstart', handleMouseDown, { passive: true });
-    window.addEventListener('mouseup', handleMouseUp, { passive: true });
-    window.addEventListener('touchend', handleMouseUp, { passive: true });
-    window.addEventListener('touchcancel', handleMouseUp, { passive: true });
-
-    const animate = () => {
-      if (!isActive) {
-        animationFrameId = requestAnimationFrame(animate);
-        return;
-      }
-
-      // 1. Update slow glow
-      glowPos.current.x += (mouse.current.x - glowPos.current.x) * 0.05;
-      glowPos.current.y += (mouse.current.y - glowPos.current.y) * 0.05;
-
-      if (glowRef.current) {
-        glowRef.current.style.transform = `translate(${glowPos.current.x}px, ${glowPos.current.y}px)`;
-      }
-
-      // 2. Update Trail
-      let x = mouse.current.x;
-      let y = mouse.current.y;
-
-      dots.current.forEach((dot, index) => {
-        dot.x += (x - dot.x) * 0.35;
-        dot.y += (y - dot.y) * 0.35;
-
-        const el = trailRef.current?.children[index] as HTMLElement;
-        if (el) {
-          const scale = 1 - (index / 25);
-          el.style.transform = `translate(${dot.x}px, ${dot.y}px) scale(${scale})`;
-        }
-        x = dot.x;
-        y = dot.y;
-      });
-
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchmove', handleMouseMove);
-      window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('touchstart', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchend', handleMouseUp);
-      window.removeEventListener('touchcancel', handleMouseUp);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* Deep, slow-moving ambient glow */}
-      <div
-        ref={glowRef}
-        className="absolute top-0 left-0 w-[800px] h-[800px] -ml-[400px] -mt-[400px] rounded-full mix-blend-screen opacity-40"
-        style={{
-          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 60%)',
-          filter: 'blur(60px)',
-          willChange: 'transform'
-        }}
-      />
-
-      {/* High-fidelity Gold dust trail */}
-      <div 
-        ref={trailRef} 
-        className="absolute inset-0 mix-blend-screen opacity-0 transition-opacity duration-300"
-      >
-        {dots.current.map((_, index) => (
-          <div
-            key={index}
-            className="absolute top-0 left-0 rounded-full"
-            style={{
-              width: '16px',
-              height: '16px',
-              marginLeft: '-8px',
-              marginTop: '-8px',
-              background: `rgba(212, 175, 55, ${0.8 * Math.pow(1 - index / 25, 2)})`,
-              boxShadow: `0 0 ${10 + index}px rgba(212, 175, 55, ${0.4 * (1 - index / 25)})`,
-              willChange: 'transform'
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
+// Screens & Components
+import LoadingScreen from './screens/LoadingScreen';
+import LandingScreen from './screens/LandingScreen';
+import SelectionScreen from './screens/SelectionScreen';
+import ViewerScreen from './screens/ViewerScreen';
+import InquiryModal from './components/InquiryModal';
+import EasterEggLoading from './components/EasterEggLoading';
 
 export default function App() {
   // --- APPLICATION STATES ---
   const [currentScreen, setCurrentScreen] = useState<'loading' | 'landing' | 'selection' | 'viewer'>('loading');
-  const [activeLandingBgIndex, setActiveLandingBgIndex] = useState<number>(0);
-  const [loadingProgress, setLoadingProgress] = useState<number>(0);
-  const [activeLoadingLogoIndex, setActiveLoadingLogoIndex] = useState<number>(0);
   const [selectedProject, setSelectedProject] = useState<CommercialProject | null>(null);
   const [selectedLot, setSelectedLot] = useState<CommercialLot | null>(null);
+  
   const [showInquiryModal, setShowInquiryModal] = useState<boolean>(false);
-  const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [leads, setLeads] = useState<InvestorLead[]>([]);
+  
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [inquiriesEnabled, setInquiriesEnabled] = useState<boolean>(false);
   const [chatbotEnabled, setChatbotEnabled] = useState<boolean>(false);
   const [easterEggEnabled, setEasterEggEnabled] = useState<boolean>(true);
   const [alabangClicks, setAlabangClicks] = useState<number>(0);
+  
   const [activeCarouselIndex, setActiveCarouselIndex] = useState<number>(0);
   
   // --- TRANSITION STATE ---
@@ -213,125 +67,20 @@ export default function App() {
     }
   };
 
-  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' && window.innerWidth < 768);
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
-
   // --- INACTIVITY TIMEOUT ---
-  useEffect(() => {
-    let idleTimer: NodeJS.Timeout;
-
-    const resetIdleTimer = () => {
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => {
-        if (currentScreen !== 'landing' && currentScreen !== 'loading') {
-          setCurrentScreen('landing');
-          setSelectedProject(null);
-          setSelectedLot(null);
-          setShowInquiryModal(false);
-          setActiveCarouselIndex(0);
-        }
-      }, 3 * 60 * 1000); // 3 minutes of inactivity
-    };
-
-    resetIdleTimer();
-
-    const events = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'wheel', 'touchmove'];
-    const handleActivity = () => resetIdleTimer();
-    
-    events.forEach(event => window.addEventListener(event, handleActivity, { passive: true }));
-
-    return () => {
-      clearTimeout(idleTimer);
-      events.forEach(event => window.removeEventListener(event, handleActivity));
-    };
-  }, [currentScreen]);
-
-  // --- ASSET PRELOADER ---
-  useEffect(() => {
-    if (currentScreen !== 'loading') return;
-
-    const urlsToPreload: string[] = [
-      '/landing.svg',
-      '/lasalle.jpg',
-      ...COMMERCIAL_PROJECTS.map(p => p.carouselImage).filter(Boolean) as string[],
-      ...COMMERCIAL_PROJECTS.map(p => p.bgImage).filter(Boolean) as string[],
-      ...COMMERCIAL_PROJECTS.map(p => p.logoImage).filter(Boolean) as string[],
-      ...COMMERCIAL_PROJECTS.map(p => p.conceptMapSvg ? `/${p.conceptMapSvg}` : '').filter(Boolean) as string[]
-    ];
-
-    let loadedCount = 0;
-    const totalCount = urlsToPreload.length;
-
-    // Persist loaded images in the window object to prevent aggressive browser garbage collection
-    if (!(window as any).__preloadedImages) {
-      (window as any).__preloadedImages = [];
-    }
-
-    const handleLoad = () => {
-      loadedCount++;
-      setLoadingProgress(Math.round((loadedCount / totalCount) * 100));
-      if (loadedCount === totalCount) {
-        setTimeout(() => setCurrentScreen('landing'), 800); // Brief pause at 100%
-      }
-    };
-
-    urlsToPreload.forEach(url => {
-      const img = new Image();
-      img.src = url;
-      // Force hardware decoding before resolving the load
-      if (img.decode) {
-        img.decode().then(handleLoad).catch(handleLoad);
-      } else {
-        img.onload = handleLoad;
-        img.onerror = handleLoad;
-      }
-      (window as any).__preloadedImages.push(img);
-    });
-
-    const timeout = setTimeout(() => {
+  const handleInactivityTimeout = () => {
+    if (currentScreen !== 'landing' && currentScreen !== 'loading') {
       setCurrentScreen('landing');
-    }, 15000); // 15 seconds max
-
-    return () => clearTimeout(timeout);
-  }, [currentScreen]);
-
-  // Loading Screen Logo Cycling
-  useEffect(() => {
-    if (currentScreen !== 'loading') return;
-    
-    const loadingLogos = COMMERCIAL_PROJECTS.map(p => p.logoImage).filter(Boolean) as string[];
-    if (loadingLogos.length === 0) return;
-
-    const interval = setInterval(() => {
-      setActiveLoadingLogoIndex(prev => (prev + 1) % loadingLogos.length);
-    }, 800);
-
-    return () => clearInterval(interval);
-  }, [currentScreen]);
-
-  // Landing Screen Background Cycling
-  useEffect(() => {
-    if (currentScreen !== 'landing') return;
-    const interval = setInterval(() => {
-      setActiveLandingBgIndex(prev => {
-        let next = prev;
-        while (next === prev) {
-          next = Math.floor(Math.random() * LANDING_BACKDROPS.length);
-        }
-        return next;
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [currentScreen]);
+      setSelectedProject(null);
+      setSelectedLot(null);
+      setShowInquiryModal(false);
+      setActiveCarouselIndex(0);
+    }
+  };
+  useInactivityTimeout(true, handleInactivityTimeout);
 
   // --- THEME EDITOR STATE ---
-  const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => loadThemeFromStorage());
-
-  // Apply theme on mount and whenever it changes
+  const [siteTheme] = useState<SiteTheme>(() => loadThemeFromStorage());
   useEffect(() => {
     applyThemeToDOM(siteTheme);
   }, [siteTheme]);
@@ -353,125 +102,6 @@ export default function App() {
       return next;
     });
   };
-
-  // --- LEAD CAPTURE FORM STATE ---
-  const [formData, setFormData] = useState({
-    name: '',
-    contactNumber: '',
-    email: '',
-    broker: ''
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // --- VIEWER GESTURE NAVIGATION ---
-  useEffect(() => {
-    if (currentScreen !== 'viewer') return;
-
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let twoFingerStartX = 0;
-    let twoFingerStartY = 0;
-    let lastTouchX = 0;
-    let lastTouchY = 0;
-    let isTwoFingerSwipe = false;
-    let startDistance = 0;
-    let maxDistanceDiff = 0;
-
-    const triggerBackNavigation = () => {
-      const container = document.getElementById('viewer-scroll-container');
-      if (container) {
-        if (container.scrollLeft > 50) {
-          container.scrollTo({ left: 0, behavior: 'smooth' });
-        } else if (!isWipingRef.current) {
-          const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
-          setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
-          setWipeDirection('backward');
-          setIsWiping(true);
-          isWipingRef.current = true;
-          setTimeout(() => {
-            setCurrentScreen('selection');
-            setTimeout(() => {
-              setIsWiping(false);
-              isWipingRef.current = false;
-            }, 100);
-          }, 600);
-        }
-      }
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        isTwoFingerSwipe = false;
-      } else if (e.touches.length === 2) {
-        twoFingerStartX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        twoFingerStartY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-        lastTouchX = twoFingerStartX;
-        lastTouchY = twoFingerStartY;
-        
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        startDistance = Math.sqrt(dx * dx + dy * dy);
-        maxDistanceDiff = 0;
-        isTwoFingerSwipe = true;
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2 && isTwoFingerSwipe) {
-        lastTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        lastTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-        
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        const currentDistance = Math.sqrt(dx * dx + dy * dy);
-        const distDiff = Math.abs(currentDistance - startDistance);
-        if (distDiff > maxDistanceDiff) {
-          maxDistanceDiff = distDiff;
-        }
-      }
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (isTwoFingerSwipe) {
-        const deltaX = lastTouchX - twoFingerStartX;
-        const deltaY = lastTouchY - twoFingerStartY;
-        
-        // Detect horizontal two-finger swipe right. Must not be a zoom/pinch gesture (distance diff < 40px)
-        if (deltaX > 80 && Math.abs(deltaY) < 100 && maxDistanceDiff < 40) {
-          triggerBackNavigation();
-        }
-        isTwoFingerSwipe = false;
-        return;
-      }
-    };
-
-    let lastViewerWheel = 0;
-    const handleViewerWheel = (e: WheelEvent) => {
-      // Touchpad scrolling (two-finger scroll) generates horizontal wheel events (negative deltaX is swipe right)
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && e.deltaX < -15) {
-        const now = Date.now();
-        if (now - lastViewerWheel < 600) return; 
-        
-        triggerBackNavigation();
-        lastViewerWheel = now;
-      }
-    };
-
-    window.addEventListener('touchstart', handleTouchStart, { capture: true, passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { capture: true, passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { capture: true, passive: true });
-    window.addEventListener('wheel', handleViewerWheel, { capture: true, passive: true });
-
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart, { capture: true });
-      window.removeEventListener('touchmove', handleTouchMove, { capture: true });
-      window.removeEventListener('touchend', handleTouchEnd, { capture: true });
-      window.removeEventListener('wheel', handleViewerWheel, { capture: true });
-    };
-  }, [currentScreen]);
 
   // Sync leads from LocalStorage on mount
   useEffect(() => {
@@ -500,118 +130,58 @@ export default function App() {
     }
   }, [selectedLot, currentScreen]);
 
-  // Animejs hook for Landing Screen staggered entrance
-  useEffect(() => {
-    if (currentScreen === 'landing') {
-      anime({
-        targets: '.landing-element',
-        opacity: [0, 1],
-        translateY: [30, 0],
-        delay: anime.stagger(150),
-        easing: 'easeOutExpo',
-        duration: 900
-      });
-    }
-  }, [currentScreen]);
-
-  // Animejs hook for Selection Screen staggered entrance
-  useEffect(() => {
-    if (currentScreen === 'selection') {
-      anime({
-        targets: '.selection-header-element',
-        opacity: [0, 1],
-        translateY: [-20, 0],
-        delay: anime.stagger(100),
-        easing: 'easeOutQuad',
-        duration: 500
-      });
-
-      anime({
-        targets: '.selection-indicator-element',
-        opacity: [0, 1],
-        translateY: [20, 0],
-        delay: 350,
-        easing: 'easeOutQuad',
-        duration: 500
-      });
-    }
-  }, [currentScreen]);
-
-
-
   // Filter lots of active selected project
   const activeProjectLots = useMemo(() => {
     if (!selectedProject) return [];
     return COMMERCIAL_LOTS.filter(l => l.projectId === selectedProject.id);
   }, [selectedProject]);
 
-  const handleProjectSelect = (project: CommercialProject) => {
-    setSelectedProject(project);
-    // Pick a random color from the provided palette for the horizontal wipe
-    const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
-    setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
-    setWipeDirection('forward');
+  const triggerTransition = (color: string, direction: 'forward' | 'backward', onHalfway: () => void) => {
+    if (isWipingRef.current) return;
+    setWipeColor(color);
+    setWipeDirection(direction);
     setIsWiping(true);
     isWipingRef.current = true;
     
-    // Halfway through the wipe (when screen is covered), change screen state
     setTimeout(() => {
-      setSelectedLot(null);
-      setCurrentScreen('viewer');
-      
-      // Let the exit wipe animation play
+      onHalfway();
       setTimeout(() => {
         setIsWiping(false);
         isWipingRef.current = false;
-      }, 100); // Trigger exit slightly after the screen swap
-    }, 600); // Increased to 600ms for smoother pacing
+      }, 100);
+    }, 600);
+  };
+
+  const getRandomWipeColor = () => {
+    const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
+    return wipeColors[Math.floor(Math.random() * wipeColors.length)];
+  };
+
+  const handleProjectSelect = (project: CommercialProject) => {
+    setSelectedProject(project);
+    triggerTransition(getRandomWipeColor(), 'forward', () => {
+      setSelectedLot(null);
+      setCurrentScreen('viewer');
+    });
   };
 
   const handleBackToSelection = () => {
-    if (isWipingRef.current) return;
-    const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
-    setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
-    setWipeDirection('backward');
-    setIsWiping(true);
-    isWipingRef.current = true;
-    
-    setTimeout(() => {
+    triggerTransition(getRandomWipeColor(), 'backward', () => {
       setSelectedLot(null);
       setCurrentScreen('selection');
-      
-      setTimeout(() => {
-        setIsWiping(false);
-        isWipingRef.current = false;
-      }, 100);
-    }, 600);
+    });
   };
 
   const handleBackToLanding = () => {
-    if (isWipingRef.current) return;
-    const wipeColors = ['#171796', '#06b29c', '#df3703', '#fdb10c'];
-    setWipeColor(wipeColors[Math.floor(Math.random() * wipeColors.length)]);
-    setWipeDirection('backward');
-    setIsWiping(true);
-    isWipingRef.current = true;
-    
-    setTimeout(() => {
+    triggerTransition(getRandomWipeColor(), 'backward', () => {
       setSelectedProject(null);
       setSelectedLot(null);
       setCurrentScreen('landing');
-      
-      setTimeout(() => {
-        setIsWiping(false);
-        isWipingRef.current = false;
-      }, 100);
-    }, 600);
+    });
   };
 
   const handleLotClick = (lot: CommercialLot) => {
     setSelectedLot(prev => prev?.id === lot.id ? null : lot);
-  };
-
-  const handleLotDeselect = () => {
-    setSelectedLot(null);
   };
 
   const handleAdminToggle = () => {
@@ -627,53 +197,10 @@ export default function App() {
     }
   };
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'Full Name is required';
-    if (!formData.contactNumber.trim()) {
-      newErrors.contactNumber = 'Contact Number is required';
-    } else if (!/^[0-9+\-\s]{7,15}$/.test(formData.contactNumber.trim())) {
-      newErrors.contactNumber = 'Please enter a valid telephone or mobile number';
-    }
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    // Create investor lead model
-    const newLead: InvestorLead = {
-      id: `lead_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-      name: formData.name.trim(),
-      contactNumber: formData.contactNumber.trim(),
-      email: formData.email.trim(),
-      brokerName: formData.broker.trim() || undefined,
-      timestamp: new Date().toISOString(),
-      selectedProjectName: selectedProject ? selectedProject.name : 'General Selection',
-      selectedLotNumber: selectedLot ? `${selectedLot.blockNumber} - ${selectedLot.lotNumber}` : 'General Inquiry'
-    };
-
+  const handleLeadSubmit = (newLead: InvestorLead) => {
     const updated = [newLead, ...leads];
     setLeads(updated);
     localStorage.setItem('filinvest_commercial_lot_leads', JSON.stringify(updated));
-
-    setFormSubmitted(true);
-
-    // Smooth timer matching user design to auto close
-    setTimeout(() => {
-      setShowInquiryModal(false);
-      setFormSubmitted(false);
-      setFormData({ name: '', contactNumber: '', email: '', broker: '' });
-      setErrors({});
-    }, 2500);
   };
 
   return (
@@ -681,7 +208,6 @@ export default function App() {
       className="w-full h-[100dvh] text-slate-100 font-sans select-none overflow-hidden relative flex flex-col"
       style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)', color: 'var(--theme-text-primary, #f1f5f9)' }}
     >
-
       {/* Global Color Wipe Overlay */}
       <AnimatePresence>
         {isWiping && (
@@ -699,811 +225,57 @@ export default function App() {
       {/* Universal Embedded Content Frame */}
       <div className="flex-1 overflow-hidden relative" style={{ minHeight: 0 }}>
         <AnimatePresence mode="wait">
-
-          {/* ========================================================
-              SCREEN 0: LOADING SCREEN
-              ======================================================== */}
           {currentScreen === 'loading' && (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
-              className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-50 bg-white"
-            >
-              <div className="absolute inset-0 bg-[radial-gradient(#17179615_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none z-0" />
-              
-              <div className="z-10 h-32 md:h-40 relative flex items-center justify-center w-full max-w-sm mb-12">
-                <AnimatePresence mode="wait">
-                  {(() => {
-                    const loadingLogos = COMMERCIAL_PROJECTS.map(p => p.logoImage).filter(Boolean) as string[];
-                    const currentLogo = loadingLogos.length > 0 ? loadingLogos[activeLoadingLogoIndex] : '';
-                    return currentLogo ? (
-                      <motion.img
-                        key={currentLogo}
-                        src={currentLogo}
-                        alt="Loading logo"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.05 }}
-                        transition={{ duration: 0.4 }}
-                        className="absolute object-contain max-w-full max-h-full h-24 md:h-28"
-                      />
-                    ) : null;
-                  })()}
-                </AnimatePresence>
-              </div>
-
-              <div className="z-10 w-48 md:w-64 space-y-4">
-                <div className="h-[2px] w-full bg-[#171796]/10 overflow-hidden rounded-full">
-                  <motion.div 
-                    className="h-full bg-[#171796]"
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${loadingProgress}%` }}
-                    transition={{ ease: 'easeOut', duration: 0.2 }}
-                  />
-                </div>
-                <div className="text-[9px] md:text-[10px] text-[#171796]/60 uppercase tracking-[0.3em] font-sans font-bold flex justify-between">
-                  <span>Loading Assets</span>
-                  <span>{loadingProgress}%</span>
-                </div>
-              </div>
-            </motion.div>
+            <LoadingScreen onLoaded={() => setCurrentScreen('landing')} />
           )}
 
-          {/* ========================================================
-              SCREEN 1: LANDING SCREEN WITH EDITORIAL TOUCH
-              ======================================================== */}
           {currentScreen === 'landing' && (
-            <motion.div
-              key="landing"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col items-center justify-between p-6 sm:p-12 text-center cursor-pointer overflow-hidden z-0 bg-white"
-              onClick={() => setCurrentScreen('selection')}
-            >
-              <CursorGlow />
-              
-              {/* Immersive Atmospheric Background Image Backdrop */}
-              <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
-                <AnimatePresence>
-                  <motion.img
-                    key={LANDING_BACKDROPS[activeLandingBgIndex]}
-                    src={LANDING_BACKDROPS[activeLandingBgIndex]}
-                    alt="Landing backdrop"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.6 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 2, ease: 'easeInOut' }}
-                    className="absolute inset-0 w-full h-full object-cover scale-102 blur-[0.5px]"
-                    referrerPolicy="no-referrer"
-                  />
-                </AnimatePresence>
-                <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/40 to-white/80 pointer-events-none z-10" />
-              </div>
-
-              <div className="absolute inset-0 bg-[radial-gradient(#17179615_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none z-0" />
-
-              <div className="pt-12 landing-element z-10 flex justify-center">
-                <img src="/landing.svg" alt="Filinvest Townships" className="h-16 sm:h-20 md:h-28 lg:h-36 mb-2 object-contain" />
-              </div>
-
-              <div className="space-y-6 max-w-3xl px-6 z-10 landing-element">
-                <h1 className="text-4xl sm:text-6xl font-display font-medium tracking-tight text-[#171796] leading-tight mt-4">
-                  Invest in a Prime Business Address
-                </h1>
-                <div className="h-[1px] w-24 bg-[#171796]/30 mx-auto my-6"></div>
-                <p className="text-base sm:text-lg text-slate-800 font-sans font-normal max-w-2xl mx-auto leading-relaxed px-4 italic">
-                  Explore premium commercial lot properties strategically located in prime growth corridors—ideal for businesses, investments, and future-ready developments.
-                </p>
-              </div>
-
-              <div className="pb-12 z-10 landing-element">
-                <button className="px-10 py-4.5 bg-[#171796] hover:bg-blue-800 shadow-lg shadow-[#171796]/20 border-none text-white rounded-none font-medium tracking-widest uppercase text-xs transition-colors animate-pulse cursor-pointer">
-                  Tap Anywhere to Begin
-                </button>
-              </div>
-
-              {/* QR Code - Desktop only, far bottom-right */}
-              <div className="hidden md:flex flex-col items-center gap-2 pointer-events-none absolute bottom-6 right-8 z-20 landing-element">
-                <div className="bg-white p-2.5 rounded-sm shadow-lg shadow-black/10 border border-[#171796]/10">
-                  <QRCodeSVG
-                    value="https://filinvest-properties-explorer.vercel.app/"
-                    size={80}
-                    bgColor="#ffffff"
-                    fgColor="#171796"
-                    level="M"
-                  />
-                </div>
-                <span className="text-[8px] text-[#171796]/60 uppercase tracking-[0.2em] font-bold font-sans">
-                  Scan to open on mobile
-                </span>
-              </div>
-            </motion.div>
+            <LandingScreen onStart={() => setCurrentScreen('selection')} />
           )}
 
-          {/* ========================================================
-              SCREEN 2: PROJECT SELECTION SCREEN
-              ======================================================== */}
           {currentScreen === 'selection' && (
-            <motion.div
-              key="selection"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 overflow-y-auto"
-              style={{ backgroundColor: 'var(--theme-primary-bg, #0a1220)', WebkitOverflowScrolling: 'touch' }}
-            >
-              <CursorGlow />
-              
-              {/* Full-Screen Immersive Swipeable Carousel */}
-              <div 
-                className="absolute inset-0 overflow-hidden select-none bg-black"
-                onWheel={handleCarouselWheel}
-              >
-                {/* Header overlay */}
-                <div className="absolute top-0 left-0 w-full z-50 p-5 sm:p-8 lg:p-12 pointer-events-none">
-                  <div className="max-w-7xl mx-auto w-full flex justify-start items-start selection-header-element">
-                    <button
-                      onClick={handleBackToLanding}
-                      className="flex items-center gap-2 px-4 py-2.5 text-white hover:text-[#171796] hover:bg-white transition-all cursor-pointer rounded-full pointer-events-auto backdrop-blur-md bg-white/10 font-sans text-xs font-bold tracking-[0.15em] uppercase border border-white/20 shadow-lg"
-                      aria-label="Back to landing page"
-                    >
-                      <ArrowLeft size={16} />
-                      BACK TO LANDING PAGE
-                    </button>
-                  </div>
-                </div>
-
-                {/* Left & Right Chevron Overlay Buttons (Desktop Navigation helper) */}
-                <motion.button
-                  initial={{ opacity: 0, y: '-50%', x: -15 }}
-                  animate={{ opacity: 1, y: '-50%', x: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  onClick={() => setActiveCarouselIndex(prev => prev - 1)}
-                  className="absolute left-4 md:left-8 top-1/2 z-50 p-3.5 border border-[#171796]/20 text-[#171796] bg-white/90 hover:bg-[#171796] hover:text-white hover:border-[#171796] transition-all hover:scale-105 active:scale-95 backdrop-blur-md rounded-full shadow-lg cursor-pointer group pointer-events-auto"
-                  aria-label="Previous Township"
-                >
-                  <ChevronLeft size={28} className="group-hover:-translate-x-0.5 transition-transform" />
-                </motion.button>
-                <motion.button
-                  initial={{ opacity: 0, y: '-50%', x: 15 }}
-                  animate={{ opacity: 1, y: '-50%', x: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  onClick={() => setActiveCarouselIndex(prev => prev + 1)}
-                  className="absolute right-4 md:right-8 top-1/2 z-50 p-3.5 border border-[#171796]/20 text-[#171796] bg-white/90 hover:bg-[#171796] hover:text-white hover:border-[#171796] transition-all hover:scale-105 active:scale-95 backdrop-blur-md rounded-full shadow-lg cursor-pointer group pointer-events-auto"
-                  aria-label="Next Township"
-                >
-                  <ChevronRight size={28} className="group-hover:translate-x-0.5 transition-transform" />
-                </motion.button>
-
-                {/* Full Screen Slides */}
-                {(() => {
-                  const indicesToRender = [activeCarouselIndex - 1, activeCarouselIndex, activeCarouselIndex + 1];
-                  const getProjectIndex = (index: number) => {
-                    return ((index % COMMERCIAL_PROJECTS.length) + COMMERCIAL_PROJECTS.length) % COMMERCIAL_PROJECTS.length;
-                  };
-                  return indicesToRender.map((index) => {
-                    const projectIndex = getProjectIndex(index);
-                    const project = COMMERCIAL_PROJECTS[projectIndex];
-                    const offset = index - activeCarouselIndex;
-                    const isCenter = offset === 0;
-
-                    return (
-                      <motion.div
-                        key={index}
-                        initial={false}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          willChange: 'transform',
-                          WebkitFontSmoothing: 'antialiased',
-                          backfaceVisibility: 'hidden',
-                          WebkitBackfaceVisibility: 'hidden',
-                          transform: 'translateZ(0)',
-                        }}
-                        animate={{
-                          x: `calc(${offset * 100}vw)`,
-                          zIndex: isCenter ? 30 : 10,
-                        }}
-                        transition={{
-                          type: 'tween',
-                          ease: [0.25, 1, 0.5, 1],
-                          duration: 0.8,
-                        }}
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.8}
-                        onDragEnd={(e, info) => {
-                          const threshold = window.innerWidth * 0.15; // 15% of screen width to swipe
-                          if (info.offset.x < -threshold) {
-                            setActiveCarouselIndex(prev => prev + 1);
-                          } else if (info.offset.x > threshold) {
-                            setActiveCarouselIndex(prev => prev - 1);
-                          }
-                        }}
-                        className={`overflow-hidden cursor-grab active:cursor-grabbing group`}
-                      >
-                        {/* Background Image */}
-                        <img
-                          src={project.carouselImage || project.bgImage}
-                          alt={project.name}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 scale-100 group-hover:scale-105"
-                          style={{ filter: isCenter ? 'brightness(0.8) contrast(1.1)' : 'brightness(0.4) blur(4px)' }}
-                          referrerPolicy="no-referrer"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/30 to-transparent pointer-events-none" />
-                        <div className="absolute inset-0 bg-black/5 pointer-events-none" />
-
-                        {/* Content Overlay */}
-                        <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 pb-24 md:pb-32 flex flex-col md:flex-row items-start md:items-end justify-between max-w-7xl mx-auto right-0 gap-8 pointer-events-none">
-                          
-                          <div className="flex-1 max-w-2xl space-y-4">
-                            {project.logoImage ? (
-                              <img src={project.logoImage} alt={project.name} className={`object-contain object-left ${project.id === 'city-di-mare' ? 'h-20 md:h-28' : 'h-14 md:h-20'}`} />
-                            ) : (
-                              <h2 className="text-4xl md:text-6xl font-medium text-[#171796] tracking-wide leading-tight drop-shadow-sm selection-slide-heading" style={{ fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' }}>
-                                {project.name}
-                              </h2>
-                            )}
-
-                            <div className="flex items-center gap-8 pt-4 uppercase font-sans">
-                              <span className="bg-[#171796] text-white text-[11px] uppercase font-bold tracking-[0.25em] px-3.5 py-2 shadow-md flex items-center gap-1.5 shrink-0">
-                                <MapPin size={12} /> {project.location}
-                              </span>
-                              <div>
-                                <span className="block text-[10px] md:text-[11px] font-semibold tracking-widest text-slate-500">Avg Lot Sizing</span>
-                                <span className="block text-base md:text-lg font-bold text-[#171796] mt-1">{project.averageLotSize}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="shrink-0 pointer-events-auto w-full md:w-auto">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleProjectSelect(project);
-                              }}
-                              className="w-full md:w-auto px-10 py-5 text-sm uppercase font-extrabold tracking-[0.25em] bg-[#171796] text-white hover:bg-blue-800 hover:scale-[1.02] transition-all shadow-lg flex items-center justify-center gap-3 pointer-events-auto"
-                            >
-                              Explore Township
-                            </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  });
-                })()}
-
-                {/* Segmented Bottom Active Page Indicators */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.6 }}
-                  className="absolute bottom-8 left-0 w-full flex flex-col items-center gap-3 z-40 select-none pointer-events-none"
-                >
-                  <div className="flex items-center gap-3 pointer-events-auto">
-                    {COMMERCIAL_PROJECTS.map((project, idx) => {
-                      const getProjectIndex = (index: number) => {
-                        return ((index % COMMERCIAL_PROJECTS.length) + COMMERCIAL_PROJECTS.length) % COMMERCIAL_PROJECTS.length;
-                      };
-                      const activeIdx = getProjectIndex(activeCarouselIndex);
-                      const isActive = idx === activeIdx;
-                      return (
-                        <button
-                          key={project.id}
-                          onClick={() => {
-                            const diff = idx - activeIdx;
-                            if (diff !== 0) {
-                              setActiveCarouselIndex(prev => prev + diff);
-                            }
-                          }}
-                          className={`h-1.5 transition-all duration-300 rounded-full cursor-pointer shadow-sm ${
-                            isActive ? 'w-12 bg-white' : 'w-4 bg-white/30 hover:bg-white/60'
-                          }`}
-                          aria-label={`Go to slide ${idx + 1}`}
-                        />
-                      );
-                    })}
-                  </div>
-                  
-                  <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/70 font-sans flex items-center gap-2 drop-shadow-md">
-                    {(() => {
-                      const getProjectIndex = (index: number) => {
-                        return ((index % COMMERCIAL_PROJECTS.length) + COMMERCIAL_PROJECTS.length) % COMMERCIAL_PROJECTS.length;
-                      };
-                      return (
-                        <>
-                          <span className="text-white">Township {String(getProjectIndex(activeCarouselIndex) + 1).padStart(2, '0')}</span>
-                          <span className="text-white/40">/</span>
-                          <span>{String(COMMERCIAL_PROJECTS.length).padStart(2, '0')}</span>
-                        </>
-                      );
-                    })()}
-                  </div>
-
-                  <div className="text-[9px] uppercase tracking-[0.25em] font-medium text-white/40 font-sans flex items-center gap-2 mt-1 drop-shadow-md select-none animate-pulse">
-                    <span>← Swipe or Drag to Explore Townships →</span>
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
+            <SelectionScreen
+              onBackToLanding={handleBackToLanding}
+              onProjectSelect={handleProjectSelect}
+              activeCarouselIndex={activeCarouselIndex}
+              setActiveCarouselIndex={setActiveCarouselIndex}
+              handleCarouselWheel={handleCarouselWheel}
+            />
           )}
 
-          {/* ========================================================
-              SCREEN 3: PROJECT OVERVIEW & INTERACTIVE MAP VIEW
-              ======================================================== */}
           {currentScreen === 'viewer' && selectedProject && (
-            <motion.div
-              key="viewer"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col bg-white"
-            >
-
-
-              {/* Core Interactive Screen Layout - Horizontal Scroll Container */}
-              <div id="viewer-scroll-container" className="flex-1 w-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide relative" style={{ scrollBehavior: 'smooth' }}>
-
-                {/* Panel 1: Split Screen Project Intro */}
-                <div className="w-full shrink-0 snap-center snap-always flex flex-col md:flex-row relative h-full">
-                  {/* Left Side: Township Image */}
-                  <div className="w-full md:w-1/2 h-[35vh] md:h-full relative overflow-hidden bg-black">
-                    <img 
-                      src={selectedProject.carouselImage || selectedProject.bgImage} 
-                      alt={selectedProject.name} 
-                      className="w-full h-full object-cover opacity-80" 
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1220]/70 via-[#0a1220]/10 to-transparent md:bg-gradient-to-r md:from-transparent md:via-[#0a1220]/30 md:to-[#0a1220]/80" />
-                  </div>
-
-                  {/* Right Side: Description */}
-                  <div className="w-full md:w-1/2 h-[65vh] md:h-full bg-white flex flex-col justify-start md:justify-center p-6 sm:p-10 md:p-16 lg:p-24 overflow-y-auto min-h-0 project-intro-description">
-                    <span className="text-[#171796] tracking-[0.3em] text-xs font-bold uppercase flex items-center gap-1.5 font-sans mb-2 md:mb-4">
-                      <MapPin size={12} /> {selectedProject.location}
-                    </span>
-                    {selectedProject.logoImage ? (
-                      <img src={selectedProject.logoImage} alt={selectedProject.name} className={`object-contain object-left mb-4 md:mb-6 ${selectedProject.id === 'city-di-mare' ? 'h-16 md:h-24' : 'h-12 md:h-16'}`} />
-                    ) : (
-                      <h2 className="text-3xl md:text-5xl font-medium text-[#171796] mb-4 md:mb-6 project-intro-heading" style={{ fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' }}>
-                        {selectedProject.name}
-                      </h2>
-                    )}
-                    <div className="h-[1px] w-16 bg-[#171796]/30 mb-4 md:mb-8"></div>
-                    {selectedProject.fullDescription.map((paragraph, idx) => (
-                      <p key={idx} className={`text-sm md:text-base text-slate-600 font-sans font-light leading-relaxed ${idx === selectedProject.fullDescription.length - 1 ? 'mb-6 md:mb-12' : 'mb-4 md:mb-6'}`}>
-                        {paragraph}
-                      </p>
-                    ))}
-                    
-                  </div>
-
-                  {/* Floating Left Swipe-to-Townships Indicator Guides */}
-                  <div 
-                    onClick={handleBackToSelection}
-                    className="absolute left-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-4 py-8 px-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 shadow-lg text-white transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto group"
-                  >
-                    <span className="p-1.5 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors animate-bounce-horizontal-left">
-                      <ArrowLeft size={14} />
-                    </span>
-                    <span className="text-[9px] font-bold tracking-[0.32em] uppercase [writing-mode:vertical-lr] select-none text-white transition-colors">
-                      Swipe to Townships
-                    </span>
-                  </div>
-
-                  <div 
-                    onClick={handleBackToSelection}
-                    className="absolute left-4 bottom-4 z-40 md:hidden flex items-center gap-2.5 py-3 px-5 bg-white/90 backdrop-blur border border-[#171796]/15 shadow-md text-[#171796] transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto"
-                  >
-                    <ArrowLeft size={12} className="animate-bounce-horizontal-left" />
-                    <span className="text-[9px] font-bold tracking-[0.2em] uppercase select-none text-[#171796]/80">
-                      Townships
-                    </span>
-                  </div>
-
-                  {/* Floating Right Swipe-to-Map Indicator Guides */}
-                  <div 
-                    onClick={(e) => {
-                      const container = document.getElementById('viewer-scroll-container');
-                      if (container) {
-                        container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
-                      }
-                    }}
-                    className="absolute right-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-4 py-8 px-4 bg-white/30 backdrop-blur-md hover:bg-white/50 border border-[#171796]/10 hover:border-[#171796]/25 shadow-lg text-[#171796] transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto group"
-                  >
-                    <span className="text-[9px] font-bold tracking-[0.32em] uppercase [writing-mode:vertical-lr] select-none text-[#171796] transition-colors">
-                      Swipe to Map
-                    </span>
-                    <span className="p-1.5 rounded-full bg-[#171796]/10 group-hover:bg-[#171796]/20 transition-colors animate-bounce-horizontal">
-                      <ArrowRight size={14} />
-                    </span>
-                  </div>
-
-                  <div 
-                    onClick={(e) => {
-                      const container = document.getElementById('viewer-scroll-container');
-                      if (container) {
-                        container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
-                      }
-                    }}
-                    className="absolute right-4 bottom-4 z-40 md:hidden flex items-center gap-2.5 py-3 px-5 bg-white/90 backdrop-blur border border-[#171796]/15 shadow-md text-[#171796] transition-all rounded-full cursor-pointer animate-pulse pointer-events-auto"
-                  >
-                    <span className="text-[9px] font-bold tracking-[0.2em] uppercase select-none text-[#171796]/80">
-                      Swipe to Map
-                    </span>
-                    <ArrowRight size={12} className="animate-bounce-horizontal" />
-                  </div>
-                </div>
-
-                {/* Panel 2: Interactive Map */}
-                <div className="w-full shrink-0 snap-center snap-always flex flex-col relative h-full bg-white">
-
-                  <header className="border-b-2 border-[#171796] backdrop-blur px-4 sm:px-10 z-10 shrink-0 relative
-                    flex flex-col gap-3 py-3
-                    md:grid md:grid-cols-3 md:h-24 md:py-0 md:gap-0 md:items-center bg-white/95 text-[#171796]">
-                    {/* Row 1 on mobile: Back + Title + Admin */}
-                    <div className="flex items-center gap-3 justify-between md:justify-start">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={handleBackToSelection}
-                          className="flex items-center justify-center p-2 text-slate-400 hover:text-[#171796] hover:scale-110 active:scale-95 transition-all cursor-pointer rounded-full hover:bg-white/5 shrink-0"
-                          aria-label="Back to selection"
-                        >
-                          <ArrowLeft size={24} />
-                        </button>
-                        <div className="min-w-0">
-                          <h2 className="text-base md:text-2xl font-display font-medium text-[#171796] flex items-center gap-2 truncate" style={!selectedProject.logoImage ? { fontFamily: '"DIN", "DIN Alternate", "DIN Condensed", sans-serif' } : {}}>
-                            {selectedProject.logoImage ? (
-                              <img src={selectedProject.logoImage} alt={selectedProject.name} className={`object-contain object-left ${selectedProject.id === 'city-di-mare' ? 'h-7 md:h-10' : 'h-6 md:h-8'}`} />
-                            ) : (
-                              <span className="truncate">{selectedProject.name}</span>
-                            )}
-                            {selectedProject.id === 'filinvest-city' && (
-                              <span 
-                                onClick={() => {
-                                  setAlabangClicks(prev => {
-                                    const next = prev + 1;
-                                    if (next >= 5) {
-                                      handleAdminToggle();
-                                      return 0;
-                                    }
-                                    return next;
-                                  });
-                                }}
-                                className="cursor-pointer text-[9px] md:text-[10px] bg-[#171796]/10 text-[#171796] border border-[#171796]/20 px-1.5 md:px-2.5 py-0.5 uppercase tracking-widest font-bold font-sans shrink-0 pointer-events-auto"
-                              >
-                                Featured
-                              </span>
-                            )}
-                          </h2>
-                          <p className="text-xs text-slate-500 uppercase tracking-widest truncate max-w-sm hidden md:block mt-0.5">
-                            {selectedProject.location}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Quick Switch Tabs Removed */}
-
-                    {/* Desktop-only admin controls row */}
-                    <div className="hidden md:flex items-center justify-self-end">
-                      {isEditMode && (
-                        <>
-                          <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={chatbotEnabled}
-                              onChange={(e) => setChatbotEnabled(e.target.checked)}
-                              className="accent-amber-500 w-3.5 h-3.5"
-                            />
-                            Chatbot
-                          </label>
-                          <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={easterEggEnabled}
-                              onChange={(e) => setEasterEggEnabled(e.target.checked)}
-                              className="accent-amber-500 w-3.5 h-3.5"
-                            />
-                            Easter Egg
-                          </label>
-                          <label className="mr-5 flex items-center gap-2 text-[9px] uppercase font-bold tracking-widest text-slate-300 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={inquiriesEnabled}
-                              onChange={(e) => setInquiriesEnabled(e.target.checked)}
-                              className="accent-indigo-500 w-3.5 h-3.5"
-                            />
-                            Inquiries
-                          </label>
-
-                          <button
-                            onClick={() => {
-                              setChatbotEnabled(false);
-                              setEasterEggEnabled(false);
-                            }}
-                            className="mr-3 px-3 py-2 text-[9px] uppercase font-bold tracking-widest transition-all rounded-none border bg-rose-600 text-white border-rose-500 shadow-[0_0_10px_rgba(225,29,72,0.5)] hover:bg-rose-500"
-                          >
-                            Showcase Mode
-                          </button>
-                          <button
-                            onClick={handleAdminToggle}
-                            className="mr-4 px-3 py-2 text-[9px] uppercase font-bold tracking-widest transition-all rounded-none border bg-indigo-600 text-white border-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.5)] hover:bg-indigo-500"
-                          >
-                            Exit Edit Mode
-                          </button>
-                        </>
-                      )}
-                      {inquiriesEnabled && (
-                        <button
-                          onClick={() => {
-                            setFormSubmitted(false);
-                            setShowInquiryModal(true);
-                          }}
-                          className="px-6 py-2.5 bg-slate-100 hover:bg-white text-slate-950 text-xs uppercase font-bold tracking-widest transition-all rounded-none shadow"
-                        >
-                          Inquire Now
-                        </button>
-                      )}
-                    </div>
-                  </header>
-
-                  <div className="flex-1 flex flex-col md:flex-row kiosk-portrait-container relative min-h-0">
-
-                    {/* Interactive Map Area (Fills Center) */}
-                    <div className="flex-1 bg-slate-950/20 flex flex-col relative overflow-hidden">
-                    <div className="flex-1 h-full w-full relative">
-                    <InteractiveSDP
-                      project={selectedProject}
-                      lots={activeProjectLots}
-                      selectedLot={selectedLot}
-                      onLotSelect={handleLotClick}
-                      onLotDeselect={handleLotDeselect}
-                      onDlsuClick={handleDlsuClick}
-                      isEditMode={isEditMode}
-                      easterEggEnabled={easterEggEnabled}
-                    />
-                  </div>
-                </div>
-
-                  {/* Right Side Fixed Details Panel Layout (Screen 5 Compliance) */}
-                  {selectedLot && (
-                    <div className="w-full md:w-[30rem] border-t md:border-t-0 md:border-l border-[#171796]/10 flex flex-col justify-between p-8 sm:p-10 lg:p-12 shrink-0 h-[60vh] md:h-full z-10 overflow-y-auto kiosk-portrait-sidebar bg-white">
-                      <div className="flex-1 flex flex-col justify-between min-h-0">
-                      
-                      {/* Editorial Double Rule Header */}
-                      <div className="border-b-4 border-double border-[#171796]/20 pb-5 shrink-0 mb-6">
-                        <h3 className="text-lg md:text-xl font-bold uppercase tracking-[0.25em] text-[#171796] font-sans">
-                          Lot Specification
-                        </h3>
-                      </div>
-
-                      {/* Content Scroll Area */}
-                      <div className="flex-1 flex flex-col justify-start py-2 font-sans text-sm gap-4">
-
-                        {/* Architectural Ledger List */}
-                        <div className="space-y-4 md:space-y-6 font-sans">
-                          
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
-                            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
-                              {selectedProject?.id === 'filinvest-city' ? 'District' : 'Block'}
-                            </span>
-                            <span className="text-base md:text-lg font-bold text-[#171796]">
-                              {selectedLot.blockNumber}
-                            </span>
-                          </div>
-
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
-                            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
-                              Lot Identifier
-                            </span>
-                            <span className="text-base md:text-lg font-bold text-[#171796]">
-                              {selectedLot.lotNumber}
-                            </span>
-                          </div>
-
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
-                            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
-                              Lot Area
-                            </span>
-                            <span className="text-base md:text-lg font-bold text-[#171796]">
-                              {selectedLot.areaSqm.toLocaleString()} sqm
-                            </span>
-                          </div>
-
-                          <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
-                            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
-                              FAR Limit
-                            </span>
-                            <span className="text-base md:text-lg font-bold text-[#171796]">
-                              FAR {selectedLot.far}.0
-                            </span>
-                          </div>
-
-                          {selectedLot.structureSize !== undefined && (
-                            <>
-                              <div className="lot-detail-item opacity-0 flex justify-between items-baseline py-4 md:py-5 border-b border-[#171796]/10">
-                                <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
-                                  Structure Size
-                                </span>
-                                <span className="text-base md:text-lg font-bold text-[#171796]">
-                                  {selectedLot.structureSize.toLocaleString()} sqm
-                                </span>
-                              </div>
-                            </>
-                          )}
-
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-8">
-                      {inquiriesEnabled && (
-                        <button
-                          onClick={() => {
-                            setFormSubmitted(false);
-                            setShowInquiryModal(true);
-                          }}
-                          className="w-full py-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold uppercase tracking-wider transition-all shadow cursor-pointer"
-                        >
-                          Inquire For This Lot
-                        </button>
-                      )}
-                    </div>
-                    </div>
-                  )}
-                  </div>
-                </div> {/* End Panel 2 */}
-              </div> {/* End Horizontal Scroll Container */}
-            </motion.div>
+            <ViewerScreen
+              selectedProject={selectedProject}
+              activeProjectLots={activeProjectLots}
+              selectedLot={selectedLot}
+              onLotClick={handleLotClick}
+              onLotDeselect={() => setSelectedLot(null)}
+              onDlsuClick={handleDlsuClick}
+              isEditMode={isEditMode}
+              easterEggEnabled={easterEggEnabled}
+              chatbotEnabled={chatbotEnabled}
+              setChatbotEnabled={setChatbotEnabled}
+              setEasterEggEnabled={setEasterEggEnabled}
+              inquiriesEnabled={inquiriesEnabled}
+              setInquiriesEnabled={setInquiriesEnabled}
+              onAdminToggle={handleAdminToggle}
+              onShowInquiryModal={() => setShowInquiryModal(true)}
+              onBackToSelection={handleBackToSelection}
+              setAlabangClicks={setAlabangClicks}
+              isWipingRef={isWipingRef}
+            />
           )}
-
         </AnimatePresence>
       </div>
 
-      {/* ========================================================
-          SCREEN 7: LEAD CAPTURE POPUP OVERLAY MODAL (REFINED DESIGN)
-          ======================================================== */}
-      <AnimatePresence>
-        {showInquiryModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[#0a1220]/85 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.96 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.96 }}
-              className="bg-[#111c2e] border border-white/10 w-full max-w-lg rounded-none overflow-hidden shadow-2xl relative"
-            >
+      <InquiryModal
+        showModal={showInquiryModal}
+        onClose={() => setShowInquiryModal(false)}
+        selectedProject={selectedProject}
+        selectedLot={selectedLot}
+        onLeadSubmit={handleLeadSubmit}
+      />
 
-              <div className="p-6 border-b border-white/10 flex items-center justify-between">
-                <div>
-                  <h4 className="text-[9px] font-bold tracking-[0.3em] uppercase text-blue-400">
-                    Filinvest Townships
-                  </h4>
-                  <h3 className="text-xl font-display font-semibold text-white mt-1">
-                    Investment Inquiry Form
-                  </h3>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">
-                    Catalog your priority registry profile
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowInquiryModal(false)}
-                  className="p-1.5 bg-[#0a1220] border border-white/10 hover:text-blue-400 transition-all text-slate-400"
-                >
-                  <X size={15} />
-                </button>
-              </div>
-
-              {formSubmitted ? (
-                <div className="p-12 flex flex-col items-center justify-center text-center space-y-4 animate-fadeIn">
-                  <CheckCircle2 size={44} className="text-emerald-400" />
-                  <h4 className="text-xl font-display font-medium text-white">Inquiry Documented</h4>
-                  <p className="text-xs text-slate-300 max-w-xs leading-relaxed font-sans">
-                    Registry files logged safely. Our township account executive will prioritize your follow-up profile.
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleFormSubmit} className="p-6 space-y-4 text-xs font-sans">
-
-                  {selectedLot && (
-                    <div className="bg-[#0a1220] p-3 rounded-none border border-white/5 text-[10px] uppercase font-bold tracking-widest flex justify-between items-center mb-1">
-                      <span className="text-slate-400">Attached Parameter:</span>
-                      <span className="font-mono text-blue-400 bg-blue-500/10 px-2.5 py-0.5 border border-blue-500/25">
-                        {selectedProject?.name.substring(0, 15)} - {selectedLot.lotNumber}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase tracking-widest font-bold text-slate-300 flex items-center gap-1.5">
-                      <User size={12} className="text-slate-500" /> Investor Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Attendee Name"
-                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all"
-                    />
-                    {errors.name && <p className="text-[10px] text-rose-400 font-semibold mt-0.5">{errors.name}</p>}
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase tracking-widest font-bold text-slate-300 flex items-center gap-1.5">
-                      <Phone size={12} className="text-slate-500" /> Contact Number *
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.contactNumber}
-                      onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
-                      placeholder="+63 900 000 0000"
-                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all"
-                    />
-                    {errors.contactNumber && <p className="text-[10px] text-rose-400 font-semibold mt-0.5">{errors.contactNumber}</p>}
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase tracking-widest font-bold text-slate-300 flex items-center gap-1.5">
-                      <Mail size={12} className="text-slate-500" /> Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="investor@example.com"
-                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all"
-                    />
-                    {errors.email && <p className="text-[10px] text-rose-400 font-semibold mt-0.5">{errors.email}</p>}
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase tracking-widest font-semibold text-slate-400 flex items-center gap-1.5">
-                      <Briefcase size={12} className="text-slate-600" /> Accredited Broker <span className="text-[8px] text-slate-600">(Optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.broker}
-                      onChange={(e) => setFormData({ ...formData, broker: e.target.value })}
-                      placeholder="Broker Name / Agency"
-                      className="w-full bg-[#0a1220] border border-white/10 rounded-none px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-white/20 transition-all"
-                    />
-                  </div>
-
-                  <div className="pt-4 flex gap-3 text-xs uppercase tracking-wider font-bold">
-                    <button
-                      type="button"
-                      onClick={() => setShowInquiryModal(false)}
-                      className="flex-1 py-3 bg-[#0a1220] border border-white/10 hover:bg-white/5 text-slate-300 transition-all"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white transition-all shadow"
-                    >
-                      Submit Sheet
-                    </button>
-                  </div>
-                </form>
-              )}
-
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Premium AI Chatbot Concierge Widget */}
       {chatbotEnabled && (
         <Chatbot 
           projects={COMMERCIAL_PROJECTS} 
@@ -1512,30 +284,7 @@ export default function App() {
         />
       )}
 
-      {/* Easter Egg loading screen */}
-      {showEasterEggLoading && (
-        <div className="fixed inset-0 bg-[#0a1220] z-[9999] flex flex-col items-center justify-center text-center p-6">
-          <div className="space-y-6 max-w-md">
-            <div className="text-blue-400 uppercase tracking-[0.45em] text-[10px] font-bold font-sans animate-pulse">
-              Interactive Properties Explorer
-            </div>
-            
-            <h1 className="text-3xl font-display font-medium text-white leading-tight">
-              This was made by <span className="font-bold text-blue-400 block mt-1 tracking-wider">Waphayll</span>
-            </h1>
-            
-            <div className="h-[2px] w-28 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto"></div>
-            
-            <div className="flex flex-col items-center gap-3">
-              {/* Spinner */}
-              <div className="w-8 h-8 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-              <p className="text-slate-400 text-[10px] tracking-widest uppercase animate-pulse">
-                Redirecting to Portfolio...
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {showEasterEggLoading && <EasterEggLoading />}
 
       {/* Invisible DOM Preloading Container to prevent GPU decode delays */}
       <div className="fixed top-[-10000px] left-[-10000px] opacity-0 pointer-events-none w-[1px] h-[1px] overflow-hidden z-[-1]">
@@ -1550,7 +299,6 @@ export default function App() {
           </React.Fragment>
         ))}
       </div>
-
     </div>
   );
 }
